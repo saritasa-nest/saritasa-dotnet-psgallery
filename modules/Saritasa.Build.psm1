@@ -1,19 +1,4 @@
-﻿function Initialize-BuildVariables()
-{
-    $registryRoot = 'HKLM:\SOFTWARE\Microsoft\MSBuild\ToolsVersions\'
-    if (Test-Path "$registryRoot\14.0")
-    {
-        $path = (Get-ItemProperty HKLM:\SOFTWARE\Microsoft\MSBuild\ToolsVersions\14.0).MSBuildToolsPath
-        $env:PATH = "$path;$env:PATH"
-    }
-    else
-    {
-        $scriptPath = ($env:VS150COMNTOOLS, $env:VS140COMNTOOLS, $env:VS120COMNTOOLS, $env:VS110COMNTOOLS -ne $null)[0] + 'vsvars32.bat'
-        Invoke-Environment $scriptPath
-    }
-}
-
-function Invoke-NugetRestore([string] $solutionPath)
+﻿function Invoke-NugetRestore([string] $solutionPath)
 {
     $nugetExePath = "$PSScriptRoot\nuget.exe"
     
@@ -31,30 +16,6 @@ function Invoke-SolutionBuild([string] $solutionPath, [string] $configuration)
     if ($LASTEXITCODE)
     {
         throw "Build failed."
-    }
-}
-
-# Based on Invoke-Environment script.
-# https://github.com/nightroman/PowerShelf/blob/master/Invoke-Environment.ps1
-# Copyright (c) 2012-2016 Roman Kuzmin
-# Apache License, Version 2.0
-function Invoke-Environment([string] $command, [switch] $output, [switch] $force)
-{
-    $stream = if ($output) { ($temp = [IO.Path]::GetTempFileName()) } else { 'nul' }
-    $operator = if ($force) {'&'} else {'&&'}
-
-    foreach($_ in cmd /c " `"$command`" > `"$stream`" 2>&1 $operator SET")
-    {   
-        if ($_ -match '^([^=]+)=(.*)')
-        {
-            [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
-        }
-    }
-
-    if ($output)
-    {
-        Get-Content -LiteralPath $temp
-        Remove-Item -LiteralPath $temp
     }
 }
 
