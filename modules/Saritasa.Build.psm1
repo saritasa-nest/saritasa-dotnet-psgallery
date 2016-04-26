@@ -1,7 +1,16 @@
 ﻿function Initialize-BuildVariables()
 {
-    $scriptPath = ($env:VS150COMNTOOLS, $env:VS140COMNTOOLS, $env:VS120COMNTOOLS, $env:VS110COMNTOOLS -ne $null)[0] + 'vsvars32.bat'
-    Invoke-Environment $scriptPath
+    $registryRoot = 'HKLM:\SOFTWARE\Microsoft\MSBuild\ToolsVersions\'
+    if (Test-Path "$registryRoot\14.0")
+    {
+        $path = (Get-ItemProperty HKLM:\SOFTWARE\Microsoft\MSBuild\ToolsVersions\14.0).MSBuildToolsPath
+        $env:PATH = "$path;$env:PATH"
+    }
+    else
+    {
+        $scriptPath = ($env:VS150COMNTOOLS, $env:VS140COMNTOOLS, $env:VS120COMNTOOLS, $env:VS110COMNTOOLS -ne $null)[0] + 'vsvars32.bat'
+        Invoke-Environment $scriptPath
+    }
 }
 
 function Invoke-NugetRestore([string] $solutionPath)
