@@ -56,5 +56,5 @@ function Invoke-FullPublish([string] $projectDir, [string] $projectName, [string
 
     Invoke-ProjectBuildAndPublish $projectDir $projectName $publishDir $installUrl
     Update-PublishVersion $publishDir $version
-    Write-Host "Published $projectName $version." -ForegroundColor Green
+    Write-Host "Published $projectName $version to `"$publishDir`" directory." -ForegroundColor Green
 }

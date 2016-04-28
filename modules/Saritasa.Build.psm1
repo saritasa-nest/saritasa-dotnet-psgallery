@@ -8,6 +8,10 @@
     }
     
     &$nugetExePath 'restore' $solutionPath
+    if ($LASTEXITCODE)
+    {
+        throw "Nuget restore failed."
+    }
 }
 
 function Invoke-SolutionBuild([string] $solutionPath, [string] $configuration)
