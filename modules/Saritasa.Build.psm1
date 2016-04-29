@@ -10,7 +10,7 @@
     &$nugetExePath 'restore' $solutionPath
     if ($LASTEXITCODE)
     {
-        throw "Nuget restore failed."
+        throw 'Nuget restore failed.'
     }
 }
 
@@ -19,7 +19,7 @@ function Invoke-SolutionBuild([string] $solutionPath, [string] $configuration)
     msbuild.exe $solutionPath '/m' '/t:Build' "/p:Configuration=$configuration" '/verbosity:normal'
     if ($LASTEXITCODE)
     {
-        throw "Build failed."
+        throw 'Build failed.'
     }
 }
 
@@ -47,5 +47,14 @@ function Update-AssemblyInfoFiles([string] $version)
             % {$_ -replace $assemblyVersionPattern, $assemblyVersion } |
             % {$_ -replace $fileVersionPattern, $fileVersion }
         } | Set-Content $filename
+    }
+}
+
+function Copy-DotnetConfig($templateFilename)
+{
+    $configFilename = $templateFilename -replace '\.template', ''
+    if (!(Test-Path $configFilename))
+    {
+        Copy-Item $templateFilename $configFilename
     }
 }

@@ -48,6 +48,10 @@ function Invoke-PackageBuild([string] $projectPath,
         '/p:IncludeSetAclProviderOnDestination=False', "/p:PrecompileBeforePublish=$precompile",
         "/p:Platform=$platform", "/p:PackageLocation=$packagePath")
     msbuild.exe $projectPath $allBuildParams $basicBuildParams $buildParams
+    if ($LASTEXITCODE)
+    {
+        throw 'Package build failed.'
+    }
 }
 
 # The recycleApp provider should be delegated to WDeployAdmin.
