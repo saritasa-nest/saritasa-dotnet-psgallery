@@ -12,7 +12,7 @@ function Set-RemoteManagementCredentials([string] $username, [string] $password,
     }
 }
 
-function ExecuteAppCmd($serverHost, $configFilename, [string[]] $arguments)
+function ExecuteAppCmd([string] $serverHost, $configFilename, [string[]] $arguments)
 {
     $config = Get-Content $configFilename
     $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
@@ -42,7 +42,7 @@ function ExecuteAppCmd($serverHost, $configFilename, [string[]] $arguments)
     }
 }
 
-function GetAppCmdOutput($serverHost, [string[]] $arguments)
+function GetAppCmdOutput([string] $serverHost, [string[]] $arguments)
 {
     $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
     
@@ -72,24 +72,102 @@ function GetAppCmdOutput($serverHost, [string[]] $arguments)
     $output
 }
 
-function Import-AppPools($serverHost, $configFilename)
+function Import-AppPools
 {
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $serverHost,
+        [Parameter(Mandatory = $true)]
+        [string] $configFilename
+    )
+
     ExecuteAppCmd $serverHost $configFilename @('add', 'apppool', '/in') $false
 }
 
-function Import-Sites($serverHost, $configFilename)
+function Import-Sites
 {
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $serverHost,
+        [Parameter(Mandatory = $true)]
+        [string] $configFilename
+    )
+
     ExecuteAppCmd $serverHost $configFilename @('add', 'site', '/in') $false
 }
 
-function Export-AppPools($serverHost, $outputFilename)
+function Export-AppPools
 {
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $serverHost,
+        [Parameter(Mandatory = $true)]
+        [string] $outputFilename
+    )
+    
     $xml = GetAppCmdOutput $serverHost @('list', 'apppool', '/config', '/xml')
     $xml | Set-Content $outputFilename
 }
 
-function Export-Sites($serverHost, $outputFilename)
+function Export-Sites
 {
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $serverHost,
+        [Parameter(Mandatory = $true)]
+        [string] $outputFilename
+    )
+
     $xml = GetAppCmdOutput $serverHost @('list', 'site', '/config', '/xml')
     $xml | Set-Content $outputFilename
+}
+
+# Install WinRM certificate of remote server to trusted certificate root authorities store.
+# Based on code by Robert Westerlund and Michael J. Lyons.
+# http://stackoverflow.com/questions/22233702/how-to-download-the-ssl-certificate-from-a-website-using-powershell
+function Import-WinrmCertificate
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $serverHost
+    )
+
+    if (!(IsAdmin))
+    {
+        throw 'Administrator permissions are required.'
+    }
+    
+    $port = 5986
+    $tempFilename = "$env:TEMP\" + [guid]::NewGuid()
+    
+    $webRequest = [Net.WebRequest]::Create("https://${serverHost}:$port")
+    try
+    {
+        $webRequest.GetResponse().Dispose()
+    }
+    catch [System.Net.WebException]
+    {
+        if ($_.Exception.Status -ne [System.Net.WebExceptionStatus]::TrustFailure)
+        {
+            # If it's not trust failure, rethrow it.
+            throw
+        }
+    }
+    
+    $cert = $webRequest.ServicePoint.Certificate
+    $bytes = $cert.Export([Security.Cryptography.X509Certificates.X509ContentType]::Cert)
+    Set-Content -Value $bytes -Encoding Byte -Path $tempFilename
+
+    Import-Certificate -CertStoreLocation Cert:\LocalMachine\Root $tempFilename
+    Remove-Item $tempFilename
+}
+
+function IsAdmin
+{
+    ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')
 }
