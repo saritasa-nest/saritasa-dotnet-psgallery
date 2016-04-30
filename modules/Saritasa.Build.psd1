@@ -95,10 +95,10 @@ PrivateData = @{
         # Tags = @()
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        LicenseUri = 'https://raw.githubusercontent.com/dermeister0/PSGallery/master/LICENSE'
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        ProjectUri = 'https://github.com/dermeister0/PSGallery'
 
         # A URL to an icon representing this module.
         # IconUri = ''
