@@ -1,7 +1,6 @@
-
 <#PSScriptInfo
 
-.VERSION 1.0.0
+.VERSION 1.1.0
 
 .GUID 3ccd77cd-d928-4e72-98fc-82e3417f3427
 
@@ -27,16 +26,16 @@
 
 .RELEASENOTES
 
-
 #>
 
 <# 
-
 .DESCRIPTION 
- Generates self-signed certificate or uses existing. Configures HTTPS listener for WinRM service. Opens 5986 port in firewall. 
-
+Generates self-signed certificate or uses existing. Configures HTTPS listener for WinRM service. Opens 5986 port in firewall. 
 #> 
-Param([string] $certificateThumbprint)
+param
+(
+    [string] $CertificateThumbprint
+)
 
 trap
 {
@@ -48,14 +47,14 @@ trap
 
 $hostname = $env:COMPUTERNAME
 
-if (!$certificateThumbprint)
+if (!$CertificateThumbprint)
 {
-    $certificateThumbprint = (New-SelfSignedCertificate -DnsName $hostname -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
+    $CertificateThumbprint = (New-SelfSignedCertificate -DnsName $hostname -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
     'New certificate is generated.'
 }
 
 New-Item -Path WSMan:\localhost\Listener -Address * -Transport HTTPS -Hostname $hostname `
-    -CertificateThumbprint $certificateThumbprint -Force
+    -CertificateThumbprint $CertificateThumbprint -Force
 
 New-NetFirewallRule -DisplayName 'Windows Remote Management (HTTPS-In)' `
     -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5986

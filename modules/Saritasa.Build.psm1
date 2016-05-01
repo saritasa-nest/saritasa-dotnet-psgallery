@@ -1,5 +1,11 @@
-﻿function Invoke-NugetRestore([string] $solutionPath)
+﻿function Invoke-NugetRestore
 {
+    param
+    (
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to solution. All NuGet packages from included projects will be restored.')]
+        [string] $SolutionPath
+    )
+
     $nugetExePath = "$PSScriptRoot\nuget.exe"
     
     if (!(Test-Path $nugetExePath))
@@ -7,36 +13,56 @@
         Invoke-WebRequest 'http://nuget.org/nuget.exe' -OutFile $nugetExePath
     }
     
-    &$nugetExePath 'restore' $solutionPath
+    &$nugetExePath 'restore' $SolutionPath
     if ($LASTEXITCODE)
     {
         throw 'Nuget restore failed.'
     }
 }
 
-function Invoke-SolutionBuild([string] $solutionPath, [string] $configuration)
+function Invoke-SolutionBuild
 {
-    msbuild.exe $solutionPath '/m' '/t:Build' "/p:Configuration=$configuration" '/verbosity:normal'
+    param
+    (
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to solution.')]
+        [string] $SolutionPath,
+        [Parameter(HelpMessage = 'Build configuration (Release, Debug, etc.)')]
+        [string] $Configuration
+    )
+
+    msbuild.exe $SolutionPath '/m' '/t:Build' "/p:Configuration=$configuration" '/verbosity:normal'
     if ($LASTEXITCODE)
     {
         throw 'Build failed.'
     }
 }
 
-# Update version numbers of AssemblyInfo.cs and AssemblyInfo.vb.
-# Based on SetVersion script.
-# http://www.luisrocha.net/2009/11/setting-assembly-version-with-windows.html
-# Copyright (c) 2009 Luis Rocha
-function Update-AssemblyInfoFiles([string] $version)
+<#
+.SYNOPSIS
+Update version numbers of AssemblyInfo.cs and AssemblyInfo.vb.
+
+.NOTES
+Based on SetVersion script.
+http://www.luisrocha.net/2009/11/setting-assembly-version-with-windows.html
+Copyright (c) 2009 Luis Rocha
+#>
+function Update-AssemblyInfoFiles
 {
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true, HelpMessage = 'Version string in major.minor.build.revision format.')]
+        [string] $Version
+    )
+
     $assemblyVersionPattern = 'AssemblyVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)'
     $fileVersionPattern = 'AssemblyFileVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)'
-    $assemblyVersion = 'AssemblyVersion("' + $version + '")';
-    $fileVersion = 'AssemblyFileVersion("' + $version + '")';
+    $assemblyVersion = 'AssemblyVersion("' + $Version + '")';
+    $fileVersion = 'AssemblyFileVersion("' + $Version + '")';
     
     Get-ChildItem -r -Include AssemblyInfo.cs, AssemblyInfo.vb | ForEach-Object {
         $filename = $_.Directory.ToString() + '\' + $_.Name
-        $filename + ' -> ' + $version
+        $filename + ' -> ' + $Version
         
         # If you are using a source control that requires to check-out files before 
         # modifying them, make sure to check-out the file here.
@@ -50,11 +76,17 @@ function Update-AssemblyInfoFiles([string] $version)
     }
 }
 
-function Copy-DotnetConfig($templateFilename)
+function Copy-DotnetConfig
 {
-    $configFilename = $templateFilename -replace '\.template', ''
+    param
+    (
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to App.config.template or Web.config.template file.')]
+        [string] $TemplateFilename
+    )
+
+    $configFilename = $TemplateFilename -replace '\.template', ''
     if (!(Test-Path $configFilename))
     {
-        Copy-Item $templateFilename $configFilename
+        Copy-Item $TemplateFilename $configFilename
     }
 }

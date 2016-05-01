@@ -1,38 +1,52 @@
 $credential = $null
 
-function Set-RemoteManagementCredentials([string] $username, [string] $password, [System.Management.Automation.PSCredential] $credential)
+function Set-RemoteManagementCredentials
 {
-    if ($username)
+    param
+    (
+        [string] $Username,
+        [string] $Password,
+        [System.Management.Automation.PSCredential] $Credential
+    )
+
+    if ($Username)
     {
-        $script:credential = New-Object System.Management.Automation.PSCredential($username, (ConvertTo-SecureString $password -AsPlainText -Force))
+        $script:credential = New-Object System.Management.Automation.PSCredential($Username, (ConvertTo-SecureString $Password -AsPlainText -Force))
     }
     else
     {
-        $script:credential = $credential
+        $script:credential = $Credential
     }
 }
 
-function ExecuteAppCmd([string] $serverHost, $configFilename, [string[]] $arguments)
+function ExecuteAppCmd
 {
-    $config = Get-Content $configFilename
+    param
+    (
+        [string] $ServerHost,
+        [string] $ConfigFilename,
+        [string[]] $Arguments
+    )
+
+    $config = Get-Content $ConfigFilename
     $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
     
-    if ($serverHost) # Remote server.
+    if ($ServerHost) # Remote server.
     {
         if (!$credential)
         {
             throw 'Credentials are not set.'
         }
         
-        $session = New-PSSession -UseSSL -Credential $credential $serverHost
+        $session = New-PSSession -UseSSL -Credential $credential $ServerHost
 
-        Invoke-Command -Session $session -ScriptBlock { $using:config | &$using:appCmd $using:arguments }
+        Invoke-Command -Session $session -ScriptBlock { $using:config | &$using:appCmd $using:Arguments }
 
         Remove-PSSession $session
     }
     else # Local server.
     {
-        Invoke-Command { $config | &$appCmd $arguments }
+        Invoke-Command { $config | &$appCmd $Arguments }
         $exitCode = $LASTEXITCODE
     }
     
@@ -42,26 +56,32 @@ function ExecuteAppCmd([string] $serverHost, $configFilename, [string[]] $argume
     }
 }
 
-function GetAppCmdOutput([string] $serverHost, [string[]] $arguments)
+function GetAppCmdOutput
 {
+    param
+    (
+        [string] $ServerHost,
+        [string[]] $Arguments
+    )
+
     $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
     
-    if ($serverHost) # Remote server.
+    if ($ServerHost) # Remote server.
     {
         if (!$credential)
         {
             throw 'Credentials are not set.'
         }
         
-        $session = New-PSSession -UseSSL -Credential $credential $serverHost
+        $session = New-PSSession -UseSSL -Credential $credential $ServerHost
 
-        $output = Invoke-Command -Session $session -ScriptBlock { &$using:appCmd $using:arguments }
+        $output = Invoke-Command -Session $session -ScriptBlock { &$using:appCmd $using:Arguments }
 
         Remove-PSSession $session
     }
     else # Local server.
     {
-        $output = Invoke-Command { &$appCmd $arguments }
+        $output = Invoke-Command { &$appCmd $Arguments }
     }
     
     if ($LASTEXITCODE)
@@ -77,12 +97,12 @@ function Import-AppPools
     param
     (
         [Parameter(Mandatory = $true)]
-        [string] $serverHost,
+        [string] $ServerHost,
         [Parameter(Mandatory = $true)]
-        [string] $configFilename
+        [string] $ConfigFilename
     )
 
-    ExecuteAppCmd $serverHost $configFilename @('add', 'apppool', '/in') $false
+    ExecuteAppCmd $ServerHost $ConfigFilename @('add', 'apppool', '/in') $false
 }
 
 function Import-Sites
@@ -90,12 +110,12 @@ function Import-Sites
     param
     (
         [Parameter(Mandatory = $true)]
-        [string] $serverHost,
+        [string] $ServerHost,
         [Parameter(Mandatory = $true)]
-        [string] $configFilename
+        [string] $ConfigFilename
     )
 
-    ExecuteAppCmd $serverHost $configFilename @('add', 'site', '/in') $false
+    ExecuteAppCmd $ServerHost $ConfigFilename @('add', 'site', '/in') $false
 }
 
 function Export-AppPools
@@ -103,38 +123,43 @@ function Export-AppPools
     param
     (
         [Parameter(Mandatory = $true)]
-        [string] $serverHost,
+        [string] $ServerHost,
         [Parameter(Mandatory = $true)]
-        [string] $outputFilename
+        [string] $OutputFilename
     )
     
-    $xml = GetAppCmdOutput $serverHost @('list', 'apppool', '/config', '/xml')
-    $xml | Set-Content $outputFilename
+    $xml = GetAppCmdOutput $ServerHost @('list', 'apppool', '/config', '/xml')
+    $xml | Set-Content $OutputFilename
 }
 
 function Export-Sites
 {
     param
     (
+        [Parameter(Mandatory = $true, HelpMessage = 'Hostname of the server with IIS site configured.')]
+        [string] $ServerHost,
         [Parameter(Mandatory = $true)]
-        [string] $serverHost,
-        [Parameter(Mandatory = $true)]
-        [string] $outputFilename
+        [string] $OutputFilename
     )
 
-    $xml = GetAppCmdOutput $serverHost @('list', 'site', '/config', '/xml')
-    $xml | Set-Content $outputFilename
+    $xml = GetAppCmdOutput $ServerHost @('list', 'site', '/config', '/xml')
+    $xml | Set-Content $OutputFilename
 }
 
-# Install WinRM certificate of remote server to trusted certificate root authorities store.
-# Based on code by Robert Westerlund and Michael J. Lyons.
-# http://stackoverflow.com/questions/22233702/how-to-download-the-ssl-certificate-from-a-website-using-powershell
+<#
+.SYNOPSIS
+Installs WinRM certificate of remote server to trusted certificate root authorities store.
+
+.NOTES
+Based on code by Robert Westerlund and Michael J. Lyons.
+http://stackoverflow.com/questions/22233702/how-to-download-the-ssl-certificate-from-a-website-using-powershell
+#>
 function Import-WinrmCertificate
 {
     param
     (
         [Parameter(Mandatory = $true)]
-        [string] $serverHost
+        [string] $ServerHost
     )
 
     if (!(IsAdmin))
@@ -145,7 +170,7 @@ function Import-WinrmCertificate
     $port = 5986
     $tempFilename = "$env:TEMP\" + [guid]::NewGuid()
     
-    $webRequest = [Net.WebRequest]::Create("https://${serverHost}:$port")
+    $webRequest = [Net.WebRequest]::Create("https://${ServerHost}:$port")
     try
     {
         $webRequest.GetResponse().Dispose()
