@@ -203,6 +203,8 @@ function CheckSession
         }
         $Session = StartSession $ServerHost $credential
     }
+    
+    $Session
 }
 
 function Install-WebManagementService
@@ -213,7 +215,7 @@ function Install-WebManagementService
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
 
-    CheckSession $ServerHost $Session
+    $Session = CheckSession $ServerHost $Session
     
     Invoke-Command -Session $session -ScriptBlock `
         {
@@ -252,7 +254,7 @@ function Install-WebDeploy
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
     
-    CheckSession $ServerHost $Session
+    $Session = CheckSession $ServerHost $Session
     
     Invoke-Command -Session $session -ScriptBlock `
         {
@@ -305,9 +307,9 @@ function Invoke-RemoteScript
         [hashtable] $Parameters
     )
     
-    CheckSession $ServerHost $Session
+    $Session = CheckSession $ServerHost $Session
     
-    $scriptContent = Get-Content $ScriptPath -Raw
+    $scriptContent = Get-Content $Path -Raw
     $scriptParams = &{$args} @Parameters
     $sb = [scriptblock]::create("&{ $scriptContent } $scriptParams")
     
