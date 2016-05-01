@@ -28,9 +28,15 @@
 
 #>
 
-<# 
-.DESCRIPTION 
-Generates self-signed certificate or uses existing. Configures HTTPS listener for WinRM service. Opens 5986 port in firewall. 
+<#
+.SYNOPSIS
+Configures server to accept WinRM connections over HTTPS.
+
+.DESCRIPTION
+Generates self-signed certificate or uses existing. Configures HTTPS listener for WinRM service. Opens 5986 port in firewall.
+
+For Windows Server 2008 you should execute following statement to disable remote UAC:
+Set-ItemProperty –Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System –Name LocalAccountTokenFilterPolicy –Value 1 –Type DWord
 #> 
 param
 (
@@ -58,5 +64,5 @@ New-Item -Path WSMan:\localhost\Listener -Address * -Transport HTTPS -Hostname $
 
 New-NetFirewallRule -DisplayName 'Windows Remote Management (HTTPS-In)' `
     -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5986
-    
+
 Write-Host "`nWinRM is set up for host $hostname." -ForegroundColor Green
