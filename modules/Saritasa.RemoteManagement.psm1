@@ -187,14 +187,14 @@ function Install-Iis
     Remove-PSSession $session
 }
 
-function Install-WebManagementService
+function CheckSession
 {
     param
     (
         [string] $ServerHost,
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
-       
+    
     if (!$Session)
     {
         if (!$ServerHost)
@@ -203,6 +203,17 @@ function Install-WebManagementService
         }
         $Session = StartSession $ServerHost $credential
     }
+}
+
+function Install-WebManagementService
+{
+    param
+    (
+        [string] $ServerHost,
+        [System.Management.Automation.Runspaces.PSSession] $Session
+    )
+
+    CheckSession $ServerHost $Session
     
     Invoke-Command -Session $session -ScriptBlock `
         {
@@ -241,14 +252,7 @@ function Install-WebDeploy
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
     
-    if (!$Session)
-    {
-        if (!$ServerHost)
-        {
-            throw 'ServerHost is not set.'
-        }
-        $Session = StartSession $ServerHost $credential
-    }
+    CheckSession $ServerHost $Session
     
     Invoke-Command -Session $session -ScriptBlock `
         {
@@ -281,4 +285,31 @@ function Install-WebDeploy
                 'WebDeploy is installed.'
             }
         }
+}
+
+<#
+.SYNOPSIS
+Executes a script on a remote server.
+
+.NOTES
+Based on code by mjolinor.
+http://stackoverflow.com/a/27799658/991267
+#>
+function Invoke-RemoteScript
+{
+    param
+    (
+        [string] $Path,
+        [string] $ServerHost,
+        [System.Management.Automation.Runspaces.PSSession] $Session,
+        [hashtable] $Parameters
+    )
+    
+    CheckSession $ServerHost $Session
+    
+    $scriptContent = Get-Content $ScriptPath -Raw
+    $scriptParams = &{$args} @Parameters
+    $sb = [scriptblock]::create("&{ $scriptContent } $scriptParams")
+    
+    Invoke-Command -Session $Session -ScriptBlock $sb
 }
