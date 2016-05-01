@@ -65,3 +65,8 @@ function Import-SslCertificate
     Import-Certificate -CertStoreLocation Cert:\LocalMachine\Root $tempFilename
     Remove-Item $tempFilename
 }
+
+function IsAdmin
+{
+    ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')
+}

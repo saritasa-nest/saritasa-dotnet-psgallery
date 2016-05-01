@@ -146,11 +146,6 @@ function Export-Sites
     $xml | Set-Content $OutputFilename
 }
 
-function IsAdmin
-{
-    ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')
-}
-
 function StartSession
 {
     param
