@@ -1,14 +1,26 @@
-﻿function Get-VersionTemplate([string] $fileName)
+﻿function Get-VersionTemplate
 {
-    $lines = Get-Content $fileName
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $FileName
+    )
+
+    $lines = Get-Content $FileName
     $regex = [regex] '<ApplicationVersion>(\d+\.\d+\.\d+\.).*</ApplicationVersion>'
     $regex.Match($lines)[0].Groups[1].Value
 }
 
-function Update-ApplicationRevision([string] $fileName)
+function Update-ApplicationRevision
 {
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $FileName
+    )
+
     $regex = [regex] "(<ApplicationRevision>)(\d+)(</ApplicationRevision>)"
-    $lines = Get-Content $fileName
+    $lines = Get-Content $FileName
     $version = 0
 
     for ($i = 0; $i -lt $lines.Length; $i++)
@@ -21,40 +33,76 @@ function Update-ApplicationRevision([string] $fileName)
         }
     }
 
-    $lines | Out-File $fileName -Encoding utf8
+    $lines | Out-File $FileName -Encoding utf8
     $version
 }
 
-# NOTE: Copy ..\artifacts\publish.htm.template file to project directory and replace ApplicationName.
-function Invoke-ProjectBuildAndPublish([string] $projectDir, [string] $projectName, [string] $publishDir, [string] $installUrl)
+<#
+.SYNOPSIS
+
+.DESCRIPTION
+Copy publish.htm.template file to project directory and replace ApplicationName.
+#>
+function Invoke-ProjectBuildAndPublish
 {
-    if (Test-Path $publishDir)
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ProjectDir,
+        [Parameter(Mandatory = $true)]
+        [string] $ProjectName,
+        [Parameter(Mandatory = $true)]
+        [string] $PublishDir,
+        [Parameter(Mandatory = $true)]
+        [string] $InstallUrl)
+
+    if (Test-Path $PublishDir)
     {
-        Remove-Item $publishDir -Recurse -ErrorAction Stop
+        Remove-Item $PublishDir -Recurse -ErrorAction Stop
     }
 
-    msbuild.exe '/m' "$projectDir\$projectName.csproj" '/t:Publish' '/p:Configuration=Release' "/p:PublishDir=$publishDir\" "/p:InstallUrl=$installUrl" '/verbosity:normal'
+    msbuild.exe '/m' "$ProjectDir\$ProjectName.csproj" '/t:Publish' '/p:Configuration=Release' "/p:PublishDir=$PublishDir\" "/p:InstallUrl=$InstallUrl" '/verbosity:normal'
     if ($LASTEXITCODE)
     {
         throw "Build failed."
     }
 
-    Copy-Item "$projectDir\publish.htm.template" "$publishDir\publish.htm"
+    Copy-Item "$ProjectDir\publish.htm.template" "$publishDir\publish.htm"
     Remove-Item "$publishDir\*.exe" -Exclude "setup.exe"
 }
 
-function Update-PublishVersion([string] $publishDir, [string] $version)
+function Update-PublishVersion
 {
-    (Get-Content "$publishDir\publish.htm") -Replace "{VERSION}", $version | Out-File "$publishDir\publish.htm" -Encoding utf8
+    param
+    {
+        [Parameter(Mandatory = $true)]
+        [string] $PublishDir,
+        [Parameter(Mandatory = $true)]
+        [string] $Version
+    }
+
+    (Get-Content "$publishDir\publish.htm") -Replace "{VERSION}", $Version | Out-File "$PublishDir\publish.htm" -Encoding utf8
 }
 
-function Invoke-FullPublish([string] $projectDir, [string] $projectName, [string] $publishDir, [string] $installUrl)
+function Invoke-FullPublish
 {
-    $revision = Update-ApplicationRevision "$projectDir\$projectName.csproj"
-    $template = Get-VersionTemplate "$projectDir\$projectName.csproj"
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ProjectDir,
+        [Parameter(Mandatory = $true)]
+        [string] $ProjectName,
+        [Parameter(Mandatory = $true)]
+        [string] $PublishDir,
+        [Parameter(Mandatory = $true)]
+        [string] $InstallUrl
+    )
+
+    $revision = Update-ApplicationRevision "$ProjectDir\$ProjectName.csproj"
+    $template = Get-VersionTemplate "$ProjectDir\$ProjectName.csproj"
     $version = $template + $revision
 
-    Invoke-ProjectBuildAndPublish $projectDir $projectName $publishDir $installUrl
-    Update-PublishVersion $publishDir $version
-    Write-Host "Published $projectName $version to `"$publishDir`" directory." -ForegroundColor Green
+    Invoke-ProjectBuildAndPublish $ProjectDir $ProjectName $PublishDir $InstallUrl
+    Update-PublishVersion $PublishDir $version
+    Write-Host "Published $ProjectName $version to `"$PublishDir`" directory." -ForegroundColor Green
 }

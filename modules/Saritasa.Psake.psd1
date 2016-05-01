@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Psake'
 
 # Version number of this module.
-ModuleVersion = '1.0.0'
+ModuleVersion = '1.1.0'
 
 # ID used to uniquely identify this module
 GUID = '93095d01-c190-477a-be32-4bc76b9f9f7c'

@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Web'
 
 # Version number of this module.
-ModuleVersion = '1.0.0'
+ModuleVersion = '1.1.0'
 
 # ID used to uniquely identify this module
 GUID = '6aeb9fa0-7096-4488-9d49-4f16578d7be0'

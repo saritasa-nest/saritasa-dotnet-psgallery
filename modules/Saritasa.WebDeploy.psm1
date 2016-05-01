@@ -1,27 +1,39 @@
 $msdeployPath = "$env:ProgramFiles\IIS\Microsoft Web Deploy V3"
-$username = ''
-$password = ''
 $credentials = ''
 
-function Set-MsdeployPath([string] $path)
+function Set-MsdeployPath
 {
-    $script:msdeployPath = $path
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $Path
+    )
+
+    $script:msdeployPath = $Path
 }
 
-# Leave $username and $password empty for NTLM.
-# For NTLM support execute on server:
-# Set-ItemProperty HKLM:Software\Microsoft\WebManagement\Server WindowsAuthenticationEnabled 1
-# Restart-Service WMSVC
-# https://blogs.msdn.microsoft.com/carlosag/2011/12/13/using-windows-authentication-with-web-deploy-and-wmsvc/
-function Set-WebDeployCredentials([string] $username, [string] $password)
+<#
+.SYNOPSIS
+
+.DESCRIPTION
+Leave -Username and -Password empty for NTLM.
+For NTLM support execute on server:
+Set-ItemProperty HKLM:Software\Microsoft\WebManagement\Server WindowsAuthenticationEnabled 1
+Restart-Service WMSVC
+https://blogs.msdn.microsoft.com/carlosag/2011/12/13/using-windows-authentication-with-web-deploy-and-wmsvc/
+#>
+function Set-WebDeployCredentials
 {
-    $script:username = $path
-    $script:password = $path
-    
+    param
+    (
+        [string] $Username,
+        [string] $Password
+    )
+
     $script:credentials = ''
-    if ($username)
+    if ($Username)
     {
-        $script:credentials = "userName=$username,password=$password,authType=basic"
+        $script:credentials = "userName=$Username,password=$Password,authType=basic"
     }
     else
     {
@@ -37,31 +49,53 @@ function Assert-WebDeployCredentials()
     }
 }
 
-function Invoke-PackageBuild([string] $projectPath,
-                             [string] $packagePath,
-                             [string] $configuration = 'Release',
-                             [string] $platform = 'AnyCPU',
-                             [bool] $precompile = $true,
-                             [string[]] $buildParams)
+function Invoke-PackageBuild
 {
-    $basicBuildParams = ('/m', '/t:Package', "/p:Configuration=$configuration",
-        '/p:IncludeSetAclProviderOnDestination=False', "/p:PrecompileBeforePublish=$precompile",
-        "/p:Platform=$platform", "/p:PackageLocation=$packagePath")
-    msbuild.exe $projectPath $allBuildParams $basicBuildParams $buildParams
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ProjectPath,
+        [Parameter(Mandatory = $true)]
+        [string] $PackagePath,
+        [string] $Configuration = 'Release',
+        [string] $Platform = 'AnyCPU',
+        [bool] $Precompile = $true,
+        [string[]] $BuildParams
+    )
+
+    $basicBuildParams = ('/m', '/t:Package', "/p:Configuration=$Configuration",
+        '/p:IncludeSetAclProviderOnDestination=False', "/p:PrecompileBeforePublish=$Precompile",
+        "/p:Platform=$Platform", "/p:PackageLocation=$PackagePath")
+    msbuild.exe $ProjectPath $allBuildParams $basicBuildParams $BuildParams
     if ($LASTEXITCODE)
     {
         throw 'Package build failed.'
     }
 }
 
-# The recycleApp provider should be delegated to WDeployAdmin.
-function Start-AppPool([string] $serverHost, [string] $siteName, [string] $application)
+<#
+.SYNOPSIS
+
+.DESCRIPTION
+The recycleApp provider should be delegated to WDeployAdmin.
+#>
+function Start-AppPool
 {
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ServerHost,
+        [Parameter(Mandatory = $true)]
+        [string] $SiteName,
+        [Parameter(Mandatory = $true)]
+        [string] $Application
+    )
+
     Assert-WebDeployCredentials
     'Starting app pool...'
     
-    $destArg = "-dest:recycleApp='$siteName/$application',recycleMode='StartAppPool'," +
-        "computername=https://${serverHost}:8172/msdeploy.axd?site=$siteName," + $credentials
+    $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StartAppPool'," +
+        "computername=https://${ServerHost}:8172/msdeploy.axd?site=$SiteName," + $credentials
     $args = @('-verb:sync', '-source:recycleApp', $destArg)
     
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
@@ -71,14 +105,29 @@ function Start-AppPool([string] $serverHost, [string] $siteName, [string] $appli
     }
 }
 
-# The recycleApp provider should be delegated to WDeployAdmin.
-function Stop-AppPool([string] $serverHost, [string] $siteName, [string] $application, [string] $username, [string] $password)
+<#
+.SYNOPSIS
+
+.DESCRIPTION
+The recycleApp provider should be delegated to WDeployAdmin.
+#>
+function Stop-AppPool
 {
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ServerHost,
+        [Parameter(Mandatory = $true)]
+        [string] $SiteName,
+        [Parameter(Mandatory = $true)]
+        [string] $Application
+    )
+
     Assert-WebDeployCredentials
     'Stopping app pool...'
 
-    $destArg = "-dest:recycleApp='$siteName/$application',recycleMode='StopAppPool'," +
-        "computername=https://${serverHost}:8172/msdeploy.axd?site=$siteName," + $credentials
+    $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StopAppPool'," +
+        "computername=https://${ServerHost}:8172/msdeploy.axd?site=$SiteName," + $credentials
     $args = @('-verb:sync', '-source:recycleApp', $destArg)
     
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
@@ -88,18 +137,35 @@ function Stop-AppPool([string] $serverHost, [string] $siteName, [string] $applic
     }
 }
 
-# The recycleApp provider should be delegated to WDeployConfigWriter.
-function Invoke-WebDeployment([string] $packagePath, [string] $serverHost, [string] $siteName, [string] $application)
+<#
+.SYNOPSIS
+
+.DESCRIPTION
+The recycleApp provider should be delegated to WDeployConfigWriter.
+#>
+function Invoke-WebDeployment
 {
-    "Deploying $packagePath to $serverHost/$application..."
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $packagePath,
+        [Parameter(Mandatory = $true)]
+        [string] $ServerHost,
+        [Parameter(Mandatory = $true)]
+        [string] $SiteName,
+        [Parameter(Mandatory = $true)]
+        [string] $Application
+    )
+
+    "Deploying $packagePath to $ServerHost/$Application..."
     
-    "https://${serverHost}:8172/msdeploy.axd"
+    "https://${ServerHost}:8172/msdeploy.axd"
     
     $destArg = 
     $args = @("-source:package=$packagePath",
-              ("-dest:auto,computerName='https://${serverHost}:8172/msdeploy.axd?site=$siteName',includeAcls='False'," + $credentials),
+              ("-dest:auto,computerName='https://${ServerHost}:8172/msdeploy.axd?site=$SiteName',includeAcls='False'," + $credentials),
               '-verb:sync', '-disableLink:AppPoolExtension', '-disableLink:ContentExtension', '-disableLink:CertificateExtension',
-              '-allowUntrusted', "-setParam:name='IIS Web Application Name',value='$siteName/$application")
+              '-allowUntrusted', "-setParam:name='IIS Web Application Name',value='$SiteName/$Application")
     
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
     if ($result.ExitCode)

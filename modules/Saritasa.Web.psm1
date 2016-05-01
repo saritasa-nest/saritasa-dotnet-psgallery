@@ -10,6 +10,10 @@ Add-Type @"
     }
 "@
 
+<#
+.SYNOPSIS
+Disables SSL check for WebClient requests.
+#>
 function Update-SslCheckProcedure()
 {
     'SSL certificates validation is turned off.'

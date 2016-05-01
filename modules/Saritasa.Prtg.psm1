@@ -3,40 +3,74 @@ $userName = ''
 $password = ''
 $sensors = @{}
 
-# $sensors:
-# @{ Server1 = 10123; Server2 = 10124; }
-function Initialize-Prtg([string] $prtgUrl, [string] $userName, [string] $password, [hashtable] $sensors)
+<#
+.SYNOPSIS
+
+.EXAMPLE
+Initialize-Prtg prtg.local admin Qwerty123 @{ Server1 = 10123; Server2 = 10124; }
+#>
+function Initialize-Prtg
 {
-    $script:prtgUrl = $prtgUrl
-    $script:userName = $userName
-    $script:password = $password
-    $script:sensors = $sensors
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $PrtgUrl,
+        [Parameter(Mandatory = $true)]
+        [string] $UserName,
+        [Parameter(Mandatory = $true)]
+        [string] $Password,
+        [Parameter(Mandatory = $true)]
+        [hashtable] $Sensors
+    )
+    
+    $script:prtgUrl = $PrtgUrl
+    $script:userName = $UserName
+    $script:password = $Password
+    $script:sensors = $Sensors
 }
 
-function Get-SensorId([string] $server)
+function Get-SensorId
 {
-    $sensorId = $sensors[$server]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $Server
+    )
+
+    $sensorId = $sensors[$Server]
     if (!$sensorId)
     {
-        throw "PRTG sensor for $server is not registered."
+        throw "PRTG sensor for $Server is not registered."
     }
     
     $sensorId
 }
 
-function Start-Sensor([string] $server)
+function Start-Sensor
 {
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $Server
+    )
+
     'Starting PRTG sensor...'
-    $sensorId = Get-SensorId($server)
+    $sensorId = Get-SensorId($Server)
     Update-SslCheckProcedure
     $status = (Invoke-WebRequest "$prtgUrl/api/pause.htm?id=$sensorId&action=1&pausemsg=Resumed by deployment script.&username=$username&password=$password").StatusDescription
     "$status`n`n"
 }
 
-function Stop-Sensor([string] $server)
+function Stop-Sensor
 {
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $Server
+    )
+
     'Stopping PRTG sensor...'
-    $sensorId = Get-SensorId($server)
+    $sensorId = Get-SensorId($Server)
     Update-SslCheckProcedure
     $status = (Invoke-WebRequest "$prtgUrl/api/pause.htm?id=$sensorId&action=0&pausemsg=Paused by deployment script.&username=$username&password=$password").StatusDescription
     "$status`n`n"

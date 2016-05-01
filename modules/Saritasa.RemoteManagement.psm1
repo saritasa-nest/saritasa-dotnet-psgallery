@@ -1,38 +1,52 @@
 $credential = $null
 
-function Set-RemoteManagementCredentials([string] $username, [string] $password, [System.Management.Automation.PSCredential] $credential)
+function Set-RemoteManagementCredentials
 {
-    if ($username)
+    param
+    (
+        [string] $Username,
+        [string] $Password,
+        [System.Management.Automation.PSCredential] $Credential
+    )
+
+    if ($Username)
     {
-        $script:credential = New-Object System.Management.Automation.PSCredential($username, (ConvertTo-SecureString $password -AsPlainText -Force))
+        $script:credential = New-Object System.Management.Automation.PSCredential($Username, (ConvertTo-SecureString $Password -AsPlainText -Force))
     }
     else
     {
-        $script:credential = $credential
+        $script:credential = $Credential
     }
 }
 
-function ExecuteAppCmd($serverHost, $configFilename, [string[]] $arguments)
+function ExecuteAppCmd
 {
-    $config = Get-Content $configFilename
+    param
+    (
+        [string] $ServerHost,
+        [string] $ConfigFilename,
+        [string[]] $Arguments
+    )
+
+    $config = Get-Content $ConfigFilename
     $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
     
-    if ($serverHost) # Remote server.
+    if ($ServerHost) # Remote server.
     {
         if (!$credential)
         {
             throw 'Credentials are not set.'
         }
         
-        $session = New-PSSession -UseSSL -Credential $credential $serverHost
+        $session = New-PSSession -UseSSL -Credential $credential $ServerHost
 
-        Invoke-Command -Session $session -ScriptBlock { $using:config | &$using:appCmd $using:arguments }
+        Invoke-Command -Session $session -ScriptBlock { $using:config | &$using:appCmd $using:Arguments }
 
         Remove-PSSession $session
     }
     else # Local server.
     {
-        Invoke-Command { $config | &$appCmd $arguments }
+        Invoke-Command { $config | &$appCmd $Arguments }
         $exitCode = $LASTEXITCODE
     }
     
@@ -42,26 +56,32 @@ function ExecuteAppCmd($serverHost, $configFilename, [string[]] $arguments)
     }
 }
 
-function GetAppCmdOutput($serverHost, [string[]] $arguments)
+function GetAppCmdOutput
 {
+    param
+    (
+        [string] $ServerHost,
+        [string[]] $Arguments
+    )
+
     $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
     
-    if ($serverHost) # Remote server.
+    if ($ServerHost) # Remote server.
     {
         if (!$credential)
         {
             throw 'Credentials are not set.'
         }
         
-        $session = New-PSSession -UseSSL -Credential $credential $serverHost
+        $session = New-PSSession -UseSSL -Credential $credential $ServerHost
 
-        $output = Invoke-Command -Session $session -ScriptBlock { &$using:appCmd $using:arguments }
+        $output = Invoke-Command -Session $session -ScriptBlock { &$using:appCmd $using:Arguments }
 
         Remove-PSSession $session
     }
     else # Local server.
     {
-        $output = Invoke-Command { &$appCmd $arguments }
+        $output = Invoke-Command { &$appCmd $Arguments }
     }
     
     if ($LASTEXITCODE)
@@ -72,24 +92,244 @@ function GetAppCmdOutput($serverHost, [string[]] $arguments)
     $output
 }
 
-function Import-AppPools($serverHost, $configFilename)
+function Import-AppPools
 {
-    ExecuteAppCmd $serverHost $configFilename @('add', 'apppool', '/in') $false
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ServerHost,
+        [Parameter(Mandatory = $true)]
+        [string] $ConfigFilename
+    )
+
+    ExecuteAppCmd $ServerHost $ConfigFilename @('add', 'apppool', '/in') $false
 }
 
-function Import-Sites($serverHost, $configFilename)
+function Import-Sites
 {
-    ExecuteAppCmd $serverHost $configFilename @('add', 'site', '/in') $false
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ServerHost,
+        [Parameter(Mandatory = $true)]
+        [string] $ConfigFilename
+    )
+
+    ExecuteAppCmd $ServerHost $ConfigFilename @('add', 'site', '/in') $false
 }
 
-function Export-AppPools($serverHost, $outputFilename)
+function Export-AppPools
 {
-    $xml = GetAppCmdOutput $serverHost @('list', 'apppool', '/config', '/xml')
-    $xml | Set-Content $outputFilename
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ServerHost,
+        [Parameter(Mandatory = $true)]
+        [string] $OutputFilename
+    )
+    
+    $xml = GetAppCmdOutput $ServerHost @('list', 'apppool', '/config', '/xml')
+    $xml | Set-Content $OutputFilename
 }
 
-function Export-Sites($serverHost, $outputFilename)
+function Export-Sites
 {
-    $xml = GetAppCmdOutput $serverHost @('list', 'site', '/config', '/xml')
-    $xml | Set-Content $outputFilename
+    param
+    (
+        [Parameter(Mandatory = $true, HelpMessage = 'Hostname of the server with IIS site configured.')]
+        [string] $ServerHost,
+        [Parameter(Mandatory = $true)]
+        [string] $OutputFilename
+    )
+
+    $xml = GetAppCmdOutput $ServerHost @('list', 'site', '/config', '/xml')
+    $xml | Set-Content $OutputFilename
+}
+
+<#
+.SYNOPSIS
+Installs WinRM certificate of remote server to trusted certificate root authorities store.
+
+.NOTES
+Based on code by Robert Westerlund and Michael J. Lyons.
+http://stackoverflow.com/questions/22233702/how-to-download-the-ssl-certificate-from-a-website-using-powershell
+#>
+function Import-WinrmCertificate
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ServerHost
+    )
+
+    if (!(IsAdmin))
+    {
+        throw 'Administrator permissions are required.'
+    }
+    
+    $port = 5986
+    $tempFilename = "$env:TEMP\" + [guid]::NewGuid()
+    
+    $webRequest = [Net.WebRequest]::Create("https://${ServerHost}:$port")
+    try
+    {
+        $webRequest.GetResponse().Dispose()
+    }
+    catch [System.Net.WebException]
+    {
+        if ($_.Exception.Status -ne [System.Net.WebExceptionStatus]::TrustFailure)
+        {
+            # If it's not trust failure, rethrow it.
+            throw
+        }
+    }
+    
+    $cert = $webRequest.ServicePoint.Certificate
+    $bytes = $cert.Export([Security.Cryptography.X509Certificates.X509ContentType]::Cert)
+    Set-Content -Value $bytes -Encoding Byte -Path $tempFilename
+
+    Import-Certificate -CertStoreLocation Cert:\LocalMachine\Root $tempFilename
+    Remove-Item $tempFilename
+}
+
+function IsAdmin
+{
+    ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')
+}
+
+function StartSession
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ServerHost,
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.PSCredential] $Credential
+    )
+    
+    New-PSSession -UseSSL -Credential $Credential $ServerHost
+}
+
+function Install-Iis
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ServerHost,
+        [switch] $ManagementService,
+        [switch] $WebDeploy
+    )
+    
+    $session = StartSession $ServerHost $credential
+    
+    Invoke-Command -Session $session -ScriptBlock { Add-WindowsFeature Web-Server }
+    Write-Host 'IIS is set up successfully.'
+
+    if ($ManagementService)
+    {
+        Install-WebManagementService -Session $session
+    }
+    
+    if ($WebDeploy)
+    {
+        Install-WebDeploy -Session $session
+    }
+    
+    Remove-PSSession $session
+}
+
+function Install-WebManagementService
+{
+    param
+    (
+        [string] $ServerHost,
+        [System.Management.Automation.Runspaces.PSSession] $Session
+    )
+       
+    if (!$Session)
+    {
+        if (!$ServerHost)
+        {
+            throw 'ServerHost is not set.'
+        }
+        $Session = StartSession $ServerHost $credential
+    }
+    
+    Invoke-Command -Session $session -ScriptBlock `
+        {
+            # Install web management service.
+            Add-WindowsFeature Web-Mgmt-Service
+            # Enable remote access.
+            Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\WebManagement\Server -Name EnableRemoteManagement -Value 1
+            # Change service startup type to automatic.
+            Set-Service WMSVC -StartupType Automatic
+            
+            # Replace WMSvc-HOST with HOST certificate. It should be generated already during WinRM configuration.
+            Import-Module WebAdministration
+            $hostname = $env:COMPUTERNAME
+            $thumbprint = Get-ChildItem -Path Cert:\LocalMachine\My | where { $_.Subject -EQ "CN=$hostname" } | select -ExpandProperty Thumbprint
+            if ($thumbprint)
+            {
+                'SSL certificate for $hostname host is not found.'
+            }            
+            if (Test-Path IIS:\SslBindings\0.0.0.0!8172)
+            {
+                Remove-Item -Path IIS:\SslBindings\0.0.0.0!8172
+            }
+            Get-Item -Path "Cert:\LocalMachine\My\$thumbprint" | New-Item -Path IIS:\SslBindings\0.0.0.0!8172
+
+            # Start web management service.
+            Start-Service WMSVC
+        }
+    Write-Host 'Web management service is installed and configured.'
+}
+
+function Install-WebDeploy
+{
+    param
+    (
+        [string] $ServerHost,
+        [System.Management.Automation.Runspaces.PSSession] $Session
+    )
+    
+    if (!$Session)
+    {
+        if (!$ServerHost)
+        {
+            throw 'ServerHost is not set.'
+        }
+        $Session = StartSession $ServerHost $credential
+    }
+    
+    Invoke-Command -Session $session -ScriptBlock `
+        {
+            # 1.1 = {0F37D969-1260-419E-B308-EF7D29ABDE20}
+            # 2.0 = {5134B35A-B559-4762-94A4-FD4918977953}
+            # 3.5 = {3674F088-9B90-473A-AAC3-20A00D8D810C}
+            $webDeploy36Guid = '{ED4CC1E5-043E-4157-8452-B5E533FE2BA1}'
+            $installedProduct = Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber = '{ED4CC1E5-043E-4157-8452-B5E533FE2BA1}'"
+            
+            if ($installedProduct)
+            {
+                'WebDeploy is installed already.'
+            }
+            else
+            {       
+                $webDeploy36Url = 'https://download.microsoft.com/download/0/1/D/01DC28EA-638C-4A22-A57B-4CEF97755C6C/WebDeploy_amd64_en-US.msi'
+                $tempPath = "$env:TEMP\" + [guid]::NewGuid()
+                
+                'Downloading WebDeploy installer...'
+                Invoke-WebRequest $webDeploy36Url -OutFile $tempPath -ErrorAction Stop
+                'OK'
+                
+                msiexec.exe /i $tempPath ADDLOCAL=MSDeployFeature,MSDeployUIFeature,DelegationUIFeature,MSDeployWMSVCHandlerFeature
+                if ($LASTEXITCODE)
+                {
+                    'MsiExec failed.'
+                }
+        
+                Remove-Item $tempPath
+                'WebDeploy is installed.'
+            }
+        }
 }
