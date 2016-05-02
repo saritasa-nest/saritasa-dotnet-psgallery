@@ -716,7 +716,7 @@ function CheckVersionWithinAllowedRange($managedVersion)
 
 if(NotServerOS)
 {
-    write-log $SCRIPTERROR $Resources.NotServerOS
+    write-log $WARNING $Resources.NotServerOS
     #break [AZ] 4/29/2016 Fix for Windows Server 2012 R2
 }
 

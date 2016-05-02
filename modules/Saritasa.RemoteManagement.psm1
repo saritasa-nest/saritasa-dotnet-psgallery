@@ -230,9 +230,9 @@ function Install-WebManagementService
             Import-Module WebAdministration
             $hostname = $env:COMPUTERNAME
             $thumbprint = Get-ChildItem -Path Cert:\LocalMachine\My | where { $_.Subject -EQ "CN=$hostname" } | select -ExpandProperty Thumbprint
-            if ($thumbprint)
+            if (!$thumbprint)
             {
-                'SSL certificate for $hostname host is not found.'
+                "SSL certificate for $hostname host is not found."
             }            
             if (Test-Path IIS:\SslBindings\0.0.0.0!8172)
             {
