@@ -172,7 +172,7 @@ function Install-Iis
     
     $session = StartSession $ServerHost $credential
     
-    Invoke-Command -Session $session -ScriptBlock { Add-WindowsFeature Web-Server }
+    Invoke-Command -Session $session -ScriptBlock { Add-WindowsFeature Web-Server, Web-Asp-Net45 }
     Write-Host 'IIS is set up successfully.'
 
     if ($ManagementService)
@@ -334,7 +334,7 @@ function Install-UrlRewrite
 
     Invoke-Command -Session $session -ScriptBlock `
         {
-            $urlRewrite20Guid = '{}'
+            $urlRewrite20Guid = '{08F0318A-D113-4CF0-993E-50F191D397AD}'
             $installedProduct = Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber = '$urlRewrite20Guid'"
             
             if ($installedProduct)
