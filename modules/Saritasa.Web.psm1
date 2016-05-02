@@ -51,9 +51,18 @@ function Import-SslCertificate
     }
     catch [System.Net.WebException]
     {
-        if ($_.Exception.Status -ne [System.Net.WebExceptionStatus]::TrustFailure)
+        if ($_.Exception.Status -EQ [System.Net.WebExceptionStatus]::TrustFailure)
         {
-            # If it's not trust failure, rethrow it.
+            # Trust failure, do nothing.
+        }
+        elseif ($_.Exception.Status -EQ [System.Net.WebExceptionStatus]::ProtocolError -And
+            $_.Exception.Response.StatusCode -EQ 'NotFound')
+        {
+            # Page not found, it's OK.
+        }
+        else
+        {
+            # Unknown error, rethrow it.
             throw
         }
     }

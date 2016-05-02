@@ -38,7 +38,7 @@ function ExecuteAppCmd
             throw 'Credentials are not set.'
         }
         
-        $session = New-PSSession -UseSSL -Credential $credential $ServerHost
+        $session = Start-RemoteSession $ServerHost
 
         Invoke-Command -Session $session -ScriptBlock { $using:config | &$using:appCmd $using:Arguments }
 
@@ -73,7 +73,7 @@ function GetAppCmdOutput
             throw 'Credentials are not set.'
         }
         
-        $session = New-PSSession -UseSSL -Credential $credential $ServerHost
+        $session = Start-RemoteSession $ServerHost
 
         $output = Invoke-Command -Session $session -ScriptBlock { &$using:appCmd $using:Arguments }
 
@@ -103,6 +103,7 @@ function Import-AppPools
     )
 
     ExecuteAppCmd $ServerHost $ConfigFilename @('add', 'apppool', '/in') $false
+    'App pools are updated.'
 }
 
 function Import-Sites
@@ -116,6 +117,7 @@ function Import-Sites
     )
 
     ExecuteAppCmd $ServerHost $ConfigFilename @('add', 'site', '/in') $false
+    'Web sites are updated.'
 }
 
 function Export-AppPools
@@ -146,17 +148,15 @@ function Export-Sites
     $xml | Set-Content $OutputFilename
 }
 
-function StartSession
+function Start-RemoteSession
 {
     param
     (
         [Parameter(Mandatory = $true)]
-        [string] $ServerHost,
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential] $Credential
+        [string] $ServerHost
     )
     
-    New-PSSession -UseSSL -Credential $Credential $ServerHost
+    New-PSSession -UseSSL -Credential $credential -ComputerName $ServerHost
 }
 
 function Install-Iis
@@ -166,12 +166,13 @@ function Install-Iis
         [Parameter(Mandatory = $true)]
         [string] $ServerHost,
         [switch] $ManagementService,
-        [switch] $WebDeploy
+        [switch] $WebDeploy,
+        [switch] $UrlRewrite
     )
     
-    $session = StartSession $ServerHost $credential
+    $session = Start-RemoteSession $ServerHost
     
-    Invoke-Command -Session $session -ScriptBlock { Add-WindowsFeature Web-Server }
+    Invoke-Command -Session $session -ScriptBlock { Add-WindowsFeature Web-Server, Web-Asp-Net45 }
     Write-Host 'IIS is set up successfully.'
 
     if ($ManagementService)
@@ -184,7 +185,42 @@ function Install-Iis
         Install-WebDeploy -Session $session
     }
     
+    if ($UrlRewrite)
+    {
+        Install-UrlRewrite -Session $session
+    }
+    
+    Invoke-Command -Session $session -ScriptBlock `
+        {
+            if (Get-WebSite -Name 'Default Web Site')
+            {
+                Remove-WebSite -Name 'Default Web Site'
+                Get-ChildItem C:\inetpub\wwwroot -Recurse | Remove-Item -Recurse
+                Write-Host 'Default Web Site is deleted.'
+            }
+        }
+
     Remove-PSSession $session
+}
+
+function CheckSession
+{
+    param
+    (
+        [string] $ServerHost,
+        [System.Management.Automation.Runspaces.PSSession] $Session
+    )
+    
+    if (!$Session)
+    {
+        if (!$ServerHost)
+        {
+            throw 'ServerHost is not set.'
+        }
+        $Session = Start-RemoteSession $ServerHost
+    }
+    
+    $Session
 }
 
 function Install-WebManagementService
@@ -194,15 +230,8 @@ function Install-WebManagementService
         [string] $ServerHost,
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
-       
-    if (!$Session)
-    {
-        if (!$ServerHost)
-        {
-            throw 'ServerHost is not set.'
-        }
-        $Session = StartSession $ServerHost $credential
-    }
+
+    $Session = CheckSession $ServerHost $Session
     
     Invoke-Command -Session $session -ScriptBlock `
         {
@@ -217,9 +246,9 @@ function Install-WebManagementService
             Import-Module WebAdministration
             $hostname = $env:COMPUTERNAME
             $thumbprint = Get-ChildItem -Path Cert:\LocalMachine\My | where { $_.Subject -EQ "CN=$hostname" } | select -ExpandProperty Thumbprint
-            if ($thumbprint)
+            if (!$thumbprint)
             {
-                'SSL certificate for $hostname host is not found.'
+                "SSL certificate for $hostname host is not found."
             }            
             if (Test-Path IIS:\SslBindings\0.0.0.0!8172)
             {
@@ -230,6 +259,7 @@ function Install-WebManagementService
             # Start web management service.
             Start-Service WMSVC
         }
+
     Write-Host 'Web management service is installed and configured.'
 }
 
@@ -241,14 +271,7 @@ function Install-WebDeploy
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
     
-    if (!$Session)
-    {
-        if (!$ServerHost)
-        {
-            throw 'ServerHost is not set.'
-        }
-        $Session = StartSession $ServerHost $credential
-    }
+    $Session = CheckSession $ServerHost $Session
     
     Invoke-Command -Session $session -ScriptBlock `
         {
@@ -256,7 +279,7 @@ function Install-WebDeploy
             # 2.0 = {5134B35A-B559-4762-94A4-FD4918977953}
             # 3.5 = {3674F088-9B90-473A-AAC3-20A00D8D810C}
             $webDeploy36Guid = '{ED4CC1E5-043E-4157-8452-B5E533FE2BA1}'
-            $installedProduct = Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber = '{ED4CC1E5-043E-4157-8452-B5E533FE2BA1}'"
+            $installedProduct = Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber = '$webDeploy36Guid'"
             
             if ($installedProduct)
             {
@@ -271,14 +294,81 @@ function Install-WebDeploy
                 Invoke-WebRequest $webDeploy36Url -OutFile $tempPath -ErrorAction Stop
                 'OK'
                 
-                msiexec.exe /i $tempPath ADDLOCAL=MSDeployFeature,MSDeployUIFeature,DelegationUIFeature,MSDeployWMSVCHandlerFeature
+                msiexec.exe /i $tempPath ADDLOCAL=MSDeployFeature,MSDeployUIFeature,DelegationUIFeature,MSDeployWMSVCHandlerFeature | Out-Null
+                if ($LASTEXITCODE)
+                {
+                    'MsiExec failed.'
+                }
+        
+                Remove-Item $tempPath -ErrorAction SilentlyContinue
+                'WebDeploy is installed.'
+            }
+        }
+}
+
+<#
+.SYNOPSIS
+Executes a script on a remote server.
+
+.NOTES
+Based on code by mjolinor.
+http://stackoverflow.com/a/27799658/991267
+#>
+function Invoke-RemoteScript
+{
+    param
+    (
+        [string] $Path,
+        [hashtable] $Parameters,
+        [string] $ServerHost,
+        [System.Management.Automation.Runspaces.PSSession] $Session
+    )
+    
+    $Session = CheckSession $ServerHost $Session
+    
+    $scriptContent = Get-Content $Path -Raw
+    $scriptParams = &{$args} @Parameters
+    $sb = [scriptblock]::create("&{ $scriptContent } $scriptParams")
+
+    Invoke-Command -Session $Session -ScriptBlock $sb
+}
+
+function Install-UrlRewrite
+{
+    param
+    (
+        [string] $ServerHost,
+        [System.Management.Automation.Runspaces.PSSession] $Session
+    )
+    
+    $Session = CheckSession $ServerHost $Session
+
+    Invoke-Command -Session $session -ScriptBlock `
+        {
+            $urlRewrite20Guid = '{08F0318A-D113-4CF0-993E-50F191D397AD}'
+            $installedProduct = Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber = '$urlRewrite20Guid'"
+            
+            if ($installedProduct)
+            {
+                'URL Rewrite Module is installed already.'
+            }
+            else
+            {       
+                $urlRewrite20Url = 'http://download.microsoft.com/download/C/9/E/C9E8180D-4E51-40A6-A9BF-776990D8BCA9/rewrite_amd64.msi'
+                $tempPath = "$env:TEMP\" + [guid]::NewGuid()
+                
+                'Downloading URL Rewrite Module installer...'
+                Invoke-WebRequest $urlRewrite20Url -OutFile $tempPath -ErrorAction Stop
+                'OK'
+                
+                msiexec.exe /i $tempPath ADDLOCAL=ALL | Out-Null
                 if ($LASTEXITCODE)
                 {
                     'MsiExec failed.'
                 }
         
                 Remove-Item $tempPath
-                'WebDeploy is installed.'
+                'URL Rewrite Module is installed.'
             }
         }
 }

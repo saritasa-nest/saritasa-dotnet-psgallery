@@ -148,7 +148,7 @@ function Invoke-WebDeployment
     param
     (
         [Parameter(Mandatory = $true)]
-        [string] $packagePath,
+        [string] $PackagePath,
         [Parameter(Mandatory = $true)]
         [string] $ServerHost,
         [Parameter(Mandatory = $true)]
@@ -157,12 +157,12 @@ function Invoke-WebDeployment
         [string] $Application
     )
 
-    "Deploying $packagePath to $ServerHost/$Application..."
+    "Deploying $PackagePath to $ServerHost/$Application..."
     
     "https://${ServerHost}:8172/msdeploy.axd"
     
     $destArg = 
-    $args = @("-source:package=$packagePath",
+    $args = @("-source:package=$PackagePath",
               ("-dest:auto,computerName='https://${ServerHost}:8172/msdeploy.axd?site=$SiteName',includeAcls='False'," + $credentials),
               '-verb:sync', '-disableLink:AppPoolExtension', '-disableLink:ContentExtension', '-disableLink:CertificateExtension',
               '-allowUntrusted', "-setParam:name='IIS Web Application Name',value='$SiteName/$Application")
