@@ -55,7 +55,7 @@ function Import-SslCertificate
         {
             # Trust failure, do nothing.
         }
-        if ($_.Exception.Status -EQ [System.Net.WebExceptionStatus]::ProtocolError -And
+        elseif ($_.Exception.Status -EQ [System.Net.WebExceptionStatus]::ProtocolError -And
             $_.Exception.Response.StatusCode -EQ 'NotFound')
         {
             # Page not found, it's OK.
