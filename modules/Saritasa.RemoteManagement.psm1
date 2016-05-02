@@ -166,7 +166,8 @@ function Install-Iis
         [Parameter(Mandatory = $true)]
         [string] $ServerHost,
         [switch] $ManagementService,
-        [switch] $WebDeploy
+        [switch] $WebDeploy,
+        [switch] $UrlRewrite
     )
     
     $session = StartSession $ServerHost $credential
@@ -182,6 +183,11 @@ function Install-Iis
     if ($WebDeploy)
     {
         Install-WebDeploy -Session $session
+    }
+    
+    if ($UrlRewrite)
+    {
+        Install-UrlRewrite -Session $session
     }
     
     Remove-PSSession $session
@@ -262,7 +268,7 @@ function Install-WebDeploy
             # 2.0 = {5134B35A-B559-4762-94A4-FD4918977953}
             # 3.5 = {3674F088-9B90-473A-AAC3-20A00D8D810C}
             $webDeploy36Guid = '{ED4CC1E5-043E-4157-8452-B5E533FE2BA1}'
-            $installedProduct = Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber = '{ED4CC1E5-043E-4157-8452-B5E533FE2BA1}'"
+            $installedProduct = Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber = '$webDeploy36Guid'"
             
             if ($installedProduct)
             {
@@ -314,4 +320,44 @@ function Invoke-RemoteScript
     $sb = [scriptblock]::create("&{ $scriptContent } $scriptParams")
     
     Invoke-Command -Session $Session -ScriptBlock $sb
+}
+
+function Install-UrlRewrite
+{
+    param
+    (
+        [string] $ServerHost,
+        [System.Management.Automation.Runspaces.PSSession] $Session
+    )
+    
+    $Session = CheckSession $ServerHost $Session
+
+    Invoke-Command -Session $session -ScriptBlock `
+        {
+            $urlRewrite20Guid = '{}'
+            $installedProduct = Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber = '$urlRewrite20Guid'"
+            
+            if ($installedProduct)
+            {
+                'URL Rewrite Module is installed already.'
+            }
+            else
+            {       
+                $urlRewrite20Url = 'http://download.microsoft.com/download/C/9/E/C9E8180D-4E51-40A6-A9BF-776990D8BCA9/rewrite_amd64.msi'
+                $tempPath = "$env:TEMP\" + [guid]::NewGuid()
+                
+                'Downloading URL Rewrite Module installer...'
+                Invoke-WebRequest $urlRewrite20Url -OutFile $tempPath -ErrorAction Stop
+                'OK'
+                
+                msiexec.exe /i $tempPath ADDLOCAL=ALL
+                if ($LASTEXITCODE)
+                {
+                    'MsiExec failed.'
+                }
+        
+                Remove-Item $tempPath
+                'URL Rewrite Module is installed.'
+            }
+        }
 }
