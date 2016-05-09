@@ -49,6 +49,10 @@ function Assert-WebDeployCredentials()
     }
 }
 
+<#
+.EXAMPLE
+Invoke-PackageBuild src/WebApp.csproj WebApp.zip -BuildParams ('/p:AspnetMergePath="C:\Program Files (x86)\Microsoft SDKs\Windows\v8.1A\bin\NETFX 4.5.1 Tools"')
+#>
 function Invoke-PackageBuild
 {
     param
@@ -66,7 +70,7 @@ function Invoke-PackageBuild
     $basicBuildParams = ('/m', '/t:Package', "/p:Configuration=$Configuration",
         '/p:IncludeSetAclProviderOnDestination=False', "/p:PrecompileBeforePublish=$Precompile",
         "/p:Platform=$Platform", "/p:PackageLocation=$PackagePath")
-    msbuild.exe $ProjectPath $allBuildParams $basicBuildParams $BuildParams
+    msbuild.exe $ProjectPath $basicBuildParams $BuildParams
     if ($LASTEXITCODE)
     {
         throw 'Package build failed.'
