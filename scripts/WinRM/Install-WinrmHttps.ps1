@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.1.0
+.VERSION 1.2.0
 
 .GUID 3ccd77cd-d928-4e72-98fc-82e3417f3427
 
@@ -59,8 +59,18 @@ if (!$CertificateThumbprint)
     'New certificate is generated.'
 }
 
-New-Item -Path WSMan:\localhost\Listener -Address * -Transport HTTPS -Hostname $hostname `
-    -CertificateThumbprint $CertificateThumbprint -Force
+$existingListener = Get-ChildItem WSMan:\localhost\Listener | ? { $_.Keys[0] -eq 'Transport=HTTPS' }
+
+if (!$existingListener)
+{
+    New-Item -Path WSMan:\localhost\Listener -Address * -Transport HTTPS -Hostname $hostname `
+        -CertificateThumbprint $CertificateThumbprint -Force
+    Write-Host 'New listener is created.'
+}
+else
+{
+    Write-Host 'Listener already exists.'
+}
 
 New-NetFirewallRule -DisplayName 'Windows Remote Management (HTTPS-In)' `
     -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5986
