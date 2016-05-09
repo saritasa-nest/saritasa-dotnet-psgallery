@@ -308,7 +308,7 @@ function Install-WebDeploy
                 msiexec.exe /i $tempPath ADDLOCAL=MSDeployFeature,MSDeployUIFeature,DelegationUIFeature,MSDeployWMSVCHandlerFeature | Out-Null
                 if ($LASTEXITCODE)
                 {
-                    'MsiExec failed.'
+                    throw 'MsiExec failed.'
                 }
         
                 Remove-Item $tempPath -ErrorAction SilentlyContinue
@@ -375,11 +375,53 @@ function Install-UrlRewrite
                 msiexec.exe /i $tempPath ADDLOCAL=ALL | Out-Null
                 if ($LASTEXITCODE)
                 {
-                    'MsiExec failed.'
+                    throw 'MsiExec failed.'
                 }
         
                 Remove-Item $tempPath
                 'URL Rewrite Module is installed.'
+            }
+        }
+}
+
+<#
+.NOTES
+Msiexec supports HTTP links.
+#>
+function Install-MsiPackage
+{
+    param
+    (
+        [string] $ServerHost,
+        [System.Management.Automation.Runspaces.PSSession] $Session,
+        [Parameter(Mandatory = $true)]
+        [string] $ProductName,
+        [Parameter(Mandatory = $true)]
+        [string] $ProductId,
+        [Parameter(Mandatory = $true)]
+        [string] $MsiPath,
+        [string] $LocalFeatures = 'ALL'     
+    )
+    
+    $Session = CheckSession $ServerHost $Session
+    
+    Invoke-Command -Session $session -ScriptBlock `
+        {
+            $installedProduct = Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber = '$using:ProductId'"
+            
+            if ($installedProduct)
+            {
+                Write-Host "$using:ProductName is installed already."
+            }
+            else
+            {       
+                msiexec.exe /i $using:MsiPath ADDLOCAL=$using:LocalFeatures | Out-Null
+                if ($LASTEXITCODE)
+                {
+                    throw 'MsiExec failed.'
+                }
+                
+                Write-Host "$using:ProductName is installed."
             }
         }
 }
