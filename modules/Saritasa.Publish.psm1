@@ -11,6 +11,33 @@
     $regex.Match($lines)[0].Groups[1].Value
 }
 
+function Set-ApplicationVersion
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $Filename,
+        [Parameter(Mandatory = $true)]
+        [string] $Version
+    )
+    
+    $regex = [regex] '(<ApplicationVersion>)(.*)(</ApplicationVersion>)'
+    
+    $lines = Get-Content $Filename
+
+    for ($i = 0; $i -lt $lines.Length; $i++)
+    {
+        $l = $lines[$i]
+        if ($regex.IsMatch($l))
+        {
+            $lines[$i] = $regex.Replace($l, "`${1}$Version`$3")
+            break
+        }
+    }
+
+    $lines | Out-File $Filename -Encoding utf8
+}
+
 function Update-ApplicationRevision
 {
     param
@@ -30,6 +57,7 @@ function Update-ApplicationRevision
         {
             $version = [int]$regex.Match($l).Groups[2].Value + 1
             $lines[$i] = $regex.Replace($l, "`${1}$version`$3")
+            break
         }
     }
 
@@ -93,15 +121,25 @@ function Invoke-FullPublish
         [Parameter(Mandatory = $true)]
         [string] $PublishDir,
         [Parameter(Mandatory = $true)]
-        [string] $InstallUrl
+        [string] $InstallUrl,
+        [string] $Version
     )
 
-    $revision = Update-ApplicationRevision $ProjectFilename
-    $template = Get-VersionTemplate $ProjectFilename
-    $version = $template + $revision
+    if ($Version)
+    {
+        Set-ApplicationVersion $ProjectFilename $Version
+        $newVersion = $Version
+    }
+    else
+    {
+        $revision = Update-ApplicationRevision $ProjectFilename
+        $template = Get-VersionTemplate $ProjectFilename
+        $newVersion = $template + $revision
+    }
+    
     $projectName = (Get-Item $ProjectFilename).BaseName
     
     Invoke-ProjectBuildAndPublish $ProjectFilename $PublishDir $InstallUrl
-    Update-PublishVersion $PublishDir $version
-    Write-Host "Published $projectName $version to `"$PublishDir`" directory." -ForegroundColor Green
+    Update-PublishVersion $PublishDir $newVersion
+    Write-Host "Published $projectName $newVersion to `"$PublishDir`" directory." -ForegroundColor Green
 }
