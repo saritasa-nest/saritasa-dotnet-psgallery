@@ -79,7 +79,6 @@ function Invoke-ProjectBuildAndPublish
         [string] $ProjectFilename,
         [Parameter(Mandatory = $true)]
         [string] $PublishDir,
-        [Parameter(Mandatory = $true)]
         [string] $InstallUrl)
 
     if (Test-Path $PublishDir)
@@ -87,7 +86,14 @@ function Invoke-ProjectBuildAndPublish
         Remove-Item $PublishDir -Recurse -ErrorAction Stop
     }
 
-    msbuild.exe '/m' $ProjectFilename '/t:Publish' '/p:Configuration=Release' "/p:PublishDir=$PublishDir\" "/p:InstallUrl=$InstallUrl" '/verbosity:normal'
+    $params = @('/m', $ProjectFilename, '/t:Publish', '/p:Configuration=Release', "/p:PublishDir=$PublishDir\", '/verbosity:normal')
+    
+    if ($InstallUrl)
+    {
+        $params += "/p:InstallUrl=$InstallUrl"
+    }
+    
+    msbuild.exe $params
     if ($LASTEXITCODE)
     {
         throw "Build failed."
@@ -120,7 +126,6 @@ function Invoke-FullPublish
         [string] $ProjectFilename,
         [Parameter(Mandatory = $true)]
         [string] $PublishDir,
-        [Parameter(Mandatory = $true)]
         [string] $InstallUrl,
         [string] $Version
     )
