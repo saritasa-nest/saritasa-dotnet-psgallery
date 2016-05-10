@@ -79,7 +79,8 @@ function Invoke-ProjectBuildAndPublish
         [string] $ProjectFilename,
         [Parameter(Mandatory = $true)]
         [string] $PublishDir,
-        [string] $InstallUrl)
+        [string] $InstallUrl
+    )
 
     if (Test-Path $PublishDir)
     {
@@ -108,12 +109,12 @@ function Invoke-ProjectBuildAndPublish
 function Update-PublishVersion
 {
     param
-    {
+    (
         [Parameter(Mandatory = $true)]
         [string] $PublishDir,
         [Parameter(Mandatory = $true)]
         [string] $Version
-    }
+    )
 
     (Get-Content "$publishDir\publish.htm") -Replace "{VERSION}", $Version | Out-File "$PublishDir\publish.htm" -Encoding utf8
 }
