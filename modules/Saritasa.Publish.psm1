@@ -3,10 +3,10 @@
     param
     (
         [Parameter(Mandatory = $true)]
-        [string] $FileName
+        [string] $Filename
     )
 
-    $lines = Get-Content $FileName
+    $lines = Get-Content $Filename
     $regex = [regex] '<ApplicationVersion>(\d+\.\d+\.\d+\.).*</ApplicationVersion>'
     $regex.Match($lines)[0].Groups[1].Value
 }
@@ -16,11 +16,11 @@ function Update-ApplicationRevision
     param
     (
         [Parameter(Mandatory = $true)]
-        [string] $FileName
+        [string] $Filename
     )
 
     $regex = [regex] "(<ApplicationRevision>)(\d+)(</ApplicationRevision>)"
-    $lines = Get-Content $FileName
+    $lines = Get-Content $Filename
     $version = 0
 
     for ($i = 0; $i -lt $lines.Length; $i++)
@@ -33,7 +33,7 @@ function Update-ApplicationRevision
         }
     }
 
-    $lines | Out-File $FileName -Encoding utf8
+    $lines | Out-File $Filename -Encoding utf8
     $version
 }
 
@@ -48,9 +48,7 @@ function Invoke-ProjectBuildAndPublish
     param
     (
         [Parameter(Mandatory = $true)]
-        [string] $ProjectDir,
-        [Parameter(Mandatory = $true)]
-        [string] $ProjectName,
+        [string] $ProjectFilename,
         [Parameter(Mandatory = $true)]
         [string] $PublishDir,
         [Parameter(Mandatory = $true)]
@@ -61,14 +59,16 @@ function Invoke-ProjectBuildAndPublish
         Remove-Item $PublishDir -Recurse -ErrorAction Stop
     }
 
-    msbuild.exe '/m' "$ProjectDir\$ProjectName.csproj" '/t:Publish' '/p:Configuration=Release' "/p:PublishDir=$PublishDir\" "/p:InstallUrl=$InstallUrl" '/verbosity:normal'
+    msbuild.exe '/m' $ProjectFilename '/t:Publish' '/p:Configuration=Release' "/p:PublishDir=$PublishDir\" "/p:InstallUrl=$InstallUrl" '/verbosity:normal'
     if ($LASTEXITCODE)
     {
         throw "Build failed."
     }
 
-    Copy-Item "$ProjectDir\publish.htm.template" "$publishDir\publish.htm"
-    Remove-Item "$publishDir\*.exe" -Exclude "setup.exe"
+    $projectDir = Split-Path $ProjectFilename
+    
+    Copy-Item "$projectDir\publish.htm.template" "$PublishDir\publish.htm"
+    Remove-Item "$PublishDir\*.exe" -Exclude "setup.exe"
 }
 
 function Update-PublishVersion
@@ -89,20 +89,19 @@ function Invoke-FullPublish
     param
     (
         [Parameter(Mandatory = $true)]
-        [string] $ProjectDir,
-        [Parameter(Mandatory = $true)]
-        [string] $ProjectName,
+        [string] $ProjectFilename,
         [Parameter(Mandatory = $true)]
         [string] $PublishDir,
         [Parameter(Mandatory = $true)]
         [string] $InstallUrl
     )
 
-    $revision = Update-ApplicationRevision "$ProjectDir\$ProjectName.csproj"
-    $template = Get-VersionTemplate "$ProjectDir\$ProjectName.csproj"
+    $revision = Update-ApplicationRevision $ProjectFilename
+    $template = Get-VersionTemplate $ProjectFilename
     $version = $template + $revision
-
-    Invoke-ProjectBuildAndPublish $ProjectDir $ProjectName $PublishDir $InstallUrl
+    $projectName = (Get-Item $ProjectFilename).BaseName
+    
+    Invoke-ProjectBuildAndPublish $ProjectFilename $PublishDir $InstallUrl
     Update-PublishVersion $PublishDir $version
-    Write-Host "Published $ProjectName $version to `"$PublishDir`" directory." -ForegroundColor Green
+    Write-Host "Published $projectName $version to `"$PublishDir`" directory." -ForegroundColor Green
 }
