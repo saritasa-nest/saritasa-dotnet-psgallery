@@ -69,7 +69,7 @@ function Update-ApplicationRevision
 .SYNOPSIS
 
 .DESCRIPTION
-Copy publish.htm.template file to project directory and replace ApplicationName.
+Copy ..\artifacts\publish.htm.template file to project directory and replace ApplicationName.
 #>
 function Invoke-ProjectBuildAndPublish
 {
