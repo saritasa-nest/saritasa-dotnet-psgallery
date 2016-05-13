@@ -189,6 +189,7 @@ function Sync-IisApp
         [Parameter(Mandatory = $true)]
         [string] $SiteName,
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string] $Application,
         [Parameter(Mandatory = $true)]
         [string] $DestinationServer
