@@ -206,3 +206,29 @@ function Sync-IisApp
     
     Write-Host "Updated '$SiteName/$Application' app on $DestinationServer server."
 }
+
+<#
+.SYNOPSIS
+Synchronizes web site file structure between local and remote servers.
+#>
+function Sync-WebContent
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ContentPath,
+        [Parameter(Mandatory = $true)]
+        [string] $DestinationServer
+    )
+
+    $args = @('-verb:sync', "-source:contentPath='$ContentPath'",
+              ("-dest:auto,computerName='https://${DestinationServer}:8172/msdeploy.axd?site=$SiteName'," + $credentials))
+
+    $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
+    if ($result.ExitCode)
+    {
+        throw 'Msdeploy failed.'
+    }
+    
+    Write-Host "Updated '$ContentPath' directory on $DestinationServer server."
+}
