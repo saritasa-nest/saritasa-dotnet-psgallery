@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Web'
 
 # Version number of this module.
-ModuleVersion = '1.3.1'
+ModuleVersion = '1.3.2'
 
 # ID used to uniquely identify this module
 GUID = '6aeb9fa0-7096-4488-9d49-4f16578d7be0'
@@ -27,7 +27,7 @@ CompanyName = 'Saritasa'
 Copyright = '(c) 2015 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = 'Contains various methods for web requests and SSL handling.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 # PowerShellVersion = ''
@@ -92,7 +92,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('SSL', 'certificate')
 
         # A URL to the license for this module.
         LicenseUri = 'https://raw.githubusercontent.com/dermeister0/PSGallery/master/LICENSE'
