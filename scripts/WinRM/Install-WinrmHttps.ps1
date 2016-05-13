@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.3.0
+.VERSION 1.3.1
 
 .GUID 3ccd77cd-d928-4e72-98fc-82e3417f3427
 
@@ -87,7 +87,7 @@ try
         -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5986 -ErrorAction Stop
     Write-Host 'Firewall rule is updated.'
 }
-catch [CimException]
+catch [Microsoft.Management.Infrastructure.CimException]
 {
     if ($_.Exception.HResult -eq 0x80131500)
     {
