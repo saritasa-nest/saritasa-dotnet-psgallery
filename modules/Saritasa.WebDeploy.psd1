@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.WebDeploy'
 
 # Version number of this module.
-ModuleVersion = '1.2.2'
+ModuleVersion = '1.3.0'
 
 # ID used to uniquely identify this module
 GUID = '1821cb68-29fe-4074-b296-58c450cb9177'
@@ -27,7 +27,7 @@ CompanyName = 'Saritasa'
 Copyright = '(c) 2016 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = 'Contains functions to control app pools and synchronize IIS web sites using Microsoft WebDeploy tool.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 # PowerShellVersion = ''
@@ -66,7 +66,8 @@ Copyright = '(c) 2016 Saritasa. All rights reserved.'
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = '*'
+FunctionsToExport = @('Set-MsdeployPath', 'Set-WebDeployCredentials', 'Invoke-PackageBuild', 'Start-AppPool', 'Stop-AppPool',
+    'Invoke-WebDeployment', 'Sync-IisApp')
 
 # Cmdlets to export from this module
 CmdletsToExport = '*'
@@ -92,7 +93,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('WebDeploy', 'MSDeploy', 'IIS', 'MSBuild', 'AppPool', 'Package')
 
         # A URL to the license for this module.
         LicenseUri = 'https://raw.githubusercontent.com/dermeister0/PSGallery/master/LICENSE'

@@ -177,3 +177,29 @@ function Invoke-WebDeployment
         throw 'Msdeploy failed.'
     }
 }
+
+<#
+.SYNOPSIS
+Copies IIS app content from local server to remote server.
+#>
+function Sync-IisApp
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $SiteName,
+        [Parameter(Mandatory = $true)]
+        [string] $Application,
+        [Parameter(Mandatory = $true)]
+        [string] $DestinationServer
+    )
+
+    $args = @('-verb:sync', "-source:iisApp='$SiteName/FormI9Verify'",
+              ("-dest:auto,computerName='https://$DestinationServer:8172/msdeploy.axd?site=$SiteName'," + $credentials))
+
+    $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
+    if ($result.ExitCode)
+    {
+        throw 'Msdeploy failed.'
+    }
+}
