@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.2.0
+.VERSION 1.3.0
 
 .GUID 3ccd77cd-d928-4e72-98fc-82e3417f3427
 
@@ -55,8 +55,17 @@ $hostname = $env:COMPUTERNAME
 
 if (!$CertificateThumbprint)
 {
-    $CertificateThumbprint = (New-SelfSignedCertificate -DnsName $hostname -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
-    'New certificate is generated.'
+    $existingCertificate = Get-ChildItem -Path Cert:\LocalMachine\My | where { $_.Subject -EQ "CN=$hostname" } | select -First 1
+    if ($existingCertificate)
+    {
+        $CertificateThumbprint = $existingCertificate.Thumbprint
+        Write-Host 'Using existing certificate...'
+    }
+    else
+    {
+        $CertificateThumbprint = (New-SelfSignedCertificate -DnsName $hostname -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
+        Write-Host 'New certificate is generated.'
+    }
 }
 
 $existingListener = Get-ChildItem WSMan:\localhost\Listener | ? { $_.Keys[0] -eq 'Transport=HTTPS' }
@@ -72,7 +81,22 @@ else
     Write-Host 'Listener already exists.'
 }
 
-New-NetFirewallRule -DisplayName 'Windows Remote Management (HTTPS-In)' `
-    -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5986
+try
+{
+    New-NetFirewallRule -DisplayName 'Windows Remote Management (HTTPS-In)' `
+        -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5986 -ErrorAction Stop
+    Write-Host 'Firewall rule is updated.'
+}
+catch [CimException]
+{
+    if ($_.Exception.HResult -eq 0x80131500)
+    {
+        Write-Host 'Windows Firewall is not enabled.'
+    }
+    else
+    {
+        throw
+    }
+}
 
 Write-Host "`nWinRM is set up for host $hostname." -ForegroundColor Green
