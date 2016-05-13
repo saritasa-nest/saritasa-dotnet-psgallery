@@ -195,11 +195,13 @@ function Sync-IisApp
     )
 
     $args = @('-verb:sync', "-source:iisApp='$SiteName/FormI9Verify'",
-              ("-dest:auto,computerName='https://$DestinationServer:8172/msdeploy.axd?site=$SiteName'," + $credentials))
+              ("-dest:auto,computerName='https://${DestinationServer}:8172/msdeploy.axd?site=$SiteName'," + $credentials))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
     if ($result.ExitCode)
     {
         throw 'Msdeploy failed.'
     }
+    
+    Write-Host "Updated '$SiteName/$Application' app on $DestinationServer server."
 }
