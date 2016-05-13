@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Web'
 
 # Version number of this module.
-ModuleVersion = '1.3.2'
+ModuleVersion = '1.3.3'
 
 # ID used to uniquely identify this module
 GUID = '6aeb9fa0-7096-4488-9d49-4f16578d7be0'
@@ -66,7 +66,7 @@ Description = 'Contains various methods for web requests and SSL handling.'
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = '*'
+FunctionsToExport = @('Update-SslCheckProcedure', 'Import-SslCertificate')
 
 # Cmdlets to export from this module
 CmdletsToExport = '*'
