@@ -177,3 +177,58 @@ function Invoke-WebDeployment
         throw 'Msdeploy failed.'
     }
 }
+
+<#
+.SYNOPSIS
+Copies IIS app content from local server to remote server.
+#>
+function Sync-IisApp
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $SiteName,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string] $Application,
+        [Parameter(Mandatory = $true)]
+        [string] $DestinationServer
+    )
+
+    $args = @('-verb:sync', "-source:iisApp='$SiteName/FormI9Verify'",
+              ("-dest:auto,computerName='https://${DestinationServer}:8172/msdeploy.axd?site=$SiteName'," + $credentials))
+
+    $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
+    if ($result.ExitCode)
+    {
+        throw 'Msdeploy failed.'
+    }
+    
+    Write-Host "Updated '$SiteName/$Application' app on $DestinationServer server."
+}
+
+<#
+.SYNOPSIS
+Synchronizes web site file structure between local and remote servers.
+#>
+function Sync-WebContent
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ContentPath,
+        [Parameter(Mandatory = $true)]
+        [string] $DestinationServer
+    )
+
+    $args = @('-verb:sync', "-source:contentPath='$ContentPath'",
+              ("-dest:auto,computerName='https://${DestinationServer}:8172/msdeploy.axd?site=$SiteName'," + $credentials))
+
+    $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
+    if ($result.ExitCode)
+    {
+        throw 'Msdeploy failed.'
+    }
+    
+    Write-Host "Updated '$ContentPath' directory on $DestinationServer server."
+}
