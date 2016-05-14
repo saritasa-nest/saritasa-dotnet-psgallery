@@ -40,10 +40,12 @@ function Invoke-ProjectBuild
         [Parameter(Mandatory = $true, HelpMessage = 'Path to project.')]
         [string] $ProjectPath,
         [Parameter(HelpMessage = 'Build configuration (Release, Debug, etc.)')]
-        [string] $Configuration
+        [string] $Configuration,
+        [string] $Target = 'Build',
+        [string[]] $BuildParams
     )
 
-    msbuild.exe $ProjectPath '/m' '/t:Build' "/p:Configuration=$configuration" '/verbosity:normal'
+    msbuild.exe $ProjectPath '/m' "/t:$Target" "/p:Configuration=$Configuration" '/verbosity:normal' $BuildParams
     if ($LASTEXITCODE)
     {
         throw 'Build failed.'
