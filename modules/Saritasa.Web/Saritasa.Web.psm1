@@ -71,7 +71,17 @@ function Import-SslCertificate
     $bytes = $cert.Export([Security.Cryptography.X509Certificates.X509ContentType]::Cert)
     Set-Content -Value $bytes -Encoding Byte -Path $tempFilename
 
-    Import-Certificate -CertStoreLocation Cert:\LocalMachine\Root $tempFilename
+    $cmd = Get-Command Import-Certificate -EA SilentlyContinue
+    
+    if ($cmd) # Windows 8+
+    {
+        Import-Certificate -CertStoreLocation Cert:\LocalMachine\Root $tempFilename
+    }
+    else # Windows 7
+    {
+        certutil.exe -addstore 'Root' $tempFilename
+    }
+    
     Remove-Item $tempFilename
 }
 
