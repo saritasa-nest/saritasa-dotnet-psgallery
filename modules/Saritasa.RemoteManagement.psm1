@@ -445,3 +445,31 @@ function Get-RemoteTempPath
             $tempPath
         }
 }
+
+function Import-SslCertificate
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ServerHost,
+        [Parameter(Mandatory = $true)]
+        [string] $CertificatePath,
+        [Parameter(Mandatory = $true)]
+        [System.Security.SecureString] $CertificatePassword
+    )
+    
+    $Session = Start-RemoteSession $ServerHost
+    
+    $name = (Get-Item $CertificatePath).Name
+    $tempPath = Get-RemoteTempPath $Session
+    Copy-Item -Path $CertificatePath -Destination $tempPath -ToSession $Session
+    
+    Invoke-Command -Session $Session -ScriptBlock `
+        {
+            Import-PfxCertificate "$using:tempPath\$using:name" -CertStoreLocation 'Cert:\LocalMachine\My' -Password $using:CertificatePassword
+            
+            Remove-Item $using:tempPath -Recurse -Force
+        }
+        
+    Remove-PSSession $Session
+}
