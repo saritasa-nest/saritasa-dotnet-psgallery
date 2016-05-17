@@ -77,7 +77,7 @@ if ($existingListener)
     if ($Force)
     {
         Write-Host 'Reinstalling...'
-        Remove-Item $existingListener
+        Remove-Item "WSMan:\localhost\Listener\$($existingListener.Name)" -Recurse
         $existingListener = $null
     }
 }
