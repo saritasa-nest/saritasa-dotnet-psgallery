@@ -167,7 +167,7 @@ function Start-RemoteSession
         [string] $ServerHost
     )
     
-    New-PSSession -UseSSL -Credential $credential -ComputerName $ServerHost
+    New-PSSession -UseSSL -Credential $credential -ComputerName ([System.Net.Dns]::GetHostByName($ServerHost).Hostname)
 }
 
 function Install-Iis

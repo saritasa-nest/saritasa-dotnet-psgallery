@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.RemoteManagement'
 
 # Version number of this module.
-ModuleVersion = '1.10.0'
+ModuleVersion = '1.10.1'
 
 # ID used to uniquely identify this module
 GUID = '6e18f454-853c-413b-b614-39c8128c1399'
