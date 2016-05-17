@@ -29,7 +29,7 @@ function Initialize-Prtg
     $script:sensors = $Sensors
 }
 
-function Get-SensorId
+function Get-PrtgSensorId
 {
     param
     (
@@ -46,7 +46,7 @@ function Get-SensorId
     $sensorId
 }
 
-function Start-Sensor
+function Start-PrtgSensor
 {
     param
     (
@@ -55,13 +55,13 @@ function Start-Sensor
     )
 
     'Starting PRTG sensor...'
-    $sensorId = Get-SensorId($Server)
+    $sensorId = Get-PrtgSensorId($Server)
     Update-SslCheckProcedure
     $status = (Invoke-WebRequest "$prtgUrl/api/pause.htm?id=$sensorId&action=1&pausemsg=Resumed by deployment script.&username=$username&password=$password").StatusDescription
     "$status`n`n"
 }
 
-function Stop-Sensor
+function Stop-PrtgSensor
 {
     param
     (
@@ -70,7 +70,7 @@ function Stop-Sensor
     )
 
     'Stopping PRTG sensor...'
-    $sensorId = Get-SensorId($Server)
+    $sensorId = Get-PrtgSensorId($Server)
     Update-SslCheckProcedure
     $status = (Invoke-WebRequest "$prtgUrl/api/pause.htm?id=$sensorId&action=0&pausemsg=Paused by deployment script.&username=$username&password=$password").StatusDescription
     "$status`n`n"
