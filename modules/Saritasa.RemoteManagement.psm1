@@ -255,7 +255,7 @@ function Install-WebManagementService
             
             # Replace WMSvc-HOST with HOST certificate. It should be generated already during WinRM configuration.
             Import-Module WebAdministration
-            $hostname = $env:COMPUTERNAME
+            $hostname = [System.Net.Dns]::GetHostByName('localhost').Hostname
             $thumbprint = Get-ChildItem -Path Cert:\LocalMachine\My | where { $_.Subject -EQ "CN=$hostname" } | select -First 1 -ExpandProperty Thumbprint
             if (!$thumbprint)
             {
