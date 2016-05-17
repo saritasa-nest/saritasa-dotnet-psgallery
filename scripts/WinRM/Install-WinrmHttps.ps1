@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.3.1
+.VERSION 1.4.0
 
 .GUID 3ccd77cd-d928-4e72-98fc-82e3417f3427
 
@@ -40,7 +40,8 @@ Set-ItemProperty –Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policie
 #> 
 param
 (
-    [string] $CertificateThumbprint
+    [string] $CertificateThumbprint,
+    [switch] $Force
 )
 
 trap
@@ -51,7 +52,7 @@ trap
     exit
 }
 
-$hostname = $env:COMPUTERNAME
+$hostname = [System.Net.Dns]::GetHostByName('localhost').Hostname
 
 if (!$CertificateThumbprint)
 {
@@ -70,15 +71,22 @@ if (!$CertificateThumbprint)
 
 $existingListener = Get-ChildItem WSMan:\localhost\Listener | ? { $_.Keys[0] -eq 'Transport=HTTPS' }
 
+if ($existingListener)
+{
+    Write-Host 'Listener already exists.'
+    if ($Force)
+    {
+        Write-Host 'Reinstalling...'
+        Remove-Item $existingListener
+        $existingListener = $null
+    }
+}
+
 if (!$existingListener)
 {
     New-Item -Path WSMan:\localhost\Listener -Address * -Transport HTTPS -Hostname $hostname `
         -CertificateThumbprint $CertificateThumbprint -Force
     Write-Host 'New listener is created.'
-}
-else
-{
-    Write-Host 'Listener already exists.'
 }
 
 try
