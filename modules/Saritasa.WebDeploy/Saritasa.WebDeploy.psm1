@@ -218,7 +218,9 @@ function Sync-WebContent
         [Parameter(Mandatory = $true)]
         [string] $ContentPath,
         [Parameter(Mandatory = $true)]
-        [string] $DestinationServer
+        [string] $DestinationServer,
+        [Parameter(Mandatory = $true)]
+        [string] $SiteName
     )
 
     $args = @('-verb:sync', "-source:contentPath='$ContentPath'",

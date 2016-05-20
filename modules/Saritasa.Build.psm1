@@ -87,7 +87,7 @@ function Update-AssemblyInfoFiles
         (Get-Content $filename) | ForEach-Object {
             % {$_ -replace $assemblyVersionPattern, $assemblyVersion } |
             % {$_ -replace $fileVersionPattern, $fileVersion }
-        } | Set-Content $filename
+        } | Set-Content $filename -Encoding UTF8
     }
 }
 
@@ -103,5 +103,70 @@ function Copy-DotnetConfig
     if (!(Test-Path $configFilename))
     {
         Copy-Item $TemplateFilename $configFilename
+    }
+}
+
+<#
+.SYNOPSIS
+Run Entity Framework migrations.
+
+.NOTES
+In essential this command tries to find migrate.exe in packages and run it against specified
+configuration file.
+#>
+function Invoke-EFMigrate
+{
+    param
+    (
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to assembly file with migrations.')]
+        [string] $MigrationAssembly,
+        [Parameter(HelpMessage = 'Path to assembly .config file. If not specified default or parent Web.config will be used.')]
+        [string] $ConfigFilename
+    )
+
+    # Format and validate params
+    if (!$ConfigFilename)
+    {
+        $ConfigFilename = $MigrationAssembly + '.config'
+        if (!(Test-Path $ConfigFilename))
+        {
+            $ConfigFilename = Join-Path (Split-Path $MigrationAssembly) '..\Web.config'
+        }
+    }
+    if (!(Test-Path $ConfigFilename))
+    {
+        throw "$ConfigFilename does not exist."
+    }
+    if (!(Test-Path $MigrationAssembly))
+    {
+        throw "$MigrationAssembly does not exist."
+    }
+
+    # Find migrate.exe
+    $packagesDirectory = Get-ChildItem 'packages' -Recurse -Depth 3 | ? {$_.PSIsContainer} | Select -First 1
+    if (!$packagesDirectory)
+    {
+        throw 'Cannot find packages directory.'
+    }
+    Write-Information "Found $packagesDirectory.FullName"
+    $migrateExeDirectory = Get-ChildItem $packagesDirectory.FullName 'EntityFramework.*' | Sort-Object {$_.Name} | Select -Last 1
+    if (!$migrateExeDirectory)
+    {
+        throw 'Cannot find entity framework package.'
+    }
+    $migrateExe = Join-Path $migrateExeDirectory.FullName '.\tools\migrate.exe'
+    Write-Information "Found $migrateExeDirectory.FullName"
+
+    # Run migrate
+    $workingDirectory = Get-Location
+    $args = @(
+        [System.IO.Path]::GetFileName($MigrationAssembly)
+        '/startUpDirectory:"{0}"' -f (Join-Path $workingDirectory (Split-Path $MigrationAssembly))
+        '/startUpConfigurationFile:"{0}"' -f (Join-Path $workingDirectory $ConfigFilename)
+    );
+    &"$migrateExe" $args
+    if ($LASTEXITCODE)
+    {
+        throw "Migration failed."
     }
 }
