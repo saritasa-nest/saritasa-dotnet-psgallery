@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
 Run NUnit 3 tests.
 
