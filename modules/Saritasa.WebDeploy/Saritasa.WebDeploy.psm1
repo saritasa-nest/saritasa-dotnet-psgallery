@@ -1,5 +1,5 @@
 $msdeployPath = "$env:ProgramFiles\IIS\Microsoft Web Deploy V3"
-$credentials = ''
+$credential = ''
 
 function Set-MsdeployPath
 {
@@ -22,28 +22,31 @@ Set-ItemProperty HKLM:Software\Microsoft\WebManagement\Server WindowsAuthenticat
 Restart-Service WMSVC
 https://blogs.msdn.microsoft.com/carlosag/2011/12/13/using-windows-authentication-with-web-deploy-and-wmsvc/
 #>
-function Set-WebDeployCredentials
+function Set-WebDeployCredential
 {
     param
     (
-        [string] $Username,
-        [string] $Password
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential
     )
 
-    $script:credentials = ''
-    if ($Username)
+    $script:credential = ''
+    if ($Credential)
     {
-        $script:credentials = "userName=$Username,password=$Password,authType=basic"
+        $username = $Credential.UserName
+        $password = $Credential.GetNetworkCredential().Password
+        $script:credential = "userName=$username,password=$password,authType=basic"
     }
     else
     {
-        $script:credentials = "authType='ntlm'"
+        $script:credential = "authType='ntlm'"
     }
 }
 
-function Assert-WebDeployCredentials()
+function Assert-WebDeployCredential()
 {
-    if (!$credentials)
+    if (!$credential)
     {
         throw 'Credentials are not set.'
     }
@@ -95,11 +98,11 @@ function Start-AppPool
         [string] $Application
     )
 
-    Assert-WebDeployCredentials
+    Assert-WebDeployCredential
     'Starting app pool...'
     
     $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StartAppPool'," +
-        "computername=https://${ServerHost}:8172/msdeploy.axd?site=$SiteName," + $credentials
+        "computername=https://${ServerHost}:8172/msdeploy.axd?site=$SiteName," + $credential
     $args = @('-verb:sync', '-source:recycleApp', $destArg)
     
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
@@ -127,11 +130,11 @@ function Stop-AppPool
         [string] $Application
     )
 
-    Assert-WebDeployCredentials
+    Assert-WebDeployCredential
     'Stopping app pool...'
 
     $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StopAppPool'," +
-        "computername=https://${ServerHost}:8172/msdeploy.axd?site=$SiteName," + $credentials
+        "computername=https://${ServerHost}:8172/msdeploy.axd?site=$SiteName," + $credential
     $args = @('-verb:sync', '-source:recycleApp', $destArg)
     
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
@@ -161,13 +164,14 @@ function Invoke-WebDeployment
         [string] $Application
     )
 
+    Assert-WebDeployCredential
     "Deploying $PackagePath to $ServerHost/$Application..."
     
     "https://${ServerHost}:8172/msdeploy.axd"
     
     $destArg = 
     $args = @("-source:package='$PackagePath'",
-              ("-dest:auto,computerName='https://${ServerHost}:8172/msdeploy.axd?site=$SiteName',includeAcls='False'," + $credentials),
+              ("-dest:auto,computerName='https://${ServerHost}:8172/msdeploy.axd?site=$SiteName',includeAcls='False'," + $credential),
               '-verb:sync', '-disableLink:AppPoolExtension', '-disableLink:ContentExtension', '-disableLink:CertificateExtension',
               '-allowUntrusted', "-setParam:name='IIS Web Application Name',value='$SiteName/$Application")
     
@@ -195,8 +199,9 @@ function Sync-IisApp
         [string] $DestinationServer
     )
 
+    Assert-WebDeployCredential
     $args = @('-verb:sync', "-source:iisApp='$SiteName/FormI9Verify'",
-              ("-dest:auto,computerName='https://${DestinationServer}:8172/msdeploy.axd?site=$SiteName'," + $credentials))
+              ("-dest:auto,computerName='https://${DestinationServer}:8172/msdeploy.axd?site=$SiteName'," + $credential))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
     if ($result.ExitCode)
@@ -204,7 +209,7 @@ function Sync-IisApp
         throw 'Msdeploy failed.'
     }
     
-    Write-Host "Updated '$SiteName/$Application' app on $DestinationServer server."
+    Write-Information "Updated '$SiteName/$Application' app on $DestinationServer server."
 }
 
 <#
@@ -223,8 +228,9 @@ function Sync-WebContent
         [string] $SiteName
     )
 
+    Assert-WebDeployCredential
     $args = @('-verb:sync', "-source:contentPath='$ContentPath'",
-              ("-dest:auto,computerName='https://${DestinationServer}:8172/msdeploy.axd?site=$SiteName'," + $credentials))
+              ("-dest:auto,computerName='https://${DestinationServer}:8172/msdeploy.axd?site=$SiteName'," + $credential))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
     if ($result.ExitCode)
@@ -232,5 +238,5 @@ function Sync-WebContent
         throw 'Msdeploy failed.'
     }
     
-    Write-Host "Updated '$ContentPath' directory on $DestinationServer server."
+    Write-Information "Updated '$ContentPath' directory on $DestinationServer server."
 }

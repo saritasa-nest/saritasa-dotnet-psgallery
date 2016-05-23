@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.WebDeploy'
 
 # Version number of this module.
-ModuleVersion = '1.4.2'
+ModuleVersion = '1.5.0'
 
 # ID used to uniquely identify this module
 GUID = '1821cb68-29fe-4074-b296-58c450cb9177'
@@ -45,38 +45,39 @@ Description = 'Contains functions to control app pools and synchronize IIS web s
 # CLRVersion = ''
 
 # Processor architecture (None, X86, Amd64) required by this module
-# ProcessorArchitecture = ''
+ProcessorArchitecture = 'None'
 
 # Modules that must be imported into the global environment prior to importing this module
 # RequiredModules = @()
 
 # Assemblies that must be loaded prior to importing this module
-# RequiredAssemblies = @()
+RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-# ScriptsToProcess = @()
+ScriptsToProcess = @()
 
 # Type files (.ps1xml) to be loaded when importing this module
-# TypesToProcess = @()
+TypesToProcess = @()
 
 # Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
+FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = @('Set-MsdeployPath', 'Set-WebDeployCredentials', 'Invoke-PackageBuild', 'Start-AppPool', 'Stop-AppPool',
+FunctionsToExport = @('Set-MsdeployPath', 'Set-WebDeployCredential',
+    'Invoke-PackageBuild', 'Start-AppPool', 'Stop-AppPool',
     'Invoke-WebDeployment', 'Sync-IisApp', 'Sync-WebContent')
 
 # Cmdlets to export from this module
-CmdletsToExport = '*'
+CmdletsToExport = @()
 
 # Variables to export from this module
-VariablesToExport = '*'
+VariablesToExport = @()
 
 # Aliases to export from this module
-AliasesToExport = '*'
+AliasesToExport = @()
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -85,7 +86,7 @@ AliasesToExport = '*'
 # ModuleList = @()
 
 # List of all files packaged with this module
-# FileList = @()
+FileList = @()
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
