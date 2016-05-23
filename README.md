@@ -4,7 +4,17 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 
 # Modules
 
-TODO: Add description.
+| Name                      | Description                                                                                                                       |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Saritasa.Build            | Contains functions to execute MSBuild targets, restore NuGet packages, run EntityFramework migrations.                            |
+| Saritasa.NewRelic         | Contains functions to call New Relic (newrelic.com) service APIs.                                                                 |
+| Saritasa.Prtg             | Contains functions to call PRTG monitoring service (www.paessler.com/prtg) APIs.                                                  |
+| Saritasa.Psake            | Contains common Psake tasks.                                                                                                      |
+| Saritasa.Publish          | Contains methods to generate ClickOnce packages.                                                                                  |
+| Saritasa.RemoteManagement | Contains functions to execute actions on a remote server. Allows to set up IIS, import sites and app pools, install MSI packages. |
+| Saritasa.Test             | Contains functions to run unit tests.                                                                                             |
+| Saritasa.Web              | Contains various methods for web requests and SSL handling.                                                                       |
+| Saritasa.WebDeploy        | Contains functions to control app pools and synchronize IIS web sites using Microsoft WebDeploy tool.                             |
 
 # Scripts
 
