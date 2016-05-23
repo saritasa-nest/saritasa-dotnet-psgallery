@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.RemoteManagement'
 
 # Version number of this module.
-ModuleVersion = '1.10.2'
+ModuleVersion = '1.11.0'
 
 # ID used to uniquely identify this module
 GUID = '6e18f454-853c-413b-b614-39c8128c1399'
@@ -27,7 +27,7 @@ CompanyName = 'Saritasa'
 Copyright = '(c) 2016 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = 'Contains functions to execute actions on a remote server. Allows to set up IIS, import sites and app pools, install MSI packages.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 # PowerShellVersion = ''
@@ -66,16 +66,19 @@ Copyright = '(c) 2016 Saritasa. All rights reserved.'
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = '*'
+FunctionsToExport = 'Set-RemoteManagementCredential', 'Import-AppPool', 'Import-Site',
+    'Export-AppPool', 'Export-Site', 'Start-RemoteSession', 'Install-Iis',
+    'Install-WebManagementService', 'Install-WebDeploy', 'Invoke-RemoteScript',
+    'Install-UrlRewrite', 'Install-MsiPackage', 'Get-RemoteTempPath', 'Import-SslCertificate'
 
 # Cmdlets to export from this module
-CmdletsToExport = '*'
+CmdletsToExport = @()
 
 # Variables to export from this module
-VariablesToExport = '*'
+VariablesToExport = @()
 
 # Aliases to export from this module
-AliasesToExport = '*'
+AliasesToExport = @()
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -92,7 +95,8 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = 'IIS', 'UrlRewrite', 'Management', 'WebManagement', 'WebDeploy',
+            'AppPool', 'Site', 'MSI', 'WinRM'
 
         # A URL to the license for this module.
         LicenseUri = 'https://raw.githubusercontent.com/dermeister0/PSGallery/master/LICENSE'
