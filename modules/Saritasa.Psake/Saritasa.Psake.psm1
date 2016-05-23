@@ -21,6 +21,7 @@ function Register-HelpTask
     {
         Write-Host 'Main Tasks' -ForegroundColor DarkMagenta -NoNewline
         Get-PSakeScriptTasks | Where-Object { $_.Description -Like '`**' } |
+            Sort-Object -Property Name | 
             Format-Table -Property Name, @{ Label = 'Description'; Expression = { $_.Description -Replace '^\* ', '' } }
         
         Write-Host 'Execute ' -NoNewline -ForegroundColor DarkMagenta
@@ -36,7 +37,7 @@ function Register-HelpTask
 
 function Register-UpdateGalleryTask
 {
-    Task 'update-gallery' -description 'Update all modules from Saritasa PS Gallery.' `
+    Task 'update-gallery' -description '* Update all modules from Saritasa PS Gallery.' `
     {
         $InformationPreference = 'Continue'
     
