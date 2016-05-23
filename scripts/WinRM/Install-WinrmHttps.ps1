@@ -1,6 +1,6 @@
-<#PSScriptInfo
+﻿<#PSScriptInfo
 
-.VERSION 1.4.1
+.VERSION 1.4.2
 
 .GUID 3ccd77cd-d928-4e72-98fc-82e3417f3427
 
@@ -46,7 +46,7 @@ param
 
 trap
 {
-    Write-Host 'FAILURE' -BackgroundColor Red
+    Write-Error 'FAILURE'
     $_
     $host.SetShouldExit(1)
     exit
@@ -56,27 +56,29 @@ $hostname = [System.Net.Dns]::GetHostByName('localhost').Hostname
 
 if (!$CertificateThumbprint)
 {
-    $existingCertificate = Get-ChildItem -Path Cert:\LocalMachine\My | where { $_.Subject -EQ "CN=$hostname" } | select -First 1
+    $existingCertificate = Get-ChildItem -Path Cert:\LocalMachine\My |
+        Where-Object { $_.Subject -EQ "CN=$hostname" } | Select-Object -First 1
     if ($existingCertificate)
     {
         $CertificateThumbprint = $existingCertificate.Thumbprint
-        Write-Host 'Using existing certificate...'
+        Write-Information 'Using existing certificate...'
     }
     else
     {
         $CertificateThumbprint = (New-SelfSignedCertificate -DnsName $hostname -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
-        Write-Host 'New certificate is generated.'
+        Write-Information 'New certificate is generated.'
     }
 }
 
-$existingListener = Get-ChildItem WSMan:\localhost\Listener | ? { $_.Keys[0] -eq 'Transport=HTTPS' }
+$existingListener = Get-ChildItem WSMan:\localhost\Listener |
+    Where-Object { $_.Keys[0] -eq 'Transport=HTTPS' }
 
 if ($existingListener)
 {
-    Write-Host 'Listener already exists.'
+    Write-Information 'Listener already exists.'
     if ($Force)
     {
-        Write-Host 'Reinstalling...'
+        Write-Information 'Reinstalling...'
         Remove-Item "WSMan:\localhost\Listener\$($existingListener.Name)" -Recurse
         $existingListener = $null
     }
@@ -86,20 +88,20 @@ if (!$existingListener)
 {
     New-Item -Path WSMan:\localhost\Listener -Address * -Transport HTTPS -Hostname $hostname `
         -CertificateThumbprint $CertificateThumbprint -Force
-    Write-Host 'New listener is created.'
+    Write-Information 'New listener is created.'
 }
 
 try
 {
     New-NetFirewallRule -DisplayName 'Windows Remote Management (HTTPS-In)' `
         -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5986 -ErrorAction Stop
-    Write-Host 'Firewall rule is updated.'
+    Write-Information 'Firewall rule is updated.'
 }
 catch [Microsoft.Management.Infrastructure.CimException]
 {
     if ($_.Exception.HResult -eq 0x80131500)
     {
-        Write-Host 'Windows Firewall is not enabled.'
+        Write-Information 'Windows Firewall is not enabled.'
     }
     else
     {
@@ -107,4 +109,4 @@ catch [Microsoft.Management.Infrastructure.CimException]
     }
 }
 
-Write-Host "`nWinRM is set up for host $hostname." -ForegroundColor Green
+Write-Information "`nWinRM is set up for host $hostname."
