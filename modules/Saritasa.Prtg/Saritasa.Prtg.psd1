@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Prtg'
 
 # Version number of this module.
-ModuleVersion = '1.2.0'
+ModuleVersion = '1.3.0'
 
 # ID used to uniquely identify this module
 GUID = '5d34804a-169a-4fb1-bc0d-cc81f925f992'
@@ -27,7 +27,7 @@ CompanyName = 'Saritasa'
 Copyright = '(c) 2016 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = 'Contains functions to call PRTG monitoring service (www.paessler.com/prtg) APIs.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 # PowerShellVersion = ''
@@ -66,16 +66,17 @@ Copyright = '(c) 2016 Saritasa. All rights reserved.'
 NestedModules = @('Saritasa.Web')
 
 # Functions to export from this module
-FunctionsToExport = '*'
+FunctionsToExport = 'Initialize-Prtg', 'Get-PrtgSensorId', 'Start-PrtgSensor',
+    'Stop-PrtgSensor'
 
 # Cmdlets to export from this module
-CmdletsToExport = '*'
+CmdletsToExport = @()
 
 # Variables to export from this module
-VariablesToExport = '*'
+VariablesToExport = @()
 
 # Aliases to export from this module
-AliasesToExport = '*'
+AliasesToExport = @()
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -92,7 +93,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = 'PRTG', 'Monitoring', 'Sensor'
 
         # A URL to the license for this module.
         LicenseUri = 'https://raw.githubusercontent.com/dermeister0/PSGallery/master/LICENSE'

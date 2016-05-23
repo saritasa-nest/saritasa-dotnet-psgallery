@@ -16,16 +16,16 @@ function Initialize-Prtg
         [Parameter(Mandatory = $true)]
         [string] $PrtgUrl,
         [Parameter(Mandatory = $true)]
-        [string] $UserName,
-        [Parameter(Mandatory = $true)]
-        [string] $Password,
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential,
         [Parameter(Mandatory = $true)]
         [hashtable] $Sensors
     )
     
     $script:prtgUrl = $PrtgUrl
-    $script:userName = $UserName
-    $script:password = $Password
+    $script:userName = $Credential.UserName
+    $script:password = $Credential.GetNetworkCredential().Password
     $script:sensors = $Sensors
 }
 

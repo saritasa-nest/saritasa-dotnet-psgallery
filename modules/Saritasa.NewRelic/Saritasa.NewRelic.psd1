@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.NewRelic'
 
 # Version number of this module.
-ModuleVersion = '1.1.0'
+ModuleVersion = '1.1.1'
 
 # ID used to uniquely identify this module
 GUID = '5d34804a-169a-4fb1-bc0d-cc81f925f992'
@@ -27,7 +27,7 @@ CompanyName = 'Saritasa'
 Copyright = '(c) 2016 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = 'Contains functions to call New Relic (newrelic.com) service APIs.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 # PowerShellVersion = ''
@@ -66,16 +66,16 @@ Copyright = '(c) 2016 Saritasa. All rights reserved.'
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = '*'
+FunctionsToExport = 'Initialize-NewRelic', 'Update-NewRelicDeployment'
 
 # Cmdlets to export from this module
-CmdletsToExport = '*'
+CmdletsToExport = @()
 
 # Variables to export from this module
-VariablesToExport = '*'
+VariablesToExport = @()
 
 # Aliases to export from this module
-AliasesToExport = '*'
+AliasesToExport = @()
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -92,7 +92,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = 'NewRelic', 'Monitoring', 'Deployment'
 
         # A URL to the license for this module.
         LicenseUri = 'https://raw.githubusercontent.com/dermeister0/PSGallery/master/LICENSE'
