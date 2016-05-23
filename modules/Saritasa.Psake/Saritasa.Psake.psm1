@@ -1,3 +1,5 @@
+$root = $PSScriptRoot
+
 <#
 .SYNOPSIS
 
@@ -29,5 +31,20 @@ function Register-HelpTask
     if ($Default)
     {
         Task default -depends $Name -description 'Show automatically generated help.'
+    }
+}
+
+function Register-UpdateGalleryTask
+{
+    Task 'update-gallery' -description 'Update all modules from Saritasa PS Gallery.' `
+    {
+        $InformationPreference = 'Continue'
+    
+        Get-ChildItem -Path $root -Include 'Saritasa*.ps*1' -Recurse | ForEach-Object `
+            {
+                Write-Information "Updating $($_.Name)..."
+                Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dermeister0/PSGallery/master/modules/$($_.BaseName)/$($_.Name)" -OutFile "$root\$($_.Name)"
+                Write-Information 'OK'
+            }
     }
 }
