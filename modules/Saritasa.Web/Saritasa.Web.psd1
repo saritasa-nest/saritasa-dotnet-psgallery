@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Web'
 
 # Version number of this module.
-ModuleVersion = '1.3.5'
+ModuleVersion = '1.3.6'
 
 # ID used to uniquely identify this module
 GUID = '6aeb9fa0-7096-4488-9d49-4f16578d7be0'
@@ -45,7 +45,7 @@ Description = 'Contains various methods for web requests and SSL handling.'
 # CLRVersion = ''
 
 # Processor architecture (None, X86, Amd64) required by this module
-# ProcessorArchitecture = ''
+ProcessorArchitecture = 'None'
 
 # Modules that must be imported into the global environment prior to importing this module
 # RequiredModules = @()
@@ -69,13 +69,13 @@ Description = 'Contains various methods for web requests and SSL handling.'
 FunctionsToExport = @('Update-SslCheckProcedure', 'Import-SslCertificate')
 
 # Cmdlets to export from this module
-CmdletsToExport = '*'
+CmdletsToExport = @()
 
 # Variables to export from this module
-VariablesToExport = '*'
+VariablesToExport = @()
 
 # Aliases to export from this module
-AliasesToExport = '*'
+AliasesToExport = @()
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
