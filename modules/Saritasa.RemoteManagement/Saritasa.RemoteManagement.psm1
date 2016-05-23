@@ -1,22 +1,15 @@
 $credential = $null
 
-function Set-RemoteManagementCredentials
+function Set-RemoteManagementCredential
 {
     param
     (
-        [string] $Username,
-        [string] $Password,
-        [System.Management.Automation.PSCredential] $Credential
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential
     )
 
-    if ($Username)
-    {
-        $script:credential = New-Object System.Management.Automation.PSCredential($Username, (ConvertTo-SecureString $Password -AsPlainText -Force))
-    }
-    else
-    {
-        $script:credential = $Credential
-    }
+    $script:credential = $Credential
 }
 
 function ExecuteAppCmd
@@ -47,7 +40,6 @@ function ExecuteAppCmd
     else # Local server.
     {
         Invoke-Command { $config | &$appCmd $Arguments }
-        $exitCode = $LASTEXITCODE
     }
     
     if ($LASTEXITCODE)
@@ -92,7 +84,7 @@ function GetAppCmdOutput
     $output
 }
 
-function Import-AppPools
+function Import-AppPool
 {
     param
     (
@@ -106,7 +98,7 @@ function Import-AppPools
     'App pools are updated.'
 }
 
-function Import-Sites
+function Import-Site
 {
     param
     (
@@ -129,7 +121,7 @@ function CreateOutputDirectory([string] $Filename)
     }
 }
 
-function Export-AppPools
+function Export-AppPool
 {
     param
     (
@@ -144,7 +136,7 @@ function Export-AppPools
     $xml | Set-Content $OutputFilename
 }
 
-function Export-Sites
+function Export-Site
 {
     param
     (
@@ -172,6 +164,9 @@ function Start-RemoteSession
 
 function Install-Iis
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "",
+                                                       Scope="Function", Target="*")]
+
     param
     (
         [Parameter(Mandatory = $true)]
@@ -184,7 +179,7 @@ function Install-Iis
     $session = Start-RemoteSession $ServerHost
     
     Invoke-Command -Session $session -ScriptBlock { Add-WindowsFeature Web-Server, Web-Asp-Net45 }
-    Write-Host 'IIS is set up successfully.'
+    Write-Information 'IIS is set up successfully.'
 
     if ($ManagementService)
     {
@@ -207,7 +202,7 @@ function Install-Iis
             {
                 Remove-WebSite -Name 'Default Web Site'
                 Get-ChildItem C:\inetpub\wwwroot -Recurse | Remove-Item -Recurse
-                Write-Host 'Default Web Site is deleted.'
+                Write-Information 'Default Web Site is deleted.'
             }
         }
 
@@ -256,7 +251,9 @@ function Install-WebManagementService
             # Replace WMSvc-HOST with HOST certificate. It should be generated already during WinRM configuration.
             Import-Module WebAdministration
             $hostname = [System.Net.Dns]::GetHostByName('localhost').Hostname
-            $thumbprint = Get-ChildItem -Path Cert:\LocalMachine\My | where { $_.Subject -EQ "CN=$hostname" } | select -First 1 -ExpandProperty Thumbprint
+            $thumbprint = Get-ChildItem -Path Cert:\LocalMachine\My |
+                Where-Object { $_.Subject -EQ "CN=$hostname" } |
+                Select-Object -First 1 -ExpandProperty Thumbprint
             if (!$thumbprint)
             {
                 "SSL certificate for $hostname host is not found."
@@ -271,7 +268,7 @@ function Install-WebManagementService
             Start-Service WMSVC
         }
 
-    Write-Host 'Web management service is installed and configured.'
+    Write-Information 'Web management service is installed and configured.'
 }
 
 function Install-WebDeploy
@@ -290,7 +287,7 @@ function Install-WebDeploy
             # 2.0 = {5134B35A-B559-4762-94A4-FD4918977953}
             # 3.5 = {3674F088-9B90-473A-AAC3-20A00D8D810C}
             $webDeploy36Guid = '{ED4CC1E5-043E-4157-8452-B5E533FE2BA1}'
-            $installedProduct = Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber = '$webDeploy36Guid'"
+            $installedProduct = Get-CimInstance -Class Win32_Product -Filter "IdentifyingNumber = '$webDeploy36Guid'"
             
             if ($installedProduct)
             {
@@ -357,7 +354,7 @@ function Install-UrlRewrite
     Invoke-Command -Session $session -ScriptBlock `
         {
             $urlRewrite20Guid = '{08F0318A-D113-4CF0-993E-50F191D397AD}'
-            $installedProduct = Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber = '$urlRewrite20Guid'"
+            $installedProduct = Get-CimInstance -Class Win32_Product -Filter "IdentifyingNumber = '$urlRewrite20Guid'"
             
             if ($installedProduct)
             {
@@ -407,11 +404,11 @@ function Install-MsiPackage
     
     Invoke-Command -Session $session -ScriptBlock `
         {
-            $installedProduct = Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber = '$using:ProductId'"
+            $installedProduct = Get-CimInstance -Class Win32_Product -Filter "IdentifyingNumber = '$using:ProductId'"
             
             if ($installedProduct)
             {
-                Write-Host "$using:ProductName is installed already."
+                Write-Information "$using:ProductName is installed already."
             }
             else
             {       
@@ -421,7 +418,7 @@ function Install-MsiPackage
                     throw 'MsiExec failed.'
                 }
                 
-                Write-Host "$using:ProductName is installed."
+                Write-Information "$using:ProductName is installed."
             }
         }
 }

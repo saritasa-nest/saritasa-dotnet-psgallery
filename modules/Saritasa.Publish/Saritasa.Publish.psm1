@@ -147,5 +147,5 @@ function Invoke-FullPublish
     
     Invoke-ProjectBuildAndPublish $ProjectFilename $PublishDir $InstallUrl
     Update-PublishVersion $PublishDir $newVersion
-    Write-Host "Published $projectName $newVersion to `"$PublishDir`" directory." -ForegroundColor Green
+    Write-Information "Published $projectName $newVersion to `"$PublishDir`" directory."
 }
