@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Psake'
 
 # Version number of this module.
-ModuleVersion = '1.1.1'
+ModuleVersion = '1.1.2'
 
 # ID used to uniquely identify this module
 GUID = '93095d01-c190-477a-be32-4bc76b9f9f7c'
@@ -66,7 +66,7 @@ RequiredModules = @('psake')
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = 'Register-HelpTask'
+FunctionsToExport = 'Register-HelpTask', 'Register-UpdateGalleryTask'
 
 # Cmdlets to export from this module
 CmdletsToExport = @()
