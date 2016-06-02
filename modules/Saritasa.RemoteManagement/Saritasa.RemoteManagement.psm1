@@ -81,7 +81,7 @@ function GetAppCmdOutput
         throw 'AppCmd failed.'
     }
     
-    $output
+    $output | Where-Object { $_.Length -ne 0 }
 }
 
 function Import-AppPool
