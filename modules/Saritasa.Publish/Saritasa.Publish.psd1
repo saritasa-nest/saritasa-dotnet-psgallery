@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Publish'
 
 # Version number of this module.
-ModuleVersion = '1.5.2'
+ModuleVersion = '1.6.0'
 
 # ID used to uniquely identify this module
 GUID = '9295bc21-bc74-45bb-9d13-62acd728e4cc'

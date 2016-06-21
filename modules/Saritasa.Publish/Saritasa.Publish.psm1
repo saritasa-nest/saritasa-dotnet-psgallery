@@ -79,7 +79,8 @@ function Invoke-ProjectBuildAndPublish
         [string] $ProjectFilename,
         [Parameter(Mandatory = $true)]
         [string] $PublishDir,
-        [string] $InstallUrl
+        [string] $InstallUrl,
+        [string[]] $BuildParams
     )
 
     if (Test-Path $PublishDir)
@@ -87,7 +88,7 @@ function Invoke-ProjectBuildAndPublish
         Remove-Item $PublishDir -Recurse -ErrorAction Stop
     }
 
-    $params = @('/m', $ProjectFilename, '/t:Publish', '/p:Configuration=Release', "/p:PublishDir=$PublishDir\", '/verbosity:normal')
+    $params = @('/m', $ProjectFilename, '/t:Publish', '/p:Configuration=Release', "/p:PublishDir=$PublishDir\", '/verbosity:normal') + $BuildParams
     
     if ($InstallUrl)
     {
@@ -128,7 +129,8 @@ function Invoke-FullPublish
         [Parameter(Mandatory = $true)]
         [string] $PublishDir,
         [string] $InstallUrl,
-        [string] $Version
+        [string] $Version,
+        [string[]] $BuildParams
     )
 
     if ($Version)
@@ -145,7 +147,7 @@ function Invoke-FullPublish
     
     $projectName = (Get-Item $ProjectFilename).BaseName
     
-    Invoke-ProjectBuildAndPublish $ProjectFilename $PublishDir $InstallUrl
+    Invoke-ProjectBuildAndPublish $ProjectFilename $PublishDir $InstallUrl -BuildParams $BuildParams
     Update-PublishVersion $PublishDir $newVersion
     Write-Information "Published $projectName $newVersion to `"$PublishDir`" directory."
 }
