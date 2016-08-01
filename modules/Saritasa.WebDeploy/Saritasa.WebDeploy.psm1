@@ -161,6 +161,7 @@ function Invoke-WebDeployment
         [Parameter(Mandatory = $true)]
         [string] $SiteName,
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string] $Application
     )
 
