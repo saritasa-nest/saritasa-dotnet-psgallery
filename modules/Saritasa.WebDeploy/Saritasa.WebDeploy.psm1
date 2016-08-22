@@ -174,7 +174,8 @@ function Invoke-WebDeployment
         [string] $SiteName,
         [Parameter(Mandatory = $true)]
         [AllowEmptyString()]
-        [string] $Application
+        [string] $Application,
+        [string[]] $MSDeployParams
     )
 
     Assert-WebDeployCredential
@@ -188,7 +189,7 @@ function Invoke-WebDeployment
               '-verb:sync', '-disableLink:AppPoolExtension', '-disableLink:ContentExtension', '-disableLink:CertificateExtension',
               '-allowUntrusted', "-setParam:name='IIS Web Application Name',value='$SiteName/$Application")
     
-    $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
+    $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args $MSDeployParams
     if ($result.ExitCode)
     {
         throw 'Msdeploy failed.'
