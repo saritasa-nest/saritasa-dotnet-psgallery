@@ -13,7 +13,7 @@ function Set-RemoteManagementCredential
     $script:credential = $Credential
 }
 
-function Set-WinrmPort
+function Set-RemoteManagementPort
 {
     param
     (

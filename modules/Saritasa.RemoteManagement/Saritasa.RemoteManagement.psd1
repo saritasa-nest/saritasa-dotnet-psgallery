@@ -66,7 +66,7 @@ Description = 'Contains functions to execute actions on a remote server. Allows 
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = 'Set-RemoteManagementCredential', 'Import-AppPool', 'Import-Site',
+FunctionsToExport = 'Set-RemoteManagementCredential', 'Set-RemoteManagementPort', 'Import-AppPool', 'Import-Site',
     'Export-AppPool', 'Export-Site', 'Start-RemoteSession', 'Install-Iis',
     'Install-WebManagementService', 'Install-WebDeploy', 'Invoke-RemoteScript',
     'Install-UrlRewrite', 'Install-MsiPackage', 'Get-RemoteTempPath', 'Import-SslCertificate'

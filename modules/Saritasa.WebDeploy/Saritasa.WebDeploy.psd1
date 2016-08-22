@@ -66,7 +66,7 @@ FormatsToProcess = @()
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = @('Set-MsdeployPath', 'Set-WebDeployCredential',
+FunctionsToExport = @('Set-MsdeployPath', 'Set-MsdeployPort', 'Set-WebDeployCredential',
     'Invoke-PackageBuild', 'Start-AppPool', 'Stop-AppPool',
     'Invoke-WebDeployment', 'Sync-IisApp', 'Sync-WebContent')
 
