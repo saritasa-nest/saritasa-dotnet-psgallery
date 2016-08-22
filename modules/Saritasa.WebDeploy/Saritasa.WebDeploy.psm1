@@ -181,15 +181,13 @@ function Invoke-WebDeployment
     Assert-WebDeployCredential
     "Deploying $PackagePath to $ServerHost/$Application..."
     
-    "https://${ServerHost}:$msdeployPort/msdeploy.axd"
-    
-    $destArg = 
     $args = @("-source:package='$PackagePath'",
               ("-dest:auto,computerName='https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName',includeAcls='False'," + $credential),
               '-verb:sync', '-disableLink:AppPoolExtension', '-disableLink:ContentExtension', '-disableLink:CertificateExtension',
-              '-allowUntrusted', "-setParam:name='IIS Web Application Name',value='$SiteName/$Application")
+              '-allowUntrusted', "-setParam:name='IIS Web Application Name',value='$SiteName/$Application'")
+    $args += $MSDeployParams
     
-    $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args $MSDeployParams
+    $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
     if ($result.ExitCode)
     {
         throw 'Msdeploy failed.'
