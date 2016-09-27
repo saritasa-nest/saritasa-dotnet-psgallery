@@ -1,4 +1,5 @@
 $credential = $null
+$winrmPort = 5986
 
 function Set-RemoteManagementCredential
 {
@@ -10,6 +11,17 @@ function Set-RemoteManagementCredential
     )
 
     $script:credential = $Credential
+}
+
+function Set-RemoteManagementPort
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [int] $Port
+    )
+
+    $script:winrmPort = $Port
 }
 
 function ExecuteAppCmd
@@ -159,7 +171,7 @@ function Start-RemoteSession
         [string] $ServerHost
     )
     
-    New-PSSession -UseSSL -Credential $credential -ComputerName ([System.Net.Dns]::GetHostByName($ServerHost).Hostname)
+    New-PSSession -UseSSL -Credential $credential -ComputerName ([System.Net.Dns]::GetHostByName($ServerHost).Hostname) -Port $winrmPort
 }
 
 function Install-Iis

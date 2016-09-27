@@ -1,4 +1,5 @@
 $msdeployPath = "$env:ProgramFiles\IIS\Microsoft Web Deploy V3"
+$msdeployPort = 8172
 $credential = ''
 
 function Set-MsdeployPath
@@ -10,6 +11,17 @@ function Set-MsdeployPath
     )
 
     $script:msdeployPath = $Path
+}
+
+function Set-MsdeployPort
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [int] $Port
+    )
+
+    $script:msdeployPort = $Port
 }
 
 <#
@@ -102,7 +114,7 @@ function Start-AppPool
     'Starting app pool...'
     
     $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StartAppPool'," +
-        "computername=https://${ServerHost}:8172/msdeploy.axd?site=$SiteName," + $credential
+        "computername=https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName," + $credential
     $args = @('-verb:sync', '-source:recycleApp', $destArg)
     
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
@@ -134,7 +146,7 @@ function Stop-AppPool
     'Stopping app pool...'
 
     $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StopAppPool'," +
-        "computername=https://${ServerHost}:8172/msdeploy.axd?site=$SiteName," + $credential
+        "computername=https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName," + $credential
     $args = @('-verb:sync', '-source:recycleApp', $destArg)
     
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
@@ -162,21 +174,20 @@ function Invoke-WebDeployment
         [string] $SiteName,
         [Parameter(Mandatory = $true)]
         [AllowEmptyString()]
-        [string] $Application
+        [string] $Application,
+        [string[]] $MSDeployParams
     )
 
     Assert-WebDeployCredential
     "Deploying $PackagePath to $ServerHost/$Application..."
     
-    "https://${ServerHost}:8172/msdeploy.axd"
-    
-    $destArg = 
     $args = @("-source:package='$PackagePath'",
-              ("-dest:auto,computerName='https://${ServerHost}:8172/msdeploy.axd?site=$SiteName',includeAcls='False'," + $credential),
+              ("-dest:auto,computerName='https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName',includeAcls='False'," + $credential),
               '-verb:sync', '-disableLink:AppPoolExtension', '-disableLink:ContentExtension', '-disableLink:CertificateExtension',
-              '-allowUntrusted', "-setParam:name='IIS Web Application Name',value='$SiteName/$Application")
+              '-allowUntrusted', "-setParam:name='IIS Web Application Name',value='$SiteName/$Application'")
+    $args += $MSDeployParams
     
-    $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
+    $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
     if ($result.ExitCode)
     {
         throw 'Msdeploy failed.'
@@ -202,7 +213,7 @@ function Sync-IisApp
 
     Assert-WebDeployCredential
     $args = @('-verb:sync', "-source:iisApp='$SiteName/FormI9Verify'",
-              ("-dest:auto,computerName='https://${DestinationServer}:8172/msdeploy.axd?site=$SiteName'," + $credential))
+              ("-dest:auto,computerName='https://${DestinationServer}:$msdeployPort/msdeploy.axd?site=$SiteName'," + $credential))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
     if ($result.ExitCode)
@@ -231,7 +242,7 @@ function Sync-WebContent
 
     Assert-WebDeployCredential
     $args = @('-verb:sync', "-source:contentPath='$ContentPath'",
-              ("-dest:auto,computerName='https://${DestinationServer}:8172/msdeploy.axd?site=$SiteName'," + $credential))
+              ("-dest:auto,computerName='https://${DestinationServer}:$msdeployPort/msdeploy.axd?site=$SiteName'," + $credential))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
     if ($result.ExitCode)
