@@ -95,10 +95,10 @@ PrivateData = @{
         Tags = 'NewRelic', 'Monitoring', 'Deployment'
 
         # A URL to the license for this module.
-        LicenseUri = 'https://raw.githubusercontent.com/dermeister0/PSGallery/master/LICENSE'
+        LicenseUri = 'https://raw.githubusercontent.com/Saritasa/PSGallery/master/LICENSE'
 
         # A URL to the main website for this project.
-        ProjectUri = 'https://github.com/dermeister0/PSGallery'
+        ProjectUri = 'https://github.com/Saritasa/PSGallery'
 
         # A URL to an icon representing this module.
         # IconUri = ''

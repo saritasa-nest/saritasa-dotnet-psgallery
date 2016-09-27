@@ -44,7 +44,7 @@ function Register-UpdateGalleryTask
         Get-ChildItem -Path $root -Include 'Saritasa*.ps*1' -Recurse | ForEach-Object `
             {
                 Write-Information "Updating $($_.Name)..."
-                Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dermeister0/PSGallery/master/modules/$($_.BaseName)/$($_.Name)" -OutFile "$root\$($_.Name)"
+                Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Saritasa/PSGallery/master/modules/$($_.BaseName)/$($_.Name)" -OutFile "$root\$($_.Name)"
                 Write-Information 'OK'
             }
     }

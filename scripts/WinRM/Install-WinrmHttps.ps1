@@ -12,9 +12,9 @@
 
 .TAGS WinRM
 
-.LICENSEURI https://raw.githubusercontent.com/dermeister0/PSGallery/master/LICENSE
+.LICENSEURI https://raw.githubusercontent.com/Saritasa/PSGallery/master/LICENSE
 
-.PROJECTURI https://github.com/dermeister0/PSGallery
+.PROJECTURI https://github.com/Saritasa/PSGallery
 
 .ICONURI 
 
