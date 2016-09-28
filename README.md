@@ -6,15 +6,16 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 
 | Name                      | Description                                                                                                                       |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Saritasa.Build            | Contains functions to execute MSBuild targets, restore NuGet packages, run EntityFramework migrations.                            |
-| Saritasa.NewRelic         | Contains functions to call New Relic (newrelic.com) service APIs.                                                                 |
-| Saritasa.Prtg             | Contains functions to call PRTG monitoring service (www.paessler.com/prtg) APIs.                                                  |
-| Saritasa.Psake            | Contains common Psake tasks.                                                                                                      |
-| Saritasa.Publish          | Contains methods to generate ClickOnce packages.                                                                                  |
-| Saritasa.RemoteManagement | Contains functions to execute actions on a remote server. Allows to set up IIS, import sites and app pools, install MSI packages. |
-| Saritasa.Test             | Contains functions to run unit tests.                                                                                             |
-| Saritasa.Web              | Contains various methods for web requests and SSL handling.                                                                       |
-| Saritasa.WebDeploy        | Contains functions to control app pools and synchronize IIS web sites using Microsoft WebDeploy tool.                             |
+| [Saritasa.Build](docs/Saritasa.Build.md)                               | Contains functions to execute MSBuild targets, restore NuGet packages, run EntityFramework migrations. |
+| [Saritasa.NewRelic](docs/Saritasa.NewRelic.md)                         | Contains functions to call New Relic (newrelic.com) service APIs. |
+| [Saritasa.Prtg](docs/Saritasa.Prtg.md)                                 | Contains functions to call PRTG monitoring service (www.paessler.com/prtg) APIs. |
+| [Saritasa.Web](docs/Saritasa.Web.md)                                   | Contains various methods for web requests and SSL handling. |
+| [Saritasa.Psake](docs/Saritasa.Psake.md)                               | Contains common Psake tasks. |
+| [Saritasa.Publish](docs/Saritasa.Publish.md)                           | Contains methods to generate ClickOnce packages. |
+| [Saritasa.RemoteManagement](docs/Saritasa.RemoteManagement.md)         | Contains functions to execute actions on a remote server. Allows to set up IIS, import sites and app pools, install MSI packages. |
+| [Saritasa.Test](docs/Saritasa.Test.md)                                 | Contains functions to run unit tests. |
+| [Saritasa.Web](docs/Saritasa.Web.md)                                   | Contains various methods for web requests and SSL handling. |
+| [Saritasa.WebDeploy](docs/Saritasa.WebDeploy.md)                       | Contains functions to control app pools and synchronize IIS web sites using Microsoft WebDeploy tool. |
 
 # Scripts
 
