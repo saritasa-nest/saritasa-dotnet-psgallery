@@ -19,7 +19,26 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 
 # Scripts
 
-TODO: Add description.
+## Psake
+
+| Name                                                             | Description                                                                                                                                     |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Saritasa.PsakeExtensions.ps1](docs/Saritasa.PsakeExtensions.md) | The script is intended for dot-sourcing into default.ps1 (main file for Psake tasks). It allows to override Psake properties from another file. |
+
+## WebDeploy
+
+Microsoft scripts to set up msdeploy for web site. They are modified to skip SKU check for modern Windows versions.
+
+| Name                      | Description     |
+| ------------------------- | --------------- |
+| AddDelegationRules.ps1    |                 |
+| SetupSiteForPublish.ps1   |                 |
+
+## WinRM
+
+| Name                      | Description                                               |
+| ------------------------- | --------------------------------------------------------- |
+| Install-WinrmHttps.ps1    | Configures server to accept WinRM connections over HTTPS. |
 
 # Links
 

@@ -25,6 +25,10 @@ Task generate-docs `
         }
     
     Remove-Item .\modules\Saritasa.Prtg\Saritasa.Web.ps*1
+
+    Copy-Item .\scripts\Psake\Saritasa.PsakeExtensions.ps1 .\scripts\Psake\Saritasa.PsakeExtensions.psm1
+    GenerateMarkdown .\scripts\Psake\Saritasa.PsakeExtensions.psm1 Saritasa.PsakeExtensions
+    Remove-Item .\scripts\Psake\Saritasa.PsakeExtensions.psm1
 }
 
 function GenerateMarkdown([string] $fileName, [string] $moduleName)
