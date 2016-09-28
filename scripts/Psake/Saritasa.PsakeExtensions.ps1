@@ -10,25 +10,28 @@
 
 .COPYRIGHT (c) 2016 Saritasa. All rights reserved.
 
-.TAGS WinRM
+.TAGS Psake
 
 .LICENSEURI https://raw.githubusercontent.com/Saritasa/PSGallery/master/LICENSE
 
 .PROJECTURI https://github.com/Saritasa/PSGallery
 
-.ICONURI 
+.ICONURI
 
-.EXTERNALMODULEDEPENDENCIES 
+.EXTERNALMODULEDEPENDENCIES
 
-.REQUIREDSCRIPTS 
+.REQUIREDSCRIPTS
 
-.EXTERNALSCRIPTDEPENDENCIES 
+.EXTERNALSCRIPTDEPENDENCIES
 
 .RELEASENOTES
 
 .SYNOPSIS
 The script is intended for dot-sourcing into default.ps1 (main file for Psake tasks). It allows to override Psake properties from another file.
 
+.DESCRIPTION
+Dot source the script:
+. .\Saritasa.PsakeExtensions.ps1
 #>
 
 <#

@@ -46,11 +46,14 @@ Microsoft scripts to set up msdeploy for web site. They are modified to skip SKU
 
 * [PowerShell Gallery](https://www.powershellgallery.com/items)
 * [Carbon](http://get-carbon.org/)
+* [PowerShell Community Extensions](http://pscx.codeplex.com/)
+* [Script Center](https://gallery.technet.microsoft.com/scriptcenter/)
 * [PsGet](http://psget.net/)
 * [ChasFlorell's PowerShell snippets](https://github.com/ChaseFlorell/Powershell-Snippets/blob/master/dot-source-external-scripts.ps1)
 
 ## Documentation
 
+* [SS64 PowerShell Docs](http://ss64.com/ps/)
 * [Hey, Scripting Guy!](https://blogs.technet.microsoft.com/heyscriptingguy/)
 * [Weekend Scripter: The Best Ways to Learn PowerShell](https://blogs.technet.microsoft.com/heyscriptingguy/2015/01/04/weekend-scripter-the-best-ways-to-learn-powershell/)
 * [Effective Windows PowerShell: The Free eBook](https://rkeithhill.wordpress.com/2009/03/08/effective-windows-powershell-the-free-ebook/)
