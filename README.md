@@ -23,6 +23,7 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 
 | Name                                                             | Description                                                                                                                                     |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Saritasa.AdminTasks.ps1                                          | Contains Psake tasks for remote server administration.                                                                                          |
 | [Saritasa.PsakeExtensions.ps1](docs/Saritasa.PsakeExtensions.md) | The script is intended for dot-sourcing into default.ps1 (main file for Psake tasks). It allows to override Psake properties from another file. |
 
 ## WebDeploy
