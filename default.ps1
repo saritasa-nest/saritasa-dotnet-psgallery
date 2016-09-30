@@ -15,7 +15,7 @@ Task analyze -description 'Run PowerShell static analysis tool on all modules an
         -Exclude 'AddDelegationRules.ps1', 'SetupSiteForPublish.ps1' | Invoke-ScriptAnalyzer
 }
 
-Task generate-docs `
+Task generate-docs -depends build `
 {
     $descriptionRegex = [regex] "Description = '(.*)'"
 
