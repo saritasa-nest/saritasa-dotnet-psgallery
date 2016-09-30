@@ -1,2 +1,5 @@
 modules/nuget.exe
 *.bak
+*.dll
+tmp/
+*.exe

@@ -1,4 +1,23 @@
-﻿function Invoke-NugetRestore
+﻿function Install-NugetCli
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $Destination
+    )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    $nugetExePath = "$Destination\nuget.exe"
+    
+    if (!(Test-Path $nugetExePath))
+    {
+        Invoke-WebRequest 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe' -OutFile $nugetExePath
+    }
+}
+
+function Invoke-NugetRestore
 {
     [CmdletBinding()]
     param
@@ -9,13 +28,9 @@
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
+    Install-NugetCli -Destination $PSScriptRoot
     $nugetExePath = "$PSScriptRoot\nuget.exe"
-    
-    if (!(Test-Path $nugetExePath))
-    {
-        Invoke-WebRequest 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe' -OutFile $nugetExePath
-    }
-    
+
     &$nugetExePath 'restore' $SolutionPath
     if ($LASTEXITCODE)
     {
