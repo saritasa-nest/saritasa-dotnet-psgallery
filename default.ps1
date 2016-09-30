@@ -11,7 +11,8 @@ Task generate-docs `
     Write-Output '| Name                      | Description                                                                                                                      |'
     Write-Output '| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |'
     
-    Copy-Item .\modules\Saritasa.Web\Saritasa.Web.ps*1 C:\Work\PSGallery\modules\Saritasa.Prtg
+    Import-Module .\modules\Saritasa.General\Saritasa.General.psd1
+    Import-Module .\modules\Saritasa.Web\Saritasa.Web.psd1
 
     Get-ChildItem -Include '*.psd1' -Recurse | ForEach-Object `
         {
@@ -35,5 +36,4 @@ function GenerateMarkdown([string] $fileName, [string] $moduleName)
 {
     Import-Module $fileName
     .\tools\psDoc\psDoc.ps1 -moduleName $moduleName -template .\tools\psDoc\out-markdown-template.ps1 -outputDir .\docs -fileName "$moduleName.md"
-    Remove-Module $moduleName
 }
