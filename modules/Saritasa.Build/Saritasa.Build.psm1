@@ -1,10 +1,13 @@
 ﻿function Invoke-NugetRestore
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Path to solution. All NuGet packages from included projects will be restored.')]
         [string] $SolutionPath
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $nugetExePath = "$PSScriptRoot\nuget.exe"
     
@@ -22,6 +25,7 @@
 
 function Invoke-SolutionBuild
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Path to solution.')]
@@ -30,11 +34,14 @@ function Invoke-SolutionBuild
         [string] $Configuration
     )
 
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     Invoke-ProjectBuild $SolutionPath $Configuration
 }
 
 function Invoke-ProjectBuild
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Path to project.')]
@@ -44,6 +51,8 @@ function Invoke-ProjectBuild
         [string] $Target = 'Build',
         [string[]] $BuildParams
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     msbuild.exe $ProjectPath '/m' "/t:$Target" "/p:Configuration=$Configuration" '/verbosity:normal' $BuildParams
     if ($LASTEXITCODE)
@@ -69,6 +78,8 @@ function Update-AssemblyInfoFile
         [Parameter(Mandatory = $true, HelpMessage = 'Version string in major.minor.build.revision format.')]
         [string] $Version
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $assemblyVersionPattern = 'AssemblyVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)'
     $fileVersionPattern = 'AssemblyFileVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)'
@@ -99,11 +110,14 @@ function Update-AssemblyInfoFile
 
 function Copy-DotnetConfig
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Path to App.config.template or Web.config.template file.')]
         [string] $TemplateFilename
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $configFilename = $TemplateFilename -replace '\.template', ''
     if (!(Test-Path $configFilename))
@@ -122,6 +136,7 @@ configuration file.
 #>
 function Invoke-EFMigrate
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Path to assembly file with migrations.')]
@@ -129,6 +144,8 @@ function Invoke-EFMigrate
         [Parameter(HelpMessage = 'Path to assembly .config file. If not specified default or parent Web.config will be used.')]
         [string] $ConfigFilename
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     # Format and validate params
     if (!$ConfigFilename)

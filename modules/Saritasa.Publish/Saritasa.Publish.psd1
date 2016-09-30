@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Publish'
 
 # Version number of this module.
-ModuleVersion = '1.6.0'
+ModuleVersion = '1.7.0'
 
 # ID used to uniquely identify this module
 GUID = '9295bc21-bc74-45bb-9d13-62acd728e4cc'
@@ -48,7 +48,9 @@ Description = 'Contains methods to generate ClickOnce packages.'
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-# RequiredModules = @()
+RequiredModules = @(
+    @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' }
+)
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -66,8 +68,8 @@ Description = 'Contains methods to generate ClickOnce packages.'
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = 'Set-ApplicationVersion', 'Update-ApplicationRevision',
-    'Invoke-ProjectBuildAndPublish', 'Invoke-FullPublish'
+FunctionsToExport = @('Set-ApplicationVersion', 'Update-ApplicationRevision',
+    'Invoke-ProjectBuildAndPublish', 'Invoke-FullPublish')
 
 # Cmdlets to export from this module
 CmdletsToExport = @()

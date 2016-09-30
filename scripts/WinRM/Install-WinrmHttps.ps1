@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 1.4.2
+.VERSION 1.5.0
 
 .GUID 3ccd77cd-d928-4e72-98fc-82e3417f3427
 
@@ -37,18 +37,24 @@ Generates self-signed certificate or uses existing. Configures HTTPS listener fo
 
 For Windows Server 2008 you should execute following statement to disable remote UAC:
 Set-ItemProperty –Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System –Name LocalAccountTokenFilterPolicy –Value 1 –Type DWord
-#> 
+#>
+
+[CmdletBinding()]
 param
 (
     [string] $CertificateThumbprint,
     [switch] $Force
 )
 
+if (!$PSBoundParameters.ContainsKey('InformationAction'))
+{
+    $InformationPreference = 'Continue'
+}
+
 trap
 {
     Write-Error 'FAILURE'
     $_
-    $host.SetShouldExit(1)
     exit
 }
 

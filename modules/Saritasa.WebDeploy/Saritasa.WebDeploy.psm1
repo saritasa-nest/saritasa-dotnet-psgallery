@@ -4,22 +4,28 @@ $credential = ''
 
 function Set-MsdeployPath
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
         [string] $Path
     )
 
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     $script:msdeployPath = $Path
 }
 
 function Set-MsdeployPort
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
         [int] $Port
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $script:msdeployPort = $Port
 }
@@ -36,12 +42,15 @@ https://blogs.msdn.microsoft.com/carlosag/2011/12/13/using-windows-authenticatio
 #>
 function Set-WebDeployCredential
 {
+    [CmdletBinding()]
     param
     (
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
         $Credential
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $script:credential = ''
     if ($Credential)
@@ -70,6 +79,7 @@ Invoke-PackageBuild src/WebApp.csproj WebApp.zip -BuildParams ('/p:AspnetMergePa
 #>
 function Invoke-PackageBuild
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -81,6 +91,8 @@ function Invoke-PackageBuild
         [bool] $Precompile = $true,
         [string[]] $BuildParams
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $basicBuildParams = ('/m', '/t:Package', "/p:Configuration=$Configuration",
         '/p:IncludeSetAclProviderOnDestination=False', "/p:PrecompileBeforePublish=$Precompile",
@@ -100,6 +112,7 @@ The recycleApp provider should be delegated to WDeployAdmin.
 #>
 function Start-AppPool
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -110,8 +123,10 @@ function Start-AppPool
         [string] $Application
     )
 
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     Assert-WebDeployCredential
-    'Starting app pool...'
+    Write-Information 'Starting app pool...'
     
     $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StartAppPool'," +
         "computername=https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName," + $credential
@@ -132,6 +147,7 @@ The recycleApp provider should be delegated to WDeployAdmin.
 #>
 function Stop-AppPool
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -142,8 +158,10 @@ function Stop-AppPool
         [string] $Application
     )
 
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     Assert-WebDeployCredential
-    'Stopping app pool...'
+    Write-Information 'Stopping app pool...'
 
     $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StopAppPool'," +
         "computername=https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName," + $credential
@@ -164,6 +182,7 @@ The recycleApp provider should be delegated to WDeployConfigWriter.
 #>
 function Invoke-WebDeployment
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -178,8 +197,10 @@ function Invoke-WebDeployment
         [string[]] $MSDeployParams
     )
 
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     Assert-WebDeployCredential
-    "Deploying $PackagePath to $ServerHost/$Application..."
+    Write-Information "Deploying $PackagePath to $ServerHost/$Application..."
     
     $args = @("-source:package='$PackagePath'",
               ("-dest:auto,computerName='https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName',includeAcls='False'," + $credential),
@@ -200,6 +221,7 @@ Copies IIS app content from local server to remote server.
 #>
 function Sync-IisApp
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -210,6 +232,8 @@ function Sync-IisApp
         [Parameter(Mandatory = $true)]
         [string] $DestinationServer
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Assert-WebDeployCredential
     $args = @('-verb:sync', "-source:iisApp='$SiteName/FormI9Verify'",
@@ -230,6 +254,7 @@ Synchronizes web site file structure between local and remote servers.
 #>
 function Sync-WebContent
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -239,6 +264,8 @@ function Sync-WebContent
         [Parameter(Mandatory = $true)]
         [string] $SiteName
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Assert-WebDeployCredential
     $args = @('-verb:sync', "-source:contentPath='$ContentPath'",

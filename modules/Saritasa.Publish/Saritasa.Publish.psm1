@@ -1,10 +1,13 @@
 ﻿function Get-VersionTemplate
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
         [string] $Filename
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $lines = Get-Content $Filename
     $regex = [regex] '<ApplicationVersion>(\d+\.\d+\.\d+\.).*</ApplicationVersion>'
@@ -13,6 +16,7 @@
 
 function Set-ApplicationVersion
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -20,6 +24,8 @@ function Set-ApplicationVersion
         [Parameter(Mandatory = $true)]
         [string] $Version
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
     $regex = [regex] '(<ApplicationVersion>)(.*)(</ApplicationVersion>)'
     
@@ -40,11 +46,14 @@ function Set-ApplicationVersion
 
 function Update-ApplicationRevision
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
         [string] $Filename
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $regex = [regex] "(<ApplicationRevision>)(\d+)(</ApplicationRevision>)"
     $lines = Get-Content $Filename
@@ -73,6 +82,7 @@ Copy ..\artifacts\publish.htm.template file to project directory and replace App
 #>
 function Invoke-ProjectBuildAndPublish
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -82,6 +92,8 @@ function Invoke-ProjectBuildAndPublish
         [string] $InstallUrl,
         [string[]] $BuildParams
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     if (Test-Path $PublishDir)
     {
@@ -109,6 +121,7 @@ function Invoke-ProjectBuildAndPublish
 
 function Update-PublishVersion
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -117,11 +130,14 @@ function Update-PublishVersion
         [string] $Version
     )
 
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     (Get-Content "$publishDir\publish.htm") -Replace "{VERSION}", $Version | Out-File "$PublishDir\publish.htm" -Encoding utf8
 }
 
 function Invoke-FullPublish
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -132,6 +148,8 @@ function Invoke-FullPublish
         [string] $Version,
         [string[]] $BuildParams
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     if ($Version)
     {

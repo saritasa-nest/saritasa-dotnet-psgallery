@@ -11,6 +11,7 @@ Initialize-Prtg prtg.local admin Qwerty123 @{ Server1 = 10123; Server2 = 10124; 
 #>
 function Initialize-Prtg
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -22,6 +23,8 @@ function Initialize-Prtg
         [Parameter(Mandatory = $true)]
         [hashtable] $Sensors
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
     $script:prtgUrl = $PrtgUrl
     $script:userName = $Credential.UserName
@@ -31,11 +34,14 @@ function Initialize-Prtg
 
 function Get-PrtgSensorId
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
         [string] $Server
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $sensorId = $sensors[$Server]
     if (!$sensorId)
@@ -48,30 +54,36 @@ function Get-PrtgSensorId
 
 function Start-PrtgSensor
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
         [string] $Server
     )
 
-    'Starting PRTG sensor...'
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    Write-Information 'Starting PRTG sensor...'
     $sensorId = Get-PrtgSensorId($Server)
     Update-SslCheckProcedure
     $status = (Invoke-WebRequest "$prtgUrl/api/pause.htm?id=$sensorId&action=1&pausemsg=Resumed by deployment script.&username=$username&password=$password").StatusDescription
-    "$status`n`n"
+    Write-Information "$status`n`n"
 }
 
 function Stop-PrtgSensor
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
         [string] $Server
     )
 
-    'Stopping PRTG sensor...'
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    Write-Information 'Stopping PRTG sensor...'
     $sensorId = Get-PrtgSensorId($Server)
     Update-SslCheckProcedure
     $status = (Invoke-WebRequest "$prtgUrl/api/pause.htm?id=$sensorId&action=0&pausemsg=Paused by deployment script.&username=$username&password=$password").StatusDescription
-    "$status`n`n"
+    Write-Information "$status`n`n"
 }

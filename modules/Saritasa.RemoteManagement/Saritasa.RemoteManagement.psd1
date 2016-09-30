@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.RemoteManagement'
 
 # Version number of this module.
-ModuleVersion = '1.12.0'
+ModuleVersion = '1.13.0'
 
 # ID used to uniquely identify this module
 GUID = '6e18f454-853c-413b-b614-39c8128c1399'
@@ -48,7 +48,9 @@ Description = 'Contains functions to execute actions on a remote server. Allows 
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-# RequiredModules = @()
+RequiredModules = @(
+    @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' }
+)
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -66,10 +68,10 @@ Description = 'Contains functions to execute actions on a remote server. Allows 
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = 'Set-RemoteManagementCredential', 'Set-RemoteManagementPort', 'Import-AppPool', 'Import-Site',
+FunctionsToExport = @('Set-RemoteManagementCredential', 'Set-RemoteManagementPort', 'Import-AppPool', 'Import-Site',
     'Export-AppPool', 'Export-Site', 'Start-RemoteSession', 'Install-Iis',
     'Install-WebManagementService', 'Install-WebDeploy', 'Invoke-RemoteScript',
-    'Install-UrlRewrite', 'Install-MsiPackage', 'Get-RemoteTempPath', 'Import-SslCertificate'
+    'Install-UrlRewrite', 'Install-MsiPackage', 'Get-RemoteTempPath', 'Import-SslCertificate')
 
 # Cmdlets to export from this module
 CmdletsToExport = @()

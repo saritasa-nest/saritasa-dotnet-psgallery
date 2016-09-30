@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Psake'
 
 # Version number of this module.
-ModuleVersion = '1.1.2'
+ModuleVersion = '1.2.0'
 
 # ID used to uniquely identify this module
 GUID = '93095d01-c190-477a-be32-4bc76b9f9f7c'
@@ -48,7 +48,10 @@ Description = 'Contains common Psake tasks.'
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @('psake')
+RequiredModules = @(
+    @{ ModuleName='psake'; ModuleVersion='4.6.0'; GUID='cfb53216-072f-4a46-8975-ff7e6bda05a5' }
+    @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' }
+)
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -66,7 +69,7 @@ RequiredModules = @('psake')
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = 'Register-HelpTask', 'Register-UpdateGalleryTask'
+FunctionsToExport = @('Register-HelpTask', 'Register-UpdateGalleryTask')
 
 # Cmdlets to export from this module
 CmdletsToExport = @()

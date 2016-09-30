@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Build'
 
 # Version number of this module.
-ModuleVersion = '1.8.1'
+ModuleVersion = '1.9.1'
 
 # ID used to uniquely identify this module
 GUID = '5d34804a-169a-4fb1-bc0d-cc81f925f992'
@@ -48,7 +48,9 @@ Description = 'Contains functions to execute MSBuild targets, restore NuGet pack
 ProcessorArchitecture = 'None'
 
 # Modules that must be imported into the global environment prior to importing this module
-# RequiredModules = @()
+RequiredModules = @(
+    @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' }
+)
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -66,9 +68,9 @@ ProcessorArchitecture = 'None'
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = 'Copy-DotnetConfig', 'Invoke-EFMigrate',
+FunctionsToExport = @('Copy-DotnetConfig', 'Invoke-EFMigrate',
     'Invoke-NugetRestore', 'Invoke-ProjectBuild',
-    'Invoke-SolutionBuild', 'Update-AssemblyInfoFile'
+    'Invoke-SolutionBuild', 'Update-AssemblyInfoFile')
 
 # Cmdlets to export from this module
 CmdletsToExport = @()

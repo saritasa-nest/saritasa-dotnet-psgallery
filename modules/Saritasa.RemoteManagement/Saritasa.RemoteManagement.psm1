@@ -3,6 +3,7 @@ $winrmPort = 5986
 
 function Set-RemoteManagementCredential
 {
+    [CmdletBinding()]
     param
     (
         [System.Management.Automation.PSCredential]
@@ -10,16 +11,21 @@ function Set-RemoteManagementCredential
         $Credential
     )
 
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     $script:credential = $Credential
 }
 
 function Set-RemoteManagementPort
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
         [int] $Port
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $script:winrmPort = $Port
 }
@@ -98,6 +104,7 @@ function GetAppCmdOutput
 
 function Import-AppPool
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -106,12 +113,15 @@ function Import-AppPool
         [string] $ConfigFilename
     )
 
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     ExecuteAppCmd $ServerHost $ConfigFilename @('add', 'apppool', '/in') $false
-    'App pools are updated.'
+    Write-Information 'App pools are updated.'
 }
 
 function Import-Site
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -120,8 +130,10 @@ function Import-Site
         [string] $ConfigFilename
     )
 
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     ExecuteAppCmd $ServerHost $ConfigFilename @('add', 'site', '/in') $false
-    'Web sites are updated.'
+    Write-Information 'Web sites are updated.'
 }
 
 function CreateOutputDirectory([string] $Filename)
@@ -135,6 +147,7 @@ function CreateOutputDirectory([string] $Filename)
 
 function Export-AppPool
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -142,6 +155,8 @@ function Export-AppPool
         [Parameter(Mandatory = $true)]
         [string] $OutputFilename
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
     CreateOutputDirectory $OutputFilename
     $xml = GetAppCmdOutput $ServerHost @('list', 'apppool', '/config', '/xml')
@@ -150,6 +165,7 @@ function Export-AppPool
 
 function Export-Site
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Hostname of the server with IIS site configured.')]
@@ -158,6 +174,8 @@ function Export-Site
         [string] $OutputFilename
     )
 
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     CreateOutputDirectory $OutputFilename
     $xml = GetAppCmdOutput $ServerHost @('list', 'site', '/config', '/xml')
     $xml | Set-Content $OutputFilename
@@ -165,11 +183,14 @@ function Export-Site
 
 function Start-RemoteSession
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
         [string] $ServerHost
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
     New-PSSession -UseSSL -Credential $credential -ComputerName ([System.Net.Dns]::GetHostByName($ServerHost).Hostname) -Port $winrmPort
 }
@@ -179,6 +200,7 @@ function Install-Iis
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "",
                                                        Scope="Function", Target="*")]
 
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -187,6 +209,8 @@ function Install-Iis
         [switch] $WebDeploy,
         [switch] $UrlRewrite
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
     $session = Start-RemoteSession $ServerHost
     
@@ -243,11 +267,14 @@ function CheckSession
 
 function Install-WebManagementService
 {
+    [CmdletBinding()]
     param
     (
         [string] $ServerHost,
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $Session = CheckSession $ServerHost $Session
     
@@ -285,11 +312,14 @@ function Install-WebManagementService
 
 function Install-WebDeploy
 {
+    [CmdletBinding()]
     param
     (
         [string] $ServerHost,
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
     $Session = CheckSession $ServerHost $Session
     
@@ -336,6 +366,7 @@ http://stackoverflow.com/a/27799658/991267
 #>
 function Invoke-RemoteScript
 {
+    [CmdletBinding()]
     param
     (
         [string] $Path,
@@ -343,6 +374,8 @@ function Invoke-RemoteScript
         [string] $ServerHost,
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
     $Session = CheckSession $ServerHost $Session
     
@@ -355,11 +388,14 @@ function Invoke-RemoteScript
 
 function Install-UrlRewrite
 {
+    [CmdletBinding()]
     param
     (
         [string] $ServerHost,
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
     $Session = CheckSession $ServerHost $Session
 
@@ -399,6 +435,7 @@ Msiexec supports HTTP links.
 #>
 function Install-MsiPackage
 {
+    [CmdletBinding()]
     param
     (
         [string] $ServerHost,
@@ -411,6 +448,8 @@ function Install-MsiPackage
         [string] $MsiPath,
         [string] $LocalFeatures = 'ALL'     
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
     $Session = CheckSession $ServerHost $Session
     
@@ -441,11 +480,14 @@ Creates a new directory in remote server's %TEMP% and returns it.
 #>
 function Get-RemoteTempPath
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Invoke-Command -Session $Session -ScriptBlock `
         {
@@ -457,6 +499,7 @@ function Get-RemoteTempPath
 
 function Import-SslCertificate
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -466,6 +509,8 @@ function Import-SslCertificate
         [Parameter(Mandatory = $true)]
         [System.Security.SecureString] $CertificatePassword
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
     $Session = Start-RemoteSession $ServerHost
     
