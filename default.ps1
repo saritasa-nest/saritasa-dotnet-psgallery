@@ -45,6 +45,11 @@ Task generate-docs `
 
 function GenerateMarkdown([string] $fileName, [string] $moduleName)
 {
+    if ($moduleName -eq 'Saritasa.Psake')
+    {
+        return
+    }
+
     Import-Module $fileName
     .\tools\psDoc\psDoc.ps1 -moduleName $moduleName -template .\tools\psDoc\out-markdown-template.ps1 -outputDir .\docs -fileName "$moduleName.md"
 }

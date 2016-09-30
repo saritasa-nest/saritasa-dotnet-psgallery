@@ -27,7 +27,7 @@ CompanyName = 'Saritasa'
 Copyright = '(c) 2016 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Contains common Redis tasks.'
+Description = 'Contains Redis management cmdlets.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 # PowerShellVersion = ''

@@ -13,6 +13,7 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 | [Saritasa.Web](docs/Saritasa.Web.md)                                   | Contains various methods for web requests and SSL handling. |
 | [Saritasa.Psake](docs/Saritasa.Psake.md)                               | Contains common Psake tasks. |
 | [Saritasa.Publish](docs/Saritasa.Publish.md)                           | Contains methods to generate ClickOnce packages. |
+| [Saritasa.Redis](docs/Saritasa.Redis.md)                               | Contains Redis management cmdlets. |
 | [Saritasa.RemoteManagement](docs/Saritasa.RemoteManagement.md)         | Contains functions to execute actions on a remote server. Allows to set up IIS, import sites and app pools, install MSI packages. |
 | [Saritasa.Test](docs/Saritasa.Test.md)                                 | Contains functions to run unit tests. |
 | [Saritasa.Web](docs/Saritasa.Web.md)                                   | Contains various methods for web requests and SSL handling. |
