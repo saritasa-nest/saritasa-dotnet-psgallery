@@ -1,3 +1,8 @@
+Properties `
+{
+    $nugetApiKey = $null
+}
+
 Task analyze -description 'Run PowerShell static analysis tool on all modules and scripts.' `
 {
     Get-ChildItem -Include '*.ps1', '*.psd1', '*.psm1' -Recurse `
@@ -36,4 +41,12 @@ function GenerateMarkdown([string] $fileName, [string] $moduleName)
 {
     Import-Module $fileName
     .\tools\psDoc\psDoc.ps1 -moduleName $moduleName -template .\tools\psDoc\out-markdown-template.ps1 -outputDir .\docs -fileName "$moduleName.md"
+}
+
+Task publish-modules -requiredVariables @('nugetApiKey') `
+{
+    Get-ChildItem .\modules | % `
+        {
+            Publish-Module -Path $_.FullName -NuGetApiKey $nugetApiKey
+        }
 }
