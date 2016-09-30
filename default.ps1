@@ -5,6 +5,8 @@ Properties `
     $nugetApiKey = $null
 }
 
+$src = $PSScriptRoot
+
 Task analyze -description 'Run PowerShell static analysis tool on all modules and scripts.' `
 {
     Get-ChildItem -Include '*.ps1', '*.psd1', '*.psm1' -Recurse `
@@ -49,16 +51,29 @@ function GenerateMarkdown([string] $fileName, [string] $moduleName)
 # Install-Module psake, Saritasa.General, Saritasa.Web -Scope CurrentUser -Force
 Task publish-modules -requiredVariables @('nugetApiKey') `
 {
-    Get-ChildItem -Directory .\modules | % `
+    Get-ChildItem -Directory "$src\modules" | % `
         {
             Write-Information "Publishing $_ module..."
             try
             {
-                Publish-Module -Path $_.FullName -NuGetApiKey $nugetApiKey -ErrorAction Continue 
+                Publish-Module -Path $_.FullName -NuGetApiKey $nugetApiKey 
             }
             catch [System.Exception]
             {
                 $_.Exception
             }
         }
+}
+
+Task publish-scripts -requiredVariables @('nugetApiKey') `
+{
+    try
+    {
+        Write-Information "Publishing Install-WinrmHttps script..."
+        Publish-Script -Path "$src\scripts\WinRM\Install-WinrmHttps.ps1" -NuGetApiKey $nugetApiKey 
+    }
+    catch [System.Exception]
+    {
+        $_.Exception
+    }
 }
