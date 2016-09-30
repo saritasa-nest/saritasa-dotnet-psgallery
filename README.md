@@ -11,7 +11,6 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 | [Saritasa.NewRelic](docs/Saritasa.NewRelic.md)                         | Contains functions to call New Relic (newrelic.com) service APIs. |
 | [Saritasa.Prtg](docs/Saritasa.Prtg.md)                                 | Contains functions to call PRTG monitoring service (www.paessler.com/prtg) APIs. |
 | [Saritasa.Web](docs/Saritasa.Web.md)                                   | Contains various methods for web requests and SSL handling. |
-| [Saritasa.Psake](docs/Saritasa.Psake.md)                               | Contains common Psake tasks. |
 | [Saritasa.Publish](docs/Saritasa.Publish.md)                           | Contains methods to generate ClickOnce packages. |
 | [Saritasa.Redis](docs/Saritasa.Redis.md)                               | Contains Redis management cmdlets. |
 | [Saritasa.RemoteManagement](docs/Saritasa.RemoteManagement.md)         | Contains functions to execute actions on a remote server. Allows to set up IIS, import sites and app pools, install MSI packages. |
@@ -25,8 +24,9 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 
 | Name                                                             | Description                                                                                                                                     |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Saritasa.AdminTasks.ps1                                          | Contains Psake tasks for remote server administration.                                                                                          |
+| Saritasa.AdminTasks.ps1                                          | Contains Psake tasks for remote server administration. |
 | [Saritasa.PsakeExtensions.ps1](docs/Saritasa.PsakeExtensions.md) | The script is intended for dot-sourcing into default.ps1 (main file for Psake tasks). It allows to override Psake properties from another file. |
+| Saritasa.PsakeTasks.ps1                                          | Contains common Psake tasks. |
 
 ## WebDeploy
 
