@@ -7,6 +7,8 @@
         [string] $Destination
     )
 
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     $nugetExePath = "$Destination\nuget.exe"
     
     if (!(Test-Path $nugetExePath))

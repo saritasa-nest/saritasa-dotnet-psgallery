@@ -1,15 +1,13 @@
-#TODO: Need to fix $InformationPreference issue, when we need to display information
-# through Write-Information
-
 $root = $PSScriptRoot
 
 $lib = Resolve-Path "$root\Lib"
 
 function Initialize-Redis
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "",
-                                                   Scope="Function", Target="*")]
-    param(
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
+    [CmdletBinding()]
+    param
+    (
         [string]$Host,
         [int]$Port,
         [System.Management.Automation.PSCredential]
@@ -17,6 +15,8 @@ function Initialize-Redis
         $Credential,
         [bool]$useSsl = $true
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
     $script:redisHost = $Host
     $script:redisPort = $Port
@@ -33,10 +33,14 @@ function Initialize-Redis
 function Get-Multiplexer 
 { 
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
+    [CmdletBinding()]
     param()
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     if (!$credentialInitialized)
     {
-        throw 'credentials not initilized'
+        throw 'credentials not initialized'
     }
 
     $password = $credential.GetNetworkCredential().Password
@@ -47,9 +51,12 @@ function Get-Multiplexer
 
 function Ping-Redis 
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "",
-                                                   Scope="Function", Target="*")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
+    [CmdletBinding()]
     param()
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     $mux = Get-Multiplexer
 
     Write-Information "Pinging redis instance"
@@ -74,7 +81,11 @@ function Ping-Redis
 function Invoke-FlushRedis 
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
+    [CmdletBinding()]
     param()
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     $mux = Get-Multiplexer
 
     Write-Information "Flushing redis instance"

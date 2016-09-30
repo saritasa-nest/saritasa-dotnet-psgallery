@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Redis'
 
 # Version number of this module.
-ModuleVersion = '1.0.0'
+ModuleVersion = '1.1.0'
 
 # ID used to uniquely identify this module
 GUID = '6a5b77a8-5144-4c3f-b724-202c2e4166d1'
@@ -48,7 +48,9 @@ Description = 'Contains common Redis tasks.'
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-# RequiredModules = @()
+RequiredModules = @(
+    @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' }
+)
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
