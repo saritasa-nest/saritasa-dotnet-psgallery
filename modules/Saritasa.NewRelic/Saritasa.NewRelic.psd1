@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.NewRelic'
 
 # Version number of this module.
-ModuleVersion = '1.1.1'
+ModuleVersion = '1.2.0'
 
 # ID used to uniquely identify this module
 GUID = '5d34804a-169a-4fb1-bc0d-cc81f925f992'
@@ -48,7 +48,9 @@ Description = 'Contains functions to call New Relic (newrelic.com) service APIs.
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-# RequiredModules = @()
+RequiredModules = @(
+    @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' }
+)
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -66,7 +68,7 @@ Description = 'Contains functions to call New Relic (newrelic.com) service APIs.
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = 'Initialize-NewRelic', 'Update-NewRelicDeployment'
+FunctionsToExport = @('Initialize-NewRelic', 'Update-NewRelicDeployment')
 
 # Cmdlets to export from this module
 CmdletsToExport = @()

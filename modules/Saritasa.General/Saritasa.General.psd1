@@ -66,7 +66,7 @@ Description = 'Contains general PowerShell helpers.'
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = 'Get-CallerPreference'
+FunctionsToExport = @('Get-CallerPreference')
 
 # Cmdlets to export from this module
 CmdletsToExport = @()

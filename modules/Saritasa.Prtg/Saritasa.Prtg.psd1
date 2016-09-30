@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Prtg'
 
 # Version number of this module.
-ModuleVersion = '1.3.0'
+ModuleVersion = '1.4.0'
 
 # ID used to uniquely identify this module
 GUID = '5d34804a-169a-4fb1-bc0d-cc81f925f992'
@@ -48,7 +48,10 @@ Description = 'Contains functions to call PRTG monitoring service (www.paessler.
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-# RequiredModules = @()
+RequiredModules = @(
+    @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' },
+    @{ ModuleName='Saritasa.Web'; ModuleVersion='1.4.0'; GUID='6aeb9fa0-7096-4488-9d49-4f16578d7be0' }
+)
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -63,11 +66,11 @@ Description = 'Contains functions to call PRTG monitoring service (www.paessler.
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @('Saritasa.Web')
+# NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = 'Initialize-Prtg', 'Get-PrtgSensorId', 'Start-PrtgSensor',
-    'Stop-PrtgSensor'
+FunctionsToExport = @('Initialize-Prtg', 'Get-PrtgSensorId', 'Start-PrtgSensor',
+    'Stop-PrtgSensor')
 
 # Cmdlets to export from this module
 CmdletsToExport = @()

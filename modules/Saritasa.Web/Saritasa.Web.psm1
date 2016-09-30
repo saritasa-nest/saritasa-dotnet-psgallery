@@ -18,6 +18,11 @@ Disables SSL check for WebClient requests.
 #>
 function Update-SslCheckProcedure()
 {
+    [CmdletBinding()]
+    param ()
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     Write-Information 'SSL certificates validation is turned off.'
     [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 }
@@ -32,12 +37,15 @@ http://stackoverflow.com/questions/22233702/how-to-download-the-ssl-certificate-
 #>
 function Import-SslCertificate
 {
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
         [string] $ServerHost,
         [int] $Port = 443
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     if (!(IsAdmin))
     {
@@ -82,6 +90,10 @@ function Import-SslCertificate
     else # Windows 7
     {
         certutil.exe -addstore 'Root' $tempFilename
+        if ($LASTEXITCODE)
+        {
+            throw 'Certutil failed.'
+        }
     }
     
     Remove-Item $tempFilename

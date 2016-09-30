@@ -11,11 +11,14 @@ function Register-HelpTask
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "",
                                                        Scope="Function", Target="*")]
 
+    [CmdletBinding()]
     param
     (
         [string] $Name = 'help',
         [bool] $Default = $true
     )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Task $Name -description 'Display description of main tasks.' `
     {
@@ -37,10 +40,13 @@ function Register-HelpTask
 
 function Register-UpdateGalleryTask
 {
+    [CmdletBinding()]
+    param ()
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     Task 'update-gallery' -description '* Update all modules from Saritasa PS Gallery.' `
     {
-        $InformationPreference = 'Continue'
-    
         Get-ChildItem -Path $root -Include 'Saritasa*.ps*1' -Recurse | ForEach-Object `
             {
                 Write-Information "Updating $($_.Name)..."
