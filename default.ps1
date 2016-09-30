@@ -5,7 +5,9 @@ Properties `
     $nugetApiKey = $null
 }
 
-$src = $PSScriptRoot
+$root = $PSScriptRoot
+$modules = "$PSScriptRoot\modules"
+$scripts = "$PSScriptRoot\scripts"
 
 Task analyze -description 'Run PowerShell static analysis tool on all modules and scripts.' `
 {
@@ -51,7 +53,7 @@ function GenerateMarkdown([string] $fileName, [string] $moduleName)
 # Install-Module psake, Saritasa.General, Saritasa.Web -Scope CurrentUser -Force
 Task publish-modules -requiredVariables @('nugetApiKey') `
 {
-    Get-ChildItem -Directory "$src\modules" | % `
+    Get-ChildItem -Directory $modules | % `
         {
             Write-Information "Publishing $_ module..."
             try
@@ -70,10 +72,33 @@ Task publish-scripts -requiredVariables @('nugetApiKey') `
     try
     {
         Write-Information "Publishing Install-WinrmHttps script..."
-        Publish-Script -Path "$src\scripts\WinRM\Install-WinrmHttps.ps1" -NuGetApiKey $nugetApiKey 
+        Publish-Script -Path "$scripts\WinRM\Install-WinrmHttps.ps1" -NuGetApiKey $nugetApiKey 
     }
     catch [System.Exception]
     {
         $_.Exception
     }
+}
+
+Task build `
+{
+    Import-Module "$modules\Saritasa.General\Saritasa.General.psd1"
+    Import-Module "$modules\Saritasa.Build\Saritasa.Build.psd1"
+    Install-NugetCli -Destination "$root\tools"
+    $nugetExePath = "$root\tools\nuget.exe"
+
+    # Tested on version 1.1.605.
+    &$nugetExePath install StackExchange.Redis -OutputDirectory "$root\tmp"
+    if ($LASTEXITCODE)
+    {
+        throw 'NuGet failed.'
+    }
+
+    $redisLib = "$modules\Saritasa.Redis\Lib"
+    if (!(Test-Path $redisLib))
+    {
+        New-Item $redisLib -ItemType Directory
+    }
+
+    Copy-Item "$root\tmp\StackExchange.Redis.*\lib\net46\StackExchange.Redis.dll" $redisLib
 }
