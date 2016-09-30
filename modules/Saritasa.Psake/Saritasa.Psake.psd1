@@ -49,7 +49,7 @@ Description = 'Contains common Psake tasks.'
 
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
-    'psake',
+    @{ ModuleName='psake'; ModuleVersion='4.6.0'; GUID='cfb53216-072f-4a46-8975-ff7e6bda05a5' }
     @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' }
 )
 
