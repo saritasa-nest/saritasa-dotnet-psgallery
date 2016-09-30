@@ -1,3 +1,5 @@
+$InformationPreference = 'Continue'
+
 Properties `
 {
     $nugetApiKey = $null
@@ -43,10 +45,20 @@ function GenerateMarkdown([string] $fileName, [string] $moduleName)
     .\tools\psDoc\psDoc.ps1 -moduleName $moduleName -template .\tools\psDoc\out-markdown-template.ps1 -outputDir .\docs -fileName "$moduleName.md"
 }
 
+# Before run, make sure that required modules are installed.
+# Install-Module psake, Saritasa.General, Saritasa.Web -Scope CurrentUser -Force
 Task publish-modules -requiredVariables @('nugetApiKey') `
 {
-    Get-ChildItem .\modules | % `
+    Get-ChildItem -Directory .\modules | % `
         {
-            Publish-Module -Path $_.FullName -NuGetApiKey $nugetApiKey
+            Write-Information "Publishing $_ module..."
+            try
+            {
+                Publish-Module -Path $_.FullName -NuGetApiKey $nugetApiKey -ErrorAction Continue 
+            }
+            catch [System.Exception]
+            {
+                $_.Exception
+            }
         }
 }
