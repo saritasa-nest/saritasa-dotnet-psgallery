@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.0.0
+.VERSION 1.2.1
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -35,17 +35,54 @@ Contains Psake tasks for remote server administration.
 
 Properties `
 {
-    $serverHost = $null
-    $winrmPort = $null
+    $AdminUsername = $null
+    $AdminPassword = $null
+    $Configuration = $null
+    $ServerHost = $null
+    $WinrmPort = 5986
 }
 
-Task trust-host -description 'Add server''s certificate to trusted root CA store.' `
-    -requiredVariables @('serverHost', 'winrmPort') `
+Import-Module Saritasa.RemoteManagement
+
+Task init-winrm -description 'Initializes WinRM configuration.' `
 {
-    $fqdn = [System.Net.Dns]::GetHostByName($serverHost).Hostname
+    if ($AdminPassword)
+    {
+        $credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (ConvertTo-SecureString $AdminPassword -AsPlainText -Force))
+    }
+    else
+    {
+        $credential = Get-Credential
+    }
+    Set-RemoteManagementCredential $credential
+    Set-RemoteManagementPort $WinrmPort
+}
+
+Task import-sites -depends init-winrm -description 'Import app pools and sites to IIS.' `
+    -requiredVariables @('Configuration', 'ServerHost') `
+{
+    InitializeRemoteManagement
+    
+    Import-AppPool $serverHost "$root\IIS\AppPools.${Configuration}.xml"
+    Import-Site $serverHost "$root\IIS\Sites.${Configuration}.xml"
+}
+
+Task export-sites -depends init-winrm -description 'Export app pools and sites from IIS.' `
+    -requiredVariables @('Configuration', 'ServerHost') `
+{
+    InitializeRemoteManagement
+    
+    Export-AppPool $serverHost "$root\IIS\AppPools.${Configuration}.xml"
+    Export-Site $serverHost "$root\IIS\Sites.${Configuration}.xml"
+}
+
+Task trust-host -depends init-winrm -description 'Add server''s certificate to trusted root CA store.' `
+    -requiredVariables @('ServerHost', 'WinrmPort') `
+{
+    $fqdn = [System.Net.Dns]::GetHostByName($ServerHost).Hostname
     
     Import-Module "$root\Saritasa.Web.psd1"
-    Import-SslCertificate $fqdn $winrmPort
+    Import-SslCertificate $fqdn $WinrmPort
     Write-Information 'SSL certificate is imported.'
        
     # Allow remote connections to the host.
