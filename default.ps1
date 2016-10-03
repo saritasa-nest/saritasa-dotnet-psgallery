@@ -94,11 +94,6 @@ Task build `
         throw 'NuGet failed.'
     }
 
-    $redisLib = "$modules\Saritasa.Redis\Lib"
-    if (!(Test-Path $redisLib))
-    {
-        New-Item $redisLib -ItemType Directory
-    }
-
-    Copy-Item "$root\tmp\StackExchange.Redis.*\lib\net46\StackExchange.Redis.dll" $redisLib
+    $redisRoot = "$modules\Saritasa.Redis"
+    Copy-Item "$root\tmp\StackExchange.Redis.*\lib\net46\StackExchange.Redis.dll" $redisRoot
 }

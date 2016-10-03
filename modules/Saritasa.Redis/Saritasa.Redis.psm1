@@ -1,19 +1,17 @@
 $root = $PSScriptRoot
 
-$lib = Resolve-Path "$root\Lib"
-
 function Initialize-Redis
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
     [CmdletBinding()]
     param
     (
-        [string]$Host,
-        [int]$Port,
+        [string] $Host,
+        [int] $Port,
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
         $Credential,
-        [bool]$useSsl = $true
+        [bool] $UseSsl = $true
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
@@ -21,11 +19,12 @@ function Initialize-Redis
     $script:redisHost = $Host
     $script:redisPort = $Port
     $script:credential = $Credential
-    $script:useSsl = $useSsl
+    $script:useSsl = $UseSsl
 
-    $assemblyPath = Resolve-Path "$lib\StackExchange.Redis.dll"
-    Write-Information "Loading StackExchange.Redis.dll"
+    $assemblyPath = Resolve-Path "$PSScriptRoot\StackExchange.Redis.dll"
+    Write-Information "Loading StackExchange.Redis.dll..."
     [void][System.Reflection.Assembly]::LoadFrom($assemblyPath)
+    Write-Information 'OK'
     
     $script:credentialInitialized = $true
 }

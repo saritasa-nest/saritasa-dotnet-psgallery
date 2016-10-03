@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.WebDeploy'
 
 # Version number of this module.
-ModuleVersion = '1.9.0'
+ModuleVersion = '1.10.0'
 
 # ID used to uniquely identify this module
 GUID = '1821cb68-29fe-4074-b296-58c450cb9177'
@@ -68,7 +68,7 @@ FormatsToProcess = @()
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = @('Set-MsdeployPath', 'Set-MsdeployPort', 'Set-WebDeployCredential',
+FunctionsToExport = @('Initialize-WebDeploy',
     'Invoke-PackageBuild', 'Start-AppPool', 'Stop-AppPool',
     'Invoke-WebDeployment', 'Invoke-WebSiteDeployment', 'Sync-IisApp', 'Sync-WebContent')
 

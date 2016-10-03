@@ -2,34 +2,6 @@ $msdeployPath = "$env:ProgramFiles\IIS\Microsoft Web Deploy V3"
 $msdeployPort = 8172
 $credential = ''
 
-function Set-MsdeployPath
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [string] $Path
-    )
-
-    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-    $script:msdeployPath = $Path
-}
-
-function Set-MsdeployPort
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [int] $Port
-    )
-
-    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-    $script:msdeployPort = $Port
-}
-
 <#
 .SYNOPSIS
 
@@ -40,14 +12,16 @@ Set-ItemProperty HKLM:Software\Microsoft\WebManagement\Server WindowsAuthenticat
 Restart-Service WMSVC
 https://blogs.msdn.microsoft.com/carlosag/2011/12/13/using-windows-authentication-with-web-deploy-and-wmsvc/
 #>
-function Set-WebDeployCredential
+function Initialize-WebDeploy
 {
     [CmdletBinding()]
     param
     (
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
-        $Credential
+        $Credential,
+        [string] $MsdeployPath,
+        [int] $MsdeployPort
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
@@ -62,6 +36,16 @@ function Set-WebDeployCredential
     else
     {
         $script:credential = "authType='ntlm'"
+    }
+
+    if ($MsdeployPath)
+    {
+        $script:msdeployPath = $MsdeployPath
+    }
+
+    if ($MsdeployPort)
+    {
+        $script:msdeployPort = $MsdeployPort
     }
 }
 
