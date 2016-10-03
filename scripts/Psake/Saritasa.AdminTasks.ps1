@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.2.1
+.VERSION 1.2.2
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -54,15 +54,12 @@ Task init-winrm -description 'Initializes WinRM configuration.' `
     {
         $credential = Get-Credential
     }
-    Set-RemoteManagementCredential $credential
-    Set-RemoteManagementPort $WinrmPort
+    Initialize-RemoteManagement -Credential $credential -Port $WinrmPort
 }
 
 Task import-sites -depends init-winrm -description 'Import app pools and sites to IIS.' `
     -requiredVariables @('Configuration', 'ServerHost') `
-{
-    InitializeRemoteManagement
-    
+{  
     Import-AppPool $serverHost "$root\IIS\AppPools.${Configuration}.xml"
     Import-Site $serverHost "$root\IIS\Sites.${Configuration}.xml"
 }
@@ -70,8 +67,6 @@ Task import-sites -depends init-winrm -description 'Import app pools and sites t
 Task export-sites -depends init-winrm -description 'Export app pools and sites from IIS.' `
     -requiredVariables @('Configuration', 'ServerHost') `
 {
-    InitializeRemoteManagement
-    
     Export-AppPool $serverHost "$root\IIS\AppPools.${Configuration}.xml"
     Export-Site $serverHost "$root\IIS\Sites.${Configuration}.xml"
 }

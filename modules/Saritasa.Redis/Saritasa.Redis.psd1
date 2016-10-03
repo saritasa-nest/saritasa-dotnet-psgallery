@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Redis'
 
 # Version number of this module.
-ModuleVersion = '1.1.0'
+ModuleVersion = '1.1.1'
 
 # ID used to uniquely identify this module
 GUID = '6a5b77a8-5144-4c3f-b724-202c2e4166d1'

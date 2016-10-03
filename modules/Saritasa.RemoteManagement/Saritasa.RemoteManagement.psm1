@@ -1,33 +1,28 @@
 $credential = $null
 $winrmPort = 5986
 
-function Set-RemoteManagementCredential
+function Initialize-RemoteManagement
 {
     [CmdletBinding()]
     param
     (
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
-        $Credential
-    )
-
-    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-    $script:credential = $Credential
-}
-
-function Set-RemoteManagementPort
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
+        $Credential,
         [int] $Port
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    $script:winrmPort = $Port
+    if ($Credential)
+    {
+        $script:credential = $Credential
+    }
+
+    if ($Port)
+    {
+        $script:winrmPort = $Port
+    }
 }
 
 function ExecuteAppCmd
