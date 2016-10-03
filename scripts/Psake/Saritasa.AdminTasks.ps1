@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.2.0
+.VERSION 1.2.1
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -41,6 +41,8 @@ Properties `
     $ServerHost = $null
     $WinrmPort = 5986
 }
+
+Import-Module Saritasa.RemoteManagement
 
 Task init-winrm -description 'Initializes WinRM configuration.' `
 {
