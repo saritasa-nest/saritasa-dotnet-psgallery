@@ -279,3 +279,40 @@ function Sync-WebContent
     
     Write-Information "Updated '$ContentPath' directory on $DestinationServer server."
 }
+
+<#
+.SYNOPSIS
+Deploys ASP.NET web site (app without project) to remote server.
+#>
+function Invoke-WebSiteDeployment
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $Path,
+        [Parameter(Mandatory = $true)]
+        [string] $ServerHost,
+        [Parameter(Mandatory = $true)]
+        [string] $SiteName,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string] $Application,
+        [string[]] $MSDeployParams
+    )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    Assert-WebDeployCredential
+    Write-Information "Deploying web site from $Path to $ServerHost/$Application..."
+
+    $args = @('-verb:sync', '-allowUntrusted', "-source:iisApp='$Path'",
+              ("-dest:iisApp='$SiteName/$Application',computerName='https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName'," + $credential))
+    $args += $MSDeployParams
+              
+    $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
+    if ($result.ExitCode)
+    {
+        throw 'Msdeploy failed.'
+    }
+}
