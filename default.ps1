@@ -1,4 +1,5 @@
 $InformationPreference = 'Continue'
+$env:PSModulePath += ";$PSScriptRoot\modules"
 
 Properties `
 {
@@ -21,13 +22,10 @@ Task generate-docs -depends build `
 
     Write-Output '| Name                      | Description                                                                                                                      |'
     Write-Output '| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |'
-    
-    Import-Module .\modules\Saritasa.General\Saritasa.General.psd1
-    Import-Module .\modules\Saritasa.Web\Saritasa.Web.psd1
 
     Get-ChildItem -Include '*.psd1' -Recurse | ForEach-Object `
         {
-            GenerateMarkdown $_.FullName $_.BaseName
+            GenerateMarkdown $_.BaseName
 
             $name = $_.BaseName
             (Get-Content $_) | Where-Object { $_ -Match $descriptionRegex } |
@@ -35,23 +33,21 @@ Task generate-docs -depends build `
             $description = $matches[1]
             Write-Output "| [$name](docs/$name.md)`t`t`t| $description |"
         }
-    
-    Remove-Item .\modules\Saritasa.Prtg\Saritasa.Web.ps*1
 
     Copy-Item .\scripts\Psake\Saritasa.PsakeExtensions.ps1 .\scripts\Psake\Saritasa.PsakeExtensions.psm1
     GenerateMarkdown .\scripts\Psake\Saritasa.PsakeExtensions.psm1 Saritasa.PsakeExtensions
     Remove-Item .\scripts\Psake\Saritasa.PsakeExtensions.psm1
 }
 
-function GenerateMarkdown([string] $fileName, [string] $moduleName)
+function GenerateMarkdown([string] $moduleName)
 {
-    Import-Module $fileName
+    Import-Module $moduleName
     .\tools\psDoc\psDoc.ps1 -moduleName $moduleName -template .\tools\psDoc\out-markdown-template.ps1 -outputDir .\docs -fileName "$moduleName.md"
 }
 
 # Before run, make sure that required modules are installed.
 # Install-Module psake, Saritasa.General, Saritasa.Web -Scope CurrentUser -Force
-Task publish- -depends build -requiredVariables @('nugetApiKey') `
+Task publish-modules -depends build -requiredVariables @('nugetApiKey') `
 {
     Get-ChildItem -Directory $modules | % `
         {
