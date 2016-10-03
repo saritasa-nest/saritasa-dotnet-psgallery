@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.0.0
+.VERSION 1.1.0
 
 .GUID a55519ec-c877-4480-8496-6c87ca097332
 
@@ -79,27 +79,40 @@ function Expand-PsakeConfiguration
     (
         [Parameter(Mandatory = $true)]
         [hashtable]
-        $NewConfiguration,
-        [int]
-        $CallScope = 1
+        $NewConfiguration
     )
+
+    for ($i = 1; $i -lt 20; $i++)
+    {
+        try
+        {
+            Get-Variable -Name 'properties' -Scope $i -ErrorAction SilentlyContinue | Out-Null
+        }
+        catch
+        {
+            break
+        }
+    }
+    $maxScope = $i - 1
+    $cmdLineScope = $maxScope - 2
+    $propertiesScope = $cmdLineScope - 3
     
     # Override properties from passed hashtable.
     foreach ($key in $NewConfiguration.Keys)
     {
         Write-Debug "Set1: $key = $($NewConfiguration.$key)"
-        Set-Variable -Name $key -Value $NewConfiguration.$key -Scope ($CallScope + 2) | Out-Null
+        Set-Variable -Name $key -Value $NewConfiguration.$key -Scope $propertiesScope | Out-Null
     }
 
     # Override properties from command line arguments.
-    $properties = (Get-Variable 'properties' -Scope ($CallScope + 5)).Value
+    $properties = (Get-Variable 'properties' -Scope $cmdLineScope).Value
     foreach ($key in $properties.keys)
     {
         Write-Debug "Set2: $key"
         if (Test-Path "variable:\$key")
         {
             Write-Debug "Set3: $key = $($properties.$key)"
-            Set-Variable -Name $key -Value $properties.$key -Scope ($CallScope + 2) | Out-Null
+            Set-Variable -Name $key -Value $properties.$key -Scope $propertiesScope | Out-Null
         }
     }
 }
