@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.0.0
+.VERSION 1.1.0
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -35,17 +35,38 @@ Contains Psake tasks for remote server administration.
 
 Properties `
 {
-    $serverHost = $null
-    $winrmPort = $null
+    $AdminUsername = $null
+    $AdminPassword = $null
+    $Configuration = $null
+    $ServerHost = $null
+    $WinrmPort = 5986
+}
+
+Task import-sites -description 'Import app pools and sites to IIS.' `
+    -requiredVariables @('Configuration', 'ServerHost') `
+{
+    InitializeRemoteManagement
+    
+    Import-AppPool $serverHost "$root\IIS\AppPools.${Configuration}.xml"
+    Import-Site $serverHost "$root\IIS\Sites.${Configuration}.xml"
+}
+
+Task export-sites -description 'Export app pools and sites from IIS.' `
+    -requiredVariables @('Configuration', 'ServerHost') `
+{
+    InitializeRemoteManagement
+    
+    Export-AppPool $serverHost "$root\IIS\AppPools.${Configuration}.xml"
+    Export-Site $serverHost "$root\IIS\Sites.${Configuration}.xml"
 }
 
 Task trust-host -description 'Add server''s certificate to trusted root CA store.' `
-    -requiredVariables @('serverHost', 'winrmPort') `
+    -requiredVariables @('ServerHost', 'WinrmPort') `
 {
-    $fqdn = [System.Net.Dns]::GetHostByName($serverHost).Hostname
+    $fqdn = [System.Net.Dns]::GetHostByName($ServerHost).Hostname
     
     Import-Module "$root\Saritasa.Web.psd1"
-    Import-SslCertificate $fqdn $winrmPort
+    Import-SslCertificate $fqdn $WinrmPort
     Write-Information 'SSL certificate is imported.'
        
     # Allow remote connections to the host.
@@ -54,4 +75,20 @@ Task trust-host -description 'Add server''s certificate to trusted root CA store
         Set-Item WSMan:\localhost\Client\TrustedHosts $fqdn -Concatenate -Force
         Write-Information 'Host is added to trusted list.'
     }
+}
+
+# Private functions:
+
+function InitializeRemoteManagement
+{
+    if ($AdminPassword)
+    {
+        $credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (ConvertTo-SecureString $AdminPassword -AsPlainText -Force))
+    }
+    else
+    {
+        $credential = Get-Credential
+    }
+    Set-RemoteManagementCredential $credential
+    Set-RemoteManagementPort $WinrmPort
 }
