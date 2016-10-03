@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.1.0
+.VERSION 1.2.0
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -42,7 +42,21 @@ Properties `
     $WinrmPort = 5986
 }
 
-Task import-sites -description 'Import app pools and sites to IIS.' `
+Task init-winrm -description 'Initializes WinRM configuration.' `
+{
+    if ($AdminPassword)
+    {
+        $credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (ConvertTo-SecureString $AdminPassword -AsPlainText -Force))
+    }
+    else
+    {
+        $credential = Get-Credential
+    }
+    Set-RemoteManagementCredential $credential
+    Set-RemoteManagementPort $WinrmPort
+}
+
+Task import-sites -depends init-winrm -description 'Import app pools and sites to IIS.' `
     -requiredVariables @('Configuration', 'ServerHost') `
 {
     InitializeRemoteManagement
@@ -51,7 +65,7 @@ Task import-sites -description 'Import app pools and sites to IIS.' `
     Import-Site $serverHost "$root\IIS\Sites.${Configuration}.xml"
 }
 
-Task export-sites -description 'Export app pools and sites from IIS.' `
+Task export-sites -depends init-winrm -description 'Export app pools and sites from IIS.' `
     -requiredVariables @('Configuration', 'ServerHost') `
 {
     InitializeRemoteManagement
@@ -60,7 +74,7 @@ Task export-sites -description 'Export app pools and sites from IIS.' `
     Export-Site $serverHost "$root\IIS\Sites.${Configuration}.xml"
 }
 
-Task trust-host -description 'Add server''s certificate to trusted root CA store.' `
+Task trust-host -depends init-winrm -description 'Add server''s certificate to trusted root CA store.' `
     -requiredVariables @('ServerHost', 'WinrmPort') `
 {
     $fqdn = [System.Net.Dns]::GetHostByName($ServerHost).Hostname
@@ -75,20 +89,4 @@ Task trust-host -description 'Add server''s certificate to trusted root CA store
         Set-Item WSMan:\localhost\Client\TrustedHosts $fqdn -Concatenate -Force
         Write-Information 'Host is added to trusted list.'
     }
-}
-
-# Private functions:
-
-function InitializeRemoteManagement
-{
-    if ($AdminPassword)
-    {
-        $credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (ConvertTo-SecureString $AdminPassword -AsPlainText -Force))
-    }
-    else
-    {
-        $credential = Get-Credential
-    }
-    Set-RemoteManagementCredential $credential
-    Set-RemoteManagementPort $WinrmPort
 }
