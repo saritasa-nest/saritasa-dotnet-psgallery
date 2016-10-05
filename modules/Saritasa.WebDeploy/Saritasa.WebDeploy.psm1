@@ -190,7 +190,10 @@ function Invoke-WebDeployment
               ("-dest:auto,computerName='https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName',includeAcls='False'," + $credential),
               '-verb:sync', '-disableLink:AppPoolExtension', '-disableLink:ContentExtension', '-disableLink:CertificateExtension',
               '-allowUntrusted', "-setParam:name='IIS Web Application Name',value='$SiteName/$Application'")
-    $args += $MSDeployParams
+    if ($MSDeployParams)
+    {
+        $args += $MSDeployParams
+    }
     
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
     if ($result.ExitCode)
@@ -292,7 +295,10 @@ function Invoke-WebSiteDeployment
 
     $args = @('-verb:sync', '-allowUntrusted', "-source:iisApp='$Path'",
               ("-dest:iisApp='$SiteName/$Application',computerName='https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName'," + $credential))
-    $args += $MSDeployParams
+    if ($MSDeployParams)
+    {
+        $args += $MSDeployParams
+    }
               
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args 
     if ($result.ExitCode)
