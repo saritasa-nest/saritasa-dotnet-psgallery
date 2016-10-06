@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.2.2
+.VERSION 1.2.3
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -76,7 +76,7 @@ Task trust-host -depends init-winrm -description 'Add server''s certificate to t
 {
     $fqdn = [System.Net.Dns]::GetHostByName($ServerHost).Hostname
     
-    Import-Module "$root\Saritasa.Web.psd1"
+    Import-Module Saritasa.Web
     Import-SslCertificate $fqdn $WinrmPort
     Write-Information 'SSL certificate is imported.'
        
