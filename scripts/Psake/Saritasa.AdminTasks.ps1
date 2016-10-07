@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.2.3
+.VERSION 1.3.0
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -71,7 +71,7 @@ Task export-sites -depends init-winrm -description 'Export app pools and sites f
     Export-Site $serverHost "$root\IIS\Sites.${Configuration}.xml"
 }
 
-Task trust-host -depends init-winrm -description 'Add server''s certificate to trusted root CA store.' `
+Task trust-host -description 'Add server''s certificate to trusted root CA store.' `
     -requiredVariables @('ServerHost', 'WinrmPort') `
 {
     $fqdn = [System.Net.Dns]::GetHostByName($ServerHost).Hostname
