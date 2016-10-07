@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 1.6.4
+.VERSION 1.6.5
 
 .GUID 3ccd77cd-d928-4e72-98fc-82e3417f3427
 
@@ -35,8 +35,9 @@ Configures server to accept WinRM connections over HTTPS.
 .DESCRIPTION
 Generates self-signed certificate or uses existing. Configures HTTPS listener for WinRM service. Opens 5986 port in firewall.
 
-For Windows Server 2008 you should execute following statement to disable remote UAC:
+For Windows Server 2008 and 2008 R2 you should execute following statement to disable remote UAC:
 Set-ItemProperty –Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System –Name LocalAccountTokenFilterPolicy –Value 1 –Type DWord
+Restart-Computer
 #>
 
 [CmdletBinding()]
