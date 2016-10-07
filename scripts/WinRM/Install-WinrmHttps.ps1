@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 1.6.3
+.VERSION 1.6.4
 
 .GUID 3ccd77cd-d928-4e72-98fc-82e3417f3427
 
@@ -158,8 +158,23 @@ if (!$existingListener)
 
 try
 {
-    New-NetFirewallRule -DisplayName 'Windows Remote Management (HTTPS-In)' `
-        -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5986 -ErrorAction Stop
+    $cmd = Get-Command New-NetFirewallRule -ErrorAction Ignore
+    $ruleName = 'Windows Remote Management (HTTPS-In)'
+    $port = 5986
+
+    if ($cmd)
+    {
+        New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Action Allow -Protocol TCP -LocalPort $port -ErrorAction Stop
+    }
+    else
+    {
+        netsh advfirewall firewall add rule name=$ruleName protocol=TCP dir=in localport=$port action=allow
+        if ($LASTEXITCODE)
+        {
+            throw 'Netsh failed.'
+        }
+    }
+
     Write-Information 'Firewall rule is updated.'
 }
 catch [Microsoft.Management.Infrastructure.CimException]
