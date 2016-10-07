@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 1.6.1
+.VERSION 1.6.2
 
 .GUID 3ccd77cd-d928-4e72-98fc-82e3417f3427
 
@@ -59,6 +59,16 @@ trap
 }
 
 
+function FindCertificate
+{
+    param
+    (
+        [string] $Hostname
+    )
+    
+    Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object { $_.Subject -EQ "CN=$Hostname" } | Select-Object -First 1
+}
+
 function GenerateCertificate
 {
     param
@@ -69,7 +79,7 @@ function GenerateCertificate
     $cmd = Get-Command New-SelfSignedCertificate -ErrorAction Ignore
     if ($cmd)
     {
-        $CertificateThumbprint = (New-SelfSignedCertificate -DnsName $hostname -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
+        $certificateThumbprint = (New-SelfSignedCertificate -DnsName $hostname -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
     }
     else # Windows Server 2008, 2008 R2
     {
@@ -92,7 +102,19 @@ function GenerateCertificate
         }
 
         Remove-Item $pfxFile
+
+        $existingCertificate = FindCertificate $Hostname
+        if ($existingCertificate)
+        {
+            $certificateThumbprint = $existingCertificate.Thumbprint
+        }
+        else
+        {
+            throw 'New certificate is not found.'
+        }
     }
+
+    $certificateThumbprint
 }
 
 
@@ -100,8 +122,7 @@ $hostname = [System.Net.Dns]::GetHostByName('localhost').Hostname
 
 if (!$CertificateThumbprint)
 {
-    $existingCertificate = Get-ChildItem -Path Cert:\LocalMachine\My |
-        Where-Object { $_.Subject -EQ "CN=$hostname" } | Select-Object -First 1
+    $existingCertificate = FindCertificate $hostname
     if ($existingCertificate)
     {
         $CertificateThumbprint = $existingCertificate.Thumbprint
@@ -109,7 +130,7 @@ if (!$CertificateThumbprint)
     }
     else
     {
-        GenerateCertificate $hostname
+        $CertificateThumbprint = GenerateCertificate $hostname
         Write-Information 'New certificate is generated.'
     }
 }
