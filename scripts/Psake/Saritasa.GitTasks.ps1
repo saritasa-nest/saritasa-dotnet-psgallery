@@ -39,16 +39,16 @@ Import-Module Saritasa.Git
 
 Task gitflow-hotfixes-releases -description 'Display remote release/* and hotfix/* branches.' `
 {
-    Get-GitFlowStatus -BranchType release
-    Get-GitFlowStatus -BranchType hotfix
+    Get-GitFlowStatus -BranchType Release
+    Get-GitFlowStatus -BranchType Hotfix
 }
 
 Task gitflow-old-features -description 'Display Remote feature/* branches older than 2 weeks.' `
 {
-    Get-GitFlowStatus -BranchType feature -OlderThanDays 14
+    Get-GitFlowStatus -BranchType Feature -OlderThanDays 14
 }
 
 Task gitflow-features -description 'Display list of all remote feature/* branches.' `
 {
-    Get-GitFlowStatus -BranchType feature
+    Get-GitFlowStatus -BranchType Feature
 }

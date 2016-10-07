@@ -8,12 +8,9 @@ namespace Saritasa.Git.GitFlowStatus
 {
     public enum BranchType
     {
-        // ReSharper disable once InconsistentNaming
-        hotfix,
-        // ReSharper disable once InconsistentNaming
-        release,
-        // ReSharper disable once InconsistentNaming
-        feature
+        Hotfix,
+        Release,
+        Feature
     }
 
     /// <summary>
@@ -81,7 +78,7 @@ namespace Saritasa.Git.GitFlowStatus
             developHead = develop[0];
 
             // Find all remote branches which match pattern
-            var branchTypePattern = new Regex($"\\/{BranchType}\\/(.+)");
+            var branchTypePattern = new Regex($"\\/{BranchType.ToString().ToLower()}\\/(.+)");
             var requiredBranches = repo.Branches.Where(x => x.IsRemote && branchTypePattern.IsMatch(x.FriendlyName));
 
             // Apply OlderThanDays filter
