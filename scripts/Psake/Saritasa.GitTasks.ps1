@@ -1,5 +1,3 @@
-#Requires -Modules psake
-
 <#PSScriptInfo
 
 .VERSION 1.0.0
@@ -12,7 +10,7 @@
 
 .COPYRIGHT (c) 2016 Saritasa. All rights reserved.
 
-.TAGS Psake
+.TAGS Git GitFlow Psake
 
 .LICENSEURI https://raw.githubusercontent.com/Saritasa/PSGallery/master/LICENSE
 
@@ -32,11 +30,10 @@
 Contains Psake tasks for git repository maintenance
 
 .DESCRIPTION
+Contains following commands:
+gitflow-* commands -- show status of gitflow branches with statistic and useful info.
 
 #>
-
-$root = $PSScriptRoot
-$modules = "$root\Modules"
 
 Import-Module Saritasa.Git
 
