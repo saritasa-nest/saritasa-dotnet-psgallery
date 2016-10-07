@@ -25,6 +25,7 @@ Task generate-docs -depends build `
 
     Get-ChildItem -Include '*.psd1' -Recurse | ForEach-Object `
         {
+            Import-Module $_.BaseName
             GenerateMarkdown $_.BaseName
 
             $name = $_.BaseName
@@ -35,13 +36,13 @@ Task generate-docs -depends build `
         }
 
     Copy-Item .\scripts\Psake\Saritasa.PsakeExtensions.ps1 .\scripts\Psake\Saritasa.PsakeExtensions.psm1
-    GenerateMarkdown .\scripts\Psake\Saritasa.PsakeExtensions.psm1 Saritasa.PsakeExtensions
+    Import-Module .\scripts\Psake\Saritasa.PsakeExtensions.psm1
+    GenerateMarkdown Saritasa.PsakeExtensions
     Remove-Item .\scripts\Psake\Saritasa.PsakeExtensions.psm1
 }
 
 function GenerateMarkdown([string] $moduleName)
 {
-    Import-Module $moduleName
     .\tools\psDoc\psDoc.ps1 -moduleName $moduleName -template .\tools\psDoc\out-markdown-template.ps1 -outputDir .\docs -fileName "$moduleName.md"
 }
 
