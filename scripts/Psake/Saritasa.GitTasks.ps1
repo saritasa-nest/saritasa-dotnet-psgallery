@@ -38,7 +38,7 @@ Contains Psake tasks for git repository maintenance
 $root = $PSScriptRoot
 $modules = "$root\Modules"
 
-Import-Module "$modules\Saritasa.Git\Saritasa.Git.GitFlowStatus.psd1"
+Import-Module Saritasa.Git
 
 Task gitflow-hotfixes-releases -description 'Display remote release/* and hotfix/* branches.' `
 {
