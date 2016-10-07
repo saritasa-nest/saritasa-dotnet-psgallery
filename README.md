@@ -8,7 +8,7 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | [Saritasa.Build](docs/Saritasa.Build.md)                               | Contains functions to execute MSBuild targets, restore NuGet packages, run EntityFramework migrations. |
 | [Saritasa.General](docs/Saritasa.General.md)                           | Contains general PowerShell helpers. |
-| [Saritasa.Git](docs/Saritasa.Git.md)                  | Contains functions which help to maintain gitflow branches in target git repository. |
+| [Saritasa.Git](docs/Saritasa.Git.md)                                   | Contains functions which help to maintain gitflow branches in target git repository. |
 | [Saritasa.NewRelic](docs/Saritasa.NewRelic.md)                         | Contains functions to call New Relic (newrelic.com) service APIs. |
 | [Saritasa.Prtg](docs/Saritasa.Prtg.md)                                 | Contains functions to call PRTG monitoring service (www.paessler.com/prtg) APIs. |
 | [Saritasa.Web](docs/Saritasa.Web.md)                                   | Contains various methods for web requests and SSL handling. |
@@ -26,6 +26,7 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 | Name                                                             | Description                                                                                                                                     |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | Saritasa.AdminTasks.ps1                                          | Contains Psake tasks for remote server administration. |
+| Saritasa.GitTasks.ps1                                            | Contains Psake tasks for Git repository maintenance. |
 | [Saritasa.PsakeExtensions.ps1](docs/Saritasa.PsakeExtensions.md) | The script is intended for dot-sourcing into default.ps1 (main file for Psake tasks). It allows to override Psake properties from another file. |
 | Saritasa.PsakeTasks.ps1                                          | Contains common Psake tasks. |
 

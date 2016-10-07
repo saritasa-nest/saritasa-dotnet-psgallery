@@ -27,7 +27,7 @@
 .RELEASENOTES
 
 .SYNOPSIS
-Contains Psake tasks for git repository maintenance
+Contains Psake tasks for Git repository maintenance.
 
 .DESCRIPTION
 Contains following commands:
