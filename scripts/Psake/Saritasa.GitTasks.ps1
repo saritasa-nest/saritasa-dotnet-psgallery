@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.0.0
+.VERSION 1.0.1
 
 .GUID a8bc41d0-c2bd-459a-9e39-544b6f70724f
 
@@ -10,7 +10,7 @@
 
 .COPYRIGHT (c) 2016 Saritasa. All rights reserved.
 
-.TAGS Git GitFlow Psake
+.TAGS Git GitFlow
 
 .LICENSEURI https://raw.githubusercontent.com/Saritasa/PSGallery/master/LICENSE
 
