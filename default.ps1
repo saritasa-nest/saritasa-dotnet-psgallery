@@ -1,3 +1,4 @@
+Framework 4.6
 $InformationPreference = 'Continue'
 $env:PSModulePath += ";$PSScriptRoot\modules"
 
@@ -9,6 +10,7 @@ Properties `
 $root = $PSScriptRoot
 $modules = "$PSScriptRoot\modules"
 $scripts = "$PSScriptRoot\scripts"
+$src = "$PSScriptRoot\src"
 
 Task analyze -description 'Run PowerShell static analysis tool on all modules and scripts.' `
 {
@@ -93,4 +95,9 @@ Task build `
 
     $redisRoot = "$modules\Saritasa.Redis"
     Copy-Item "$root\tmp\StackExchange.Redis.*\lib\net46\StackExchange.Redis.dll" $redisRoot
+
+    $gitRoot = "$modules\Saritasa.Git"    
+    Invoke-NugetRestore -SolutionPath "$src\Saritasa.PSGallery.sln"
+    Invoke-SolutionBuild -SolutionPath "$src\Saritasa.PSGallery.sln" -Configuration 'Release'
+    Copy-Item "$src\Saritasa.Git.GitFlowStatus\bin\Release\Saritasa.Git.GitFlowStatus.dll" $gitRoot
 }
