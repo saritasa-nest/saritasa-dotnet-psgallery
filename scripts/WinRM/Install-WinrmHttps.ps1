@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 1.5.0
+.VERSION 1.6.0
 
 .GUID 3ccd77cd-d928-4e72-98fc-82e3417f3427
 
@@ -71,7 +71,7 @@ if (!$CertificateThumbprint)
     }
     else
     {
-        $CertificateThumbprint = (New-SelfSignedCertificate -DnsName $hostname -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
+        GenerateCertificate $hostname
         Write-Information 'New certificate is generated.'
     }
 }
@@ -116,3 +116,39 @@ catch [Microsoft.Management.Infrastructure.CimException]
 }
 
 Write-Information "`nWinRM is set up for host $hostname."
+
+function GenerateCertificate
+{
+    param
+    (
+        [string] $Hostname
+    )
+
+    $cmd = Get-Command New-SelfSignedCertificate -ErrorAction Ignore
+    if ($cmd)
+    {
+        $CertificateThumbprint = (New-SelfSignedCertificate -DnsName $hostname -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
+    }
+    else # Windows Server 2008, 2008 R2
+    {
+        $scriptPath = "$env:TEMP\New-SelfSignedCertificateEx.ps1"
+        Invoke-WebRequest 'https://raw.githubusercontent.com/Saritasa/PSGallery/master/scripts/WinRM/New-SelfSignedCertificateEx.ps1' -OutFile $scriptPath
+        . $scriptPath
+        Remove-Item $scriptPath
+
+        $pfxFile = "$Hostname.pfx"
+        $password = 'pwd'
+
+        New-SelfSignedCertificateEx -Subject "CN=$Hostname" `
+            -Exportable -Password (ConvertTo-SecureString $password -AsPlainText -Force) -Path $pfxFile `
+            -KeyUsage 'DataEncipherment', 'KeyEncipherment', 'DigitalSignature' -EnhancedKeyUsage 'Server Authentication'
+
+        certutil -p $password -importpfx $pfxFile
+        if ($LASTEXITCODE)
+        {
+            throw 'CertUtil failed.'
+        }
+
+        Remove-Item $pfxFile
+    }
+}
