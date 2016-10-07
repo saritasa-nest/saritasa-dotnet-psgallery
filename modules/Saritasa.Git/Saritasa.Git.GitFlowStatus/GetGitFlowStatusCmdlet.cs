@@ -24,15 +24,14 @@ namespace Saritasa.Git.GitFlowStatus
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "GitFlowStatus")]
     [OutputType(typeof(BranchInfo))]
-    public class GetGitFlowStatusCmdlet : Cmdlet, IDisposable
+    public class GetGitFlowStatusCmdlet : PSCmdlet, IDisposable
     {
         [Parameter(
              Mandatory = false,
              HelpMessage = "Path to git repository",
              ValueFromPipelineByPropertyName = true)]
         [Alias("p")]
-        [ValidateNotNullOrEmpty]
-        public string Path { get; set; }
+        public string Path { get; set; } = "";
 
         [Parameter(
             Mandatory = true,
@@ -60,6 +59,11 @@ namespace Saritasa.Git.GitFlowStatus
         protected override void ProcessRecord()
         {
             base.ProcessRecord();
+
+            if (string.IsNullOrEmpty(Path))
+            {
+                Path = SessionState.Path.CurrentFileSystemLocation.Path;
+            }
 
             if (!Repository.IsValid(Path))
             {
@@ -99,7 +103,6 @@ namespace Saritasa.Git.GitFlowStatus
         /// <param name="branch"></param>
         private void ProcessBranch(Branch branch)
         {
-
             var mergeBase = repo.ObjectDatabase.FindMergeBase(developHead.Tip, branch.Tip);
             var ret = new BranchInfo
             {
