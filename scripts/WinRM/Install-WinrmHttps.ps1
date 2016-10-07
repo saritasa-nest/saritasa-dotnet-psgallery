@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 1.6.2
+.VERSION 1.6.3
 
 .GUID 3ccd77cd-d928-4e72-98fc-82e3417f3427
 
@@ -86,22 +86,22 @@ function GenerateCertificate
         $scriptPath = "$env:TEMP\New-SelfSignedCertificateEx.ps1"
         Invoke-WebRequest 'https://raw.githubusercontent.com/Saritasa/PSGallery/master/scripts/WinRM/New-SelfSignedCertificateEx.ps1' -OutFile $scriptPath
         . $scriptPath
-        Remove-Item $scriptPath
+        Remove-Item $scriptPath | Out-Null
 
         $pfxFile = "$Hostname.pfx"
         $password = 'pwd'
 
         New-SelfSignedCertificateEx -Subject "CN=$Hostname" `
             -Exportable -Password (ConvertTo-SecureString $password -AsPlainText -Force) -Path $pfxFile `
-            -KeyUsage 'DataEncipherment', 'KeyEncipherment', 'DigitalSignature' -EnhancedKeyUsage 'Server Authentication'
+            -KeyUsage 'DataEncipherment', 'KeyEncipherment', 'DigitalSignature' -EnhancedKeyUsage 'Server Authentication' | Out-Null
 
-        certutil -p $password -importpfx $pfxFile
+        certutil -p $password -importpfx $pfxFile | Out-Null
         if ($LASTEXITCODE)
         {
             throw 'CertUtil failed.'
         }
 
-        Remove-Item $pfxFile
+        Remove-Item $pfxFile | Out-Null
 
         $existingCertificate = FindCertificate $Hostname
         if ($existingCertificate)
