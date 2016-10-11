@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.0.1
+.VERSION 1.1.0
 
 .GUID a8bc41d0-c2bd-459a-9e39-544b6f70724f
 
@@ -39,16 +39,22 @@ Import-Module Saritasa.Git
 
 Task gitflow-hotfixes-releases -description 'Display remote release/* and hotfix/* branches.' `
 {
-    Get-GitFlowStatus -BranchType Release
-    Get-GitFlowStatus -BranchType Hotfix
+    Write-Information 'This is a list of remote release branches. If release is done, need to remove the branch.'
+    Get-GitFlowStatus -BranchType Release | Sort-Object Merged, Name | Format-Table
+    Write-Information 'This is a list of remote hotfix branches. Usually we don''t push hotfix branches, because they are short living. Need to remove them.' 
+    Get-GitFlowStatus -BranchType Hotfix | Sort-Object Merged, Name | Format-Table
 }
 
 Task gitflow-old-features -description 'Display Remote feature/* branches older than 2 weeks.' `
 {
-    Get-GitFlowStatus -BranchType Feature -OlderThanDays 14
+    Write-Information 'This is a list of old feature branches. Need to clarify their statuses.'
+    Get-GitFlowStatus -BranchType Feature -OlderThanDays 14 | Sort-Object Merged, Name | Format-Table
 }
 
 Task gitflow-features -description 'Display list of all remote feature/* branches.' `
 {
-    Get-GitFlowStatus -BranchType Feature
+    Write-Information 'This is a list of remote feature branches. If branch is merged, need to remove it.'
+    Get-GitFlowStatus -BranchType Feature | Sort-Object Merged, Name | Format-Table
 }
+
+Task gitflow-status -depends gitflow-features, gitflow-old-features, gitflow-hotfixes-releases -description '* Display information about GitFlow issues.'
