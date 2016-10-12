@@ -1,5 +1,6 @@
 $credential = $null
 $winrmPort = 5986
+$authentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
 
 function Initialize-RemoteManagement
 {
@@ -9,7 +10,9 @@ function Initialize-RemoteManagement
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
         $Credential,
-        [int] $Port
+        [int] $Port,
+        [System.Management.Automation.Runspaces.AuthenticationMechanism]
+        $Authentication
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
@@ -22,6 +25,11 @@ function Initialize-RemoteManagement
     if ($Port)
     {
         $script:winrmPort = $Port
+    }
+
+    if ($Authentication)
+    {
+        $script:authentication = $Authentication
     }
 }
 
@@ -187,7 +195,8 @@ function Start-RemoteSession
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
-    New-PSSession -UseSSL -Credential $credential -ComputerName ([System.Net.Dns]::GetHostByName($ServerHost).Hostname) -Port $winrmPort
+    New-PSSession -UseSSL -Credential $credential -ComputerName ([System.Net.Dns]::GetHostByName($ServerHost).Hostname) `
+        -Authentication $authentication -Port $winrmPort
 }
 
 function Install-Iis
