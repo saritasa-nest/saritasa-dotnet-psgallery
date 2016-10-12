@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.3.0
+.VERSION 1.3.1
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -40,6 +40,7 @@ Properties `
     $Configuration = $null
     $ServerHost = $null
     $WinrmPort = 5986
+    $WinrmAuthentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
 }
 
 Import-Module Saritasa.RemoteManagement
@@ -54,7 +55,7 @@ Task init-winrm -description 'Initializes WinRM configuration.' `
     {
         $credential = Get-Credential
     }
-    Initialize-RemoteManagement -Credential $credential -Port $WinrmPort
+    Initialize-RemoteManagement -Credential $credential -Port $WinrmPort -Authentication $WinrmAuthentication
 }
 
 Task import-sites -depends init-winrm -description 'Import app pools and sites to IIS.' `
