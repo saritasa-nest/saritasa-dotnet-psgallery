@@ -49,7 +49,8 @@ Description = 'Contains functions to execute actions on a remote server. Allows 
 
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
-    @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' }
+    @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' },
+    @{ ModuleName='Saritasa.Winrm'; ModuleVersion='1.0.0'; GUID='4356a667-8e3d-43a8-9a2e-49eee4f67eed' }
 )
 
 # Assemblies that must be loaded prior to importing this module
@@ -68,9 +69,9 @@ RequiredModules = @(
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = @('Initialize-RemoteManagement', 'Import-AppPool', 'Import-Site',
-    'Export-AppPool', 'Export-Site', 'Start-RemoteSession', 'Install-Iis',
-    'Install-WebManagementService', 'Install-WebDeploy', 'Invoke-RemoteScript',
+FunctionsToExport = @('Import-AppPool', 'Import-Site',
+    'Export-AppPool', 'Export-Site', 'Install-Iis',
+    'Install-WebManagementService', 'Install-WebDeploy',
     'Install-UrlRewrite', 'Install-MsiPackage', 'Get-RemoteTempPath', 'Import-SslCertificate')
 
 # Cmdlets to export from this module

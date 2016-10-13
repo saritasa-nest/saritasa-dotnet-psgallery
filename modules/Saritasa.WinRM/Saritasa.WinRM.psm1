@@ -1,16 +1,103 @@
-﻿#####################################################################
-# New-SelfSignedCertificateEx.ps1
-# Version 1.0
-#
-# Creates self-signed certificate. This tool is a base replacement
-# for deprecated makecert.exe
-#
-# Vadims Podans (c) 2013
-# http://en-us.sysadmins.lv/
-#####################################################################
-#requires -Version 2.0
+﻿$credential = $null
+$winrmPort = 5986
+$authentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
 
-function New-SelfSignedCertificateEx {
+function Initialize-RemoteManagement
+{
+    [CmdletBinding()]
+    param
+    (
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential,
+        [int] $Port,
+        [System.Management.Automation.Runspaces.AuthenticationMechanism]
+        $Authentication
+    )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    if ($Credential)
+    {
+        $script:credential = $Credential
+    }
+
+    if ($Port)
+    {
+        $script:winrmPort = $Port
+    }
+
+    if ($Authentication)
+    {
+        $script:authentication = $Authentication
+    }
+}
+
+function Start-RemoteSession
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $ServerHost
+    )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+    
+    New-PSSession -UseSSL -Credential $credential -ComputerName ([System.Net.Dns]::GetHostByName($ServerHost).Hostname) `
+        -Authentication $authentication -Port $winrmPort
+}
+
+function CheckSession
+{
+    param
+    (
+        [string] $ServerHost,
+        [System.Management.Automation.Runspaces.PSSession] $Session
+    )
+    
+    if (!$Session)
+    {
+        if (!$ServerHost)
+        {
+            throw 'ServerHost is not set.'
+        }
+        $Session = Start-RemoteSession $ServerHost
+    }
+    
+    $Session
+}
+
+<#
+.SYNOPSIS
+Executes a script on a remote server.
+
+.NOTES
+Based on code by mjolinor.
+http://stackoverflow.com/a/27799658/991267
+#>
+function Invoke-RemoteScript
+{
+    [CmdletBinding()]
+    param
+    (
+        [string] $Path,
+        [hashtable] $Parameters,
+        [string] $ServerHost,
+        [System.Management.Automation.Runspaces.PSSession] $Session
+    )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+    
+    $Session = CheckSession $ServerHost $Session
+    
+    $scriptContent = Get-Content $Path -Raw
+    $scriptParams = &{$args} @Parameters
+    $sb = [scriptblock]::create("&{ $scriptContent } $scriptParams")
+
+    Invoke-Command -Session $Session -ScriptBlock $sb
+}
+
 <#
 .Synopsis
 	This cmdlet generates a self-signed certificate.
@@ -152,8 +239,19 @@ function New-SelfSignedCertificateEx {
 	"Microsoft Software Key Storage Provider" -Exportable
 	
 	Creates self-signed root CA certificate.
+.NOTES
+    New-SelfSignedCertificateEx.ps1
+    Version 1.0
+
+    Creates self-signed certificate. This tool is a base replacement
+    for deprecated makecert.exe
+
+    Vadims Podans (c) 2013
+    http://en-us.sysadmins.lv/
 #>
-[CmdletBinding(DefaultParameterSetName = '__store')]
+function New-SelfSignedCertificateEx
+{
+    [CmdletBinding(DefaultParameterSetName = '__store')]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)]
 		[string]$Subject,
@@ -240,7 +338,7 @@ function New-SelfSignedCertificateEx {
 #region Enhanced Key Usages processing
 	if ($EnhancedKeyUsage) {
 		$OIDs = New-Object -ComObject X509Enrollment.CObjectIDs
-		$EnhancedKeyUsage | %{
+		$EnhancedKeyUsage | ForEach-Object {
 			$OID = New-Object -ComObject X509Enrollment.CObjectID
 			$OID.InitializeFromValue($_.Value)
 			# http://msdn.microsoft.com/en-us/library/aa376785(VS.85).aspx
@@ -254,7 +352,7 @@ function New-SelfSignedCertificateEx {
 #endregion
 
 #region Key Usages processing
-	if ($KeyUsage -ne $null) {
+	if ($KeyUsage) {
 		$KU = New-Object -ComObject X509Enrollment.CX509ExtensionKeyUsage
 		$KU.InitializeEncode([int]$KeyUsage)
 		$KU.Critical = $true
@@ -362,7 +460,7 @@ function New-SelfSignedCertificateEx {
 	if (![string]::IsNullOrEmpty($SerialNumber)) {
 		if ($SerialNumber -match "[^0-9a-fA-F]") {throw "Invalid serial number specified."}
 		if ($SerialNumber.Length % 2) {$SerialNumber = "0" + $SerialNumber}
-		$Bytes = $SerialNumber -split "(.{2})" | ?{$_} | %{[Convert]::ToByte($_,16)}
+		$Bytes = $SerialNumber -split "(.{2})" | Where-Object {$_} | ForEach-Object {[Convert]::ToByte($_,16)}
 		$ByteString = [Convert]::ToBase64String($Bytes)
 		$Cert.SerialNumber.InvokeSet($ByteString,1)
 	}
@@ -389,113 +487,160 @@ function New-SelfSignedCertificateEx {
 			Set-Content -Path $Path -Value ([Convert]::FromBase64String($PFXString)) -Encoding Byte
 		}
 	}
+} # function New-SelfSignedCertificateEx
+
+function FindCertificate
+{
+    param
+    (
+        [string] $Hostname
+    )
+    
+    Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object { $_.Subject -EQ "CN=$Hostname" } | Select-Object -First 1
 }
-# SIG # Begin signature block
-# MIIT9wYJKoZIhvcNAQcCoIIT6DCCE+QCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
-# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAeqLu7+6JFZ1eT+FMVIQ0Tgq
-# Y0Gggg8tMIID7jCCA1egAwIBAgIQfpPr+3zGTlnqS5p31Ab8OzANBgkqhkiG9w0B
-# AQUFADCBizELMAkGA1UEBhMCWkExFTATBgNVBAgTDFdlc3Rlcm4gQ2FwZTEUMBIG
-# A1UEBxMLRHVyYmFudmlsbGUxDzANBgNVBAoTBlRoYXd0ZTEdMBsGA1UECxMUVGhh
-# d3RlIENlcnRpZmljYXRpb24xHzAdBgNVBAMTFlRoYXd0ZSBUaW1lc3RhbXBpbmcg
-# Q0EwHhcNMTIxMjIxMDAwMDAwWhcNMjAxMjMwMjM1OTU5WjBeMQswCQYDVQQGEwJV
-# UzEdMBsGA1UEChMUU3ltYW50ZWMgQ29ycG9yYXRpb24xMDAuBgNVBAMTJ1N5bWFu
-# dGVjIFRpbWUgU3RhbXBpbmcgU2VydmljZXMgQ0EgLSBHMjCCASIwDQYJKoZIhvcN
-# AQEBBQADggEPADCCAQoCggEBALGss0lUS5ccEgrYJXmRIlcqb9y4JsRDc2vCvy5Q
-# WvsUwnaOQwElQ7Sh4kX06Ld7w3TMIte0lAAC903tv7S3RCRrzV9FO9FEzkMScxeC
-# i2m0K8uZHqxyGyZNcR+xMd37UWECU6aq9UksBXhFpS+JzueZ5/6M4lc/PcaS3Er4
-# ezPkeQr78HWIQZz/xQNRmarXbJ+TaYdlKYOFwmAUxMjJOxTawIHwHw103pIiq8r3
-# +3R8J+b3Sht/p8OeLa6K6qbmqicWfWH3mHERvOJQoUvlXfrlDqcsn6plINPYlujI
-# fKVOSET/GeJEB5IL12iEgF1qeGRFzWBGflTBE3zFefHJwXECAwEAAaOB+jCB9zAd
-# BgNVHQ4EFgQUX5r1blzMzHSa1N197z/b7EyALt0wMgYIKwYBBQUHAQEEJjAkMCIG
-# CCsGAQUFBzABhhZodHRwOi8vb2NzcC50aGF3dGUuY29tMBIGA1UdEwEB/wQIMAYB
-# Af8CAQAwPwYDVR0fBDgwNjA0oDKgMIYuaHR0cDovL2NybC50aGF3dGUuY29tL1Ro
-# YXd0ZVRpbWVzdGFtcGluZ0NBLmNybDATBgNVHSUEDDAKBggrBgEFBQcDCDAOBgNV
-# HQ8BAf8EBAMCAQYwKAYDVR0RBCEwH6QdMBsxGTAXBgNVBAMTEFRpbWVTdGFtcC0y
-# MDQ4LTEwDQYJKoZIhvcNAQEFBQADgYEAAwmbj3nvf1kwqu9otfrjCR27T4IGXTdf
-# plKfFo3qHJIJRG71betYfDDo+WmNI3MLEm9Hqa45EfgqsZuwGsOO61mWAK3ODE2y
-# 0DGmCFwqevzieh1XTKhlGOl5QGIllm7HxzdqgyEIjkHq3dlXPx13SYcqFgZepjhq
-# IhKjURmDfrYwggSjMIIDi6ADAgECAhAOz/Q4yP6/NW4E2GqYGxpQMA0GCSqGSIb3
-# DQEBBQUAMF4xCzAJBgNVBAYTAlVTMR0wGwYDVQQKExRTeW1hbnRlYyBDb3Jwb3Jh
-# dGlvbjEwMC4GA1UEAxMnU3ltYW50ZWMgVGltZSBTdGFtcGluZyBTZXJ2aWNlcyBD
-# QSAtIEcyMB4XDTEyMTAxODAwMDAwMFoXDTIwMTIyOTIzNTk1OVowYjELMAkGA1UE
-# BhMCVVMxHTAbBgNVBAoTFFN5bWFudGVjIENvcnBvcmF0aW9uMTQwMgYDVQQDEytT
-# eW1hbnRlYyBUaW1lIFN0YW1waW5nIFNlcnZpY2VzIFNpZ25lciAtIEc0MIIBIjAN
-# BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAomMLOUS4uyOnREm7Dv+h8GEKU5Ow
-# mNutLA9KxW7/hjxTVQ8VzgQ/K/2plpbZvmF5C1vJTIZ25eBDSyKV7sIrQ8Gf2Gi0
-# jkBP7oU4uRHFI/JkWPAVMm9OV6GuiKQC1yoezUvh3WPVF4kyW7BemVqonShQDhfu
-# ltthO0VRHc8SVguSR/yrrvZmPUescHLnkudfzRC5xINklBm9JYDh6NIipdC6Anqh
-# d5NbZcPuF3S8QYYq3AhMjJKMkS2ed0QfaNaodHfbDlsyi1aLM73ZY8hJnTrFxeoz
-# C9Lxoxv0i77Zs1eLO94Ep3oisiSuLsdwxb5OgyYI+wu9qU+ZCOEQKHKqzQIDAQAB
-# o4IBVzCCAVMwDAYDVR0TAQH/BAIwADAWBgNVHSUBAf8EDDAKBggrBgEFBQcDCDAO
-# BgNVHQ8BAf8EBAMCB4AwcwYIKwYBBQUHAQEEZzBlMCoGCCsGAQUFBzABhh5odHRw
-# Oi8vdHMtb2NzcC53cy5zeW1hbnRlYy5jb20wNwYIKwYBBQUHMAKGK2h0dHA6Ly90
-# cy1haWEud3Muc3ltYW50ZWMuY29tL3Rzcy1jYS1nMi5jZXIwPAYDVR0fBDUwMzAx
-# oC+gLYYraHR0cDovL3RzLWNybC53cy5zeW1hbnRlYy5jb20vdHNzLWNhLWcyLmNy
-# bDAoBgNVHREEITAfpB0wGzEZMBcGA1UEAxMQVGltZVN0YW1wLTIwNDgtMjAdBgNV
-# HQ4EFgQURsZpow5KFB7VTNpSYxc/Xja8DeYwHwYDVR0jBBgwFoAUX5r1blzMzHSa
-# 1N197z/b7EyALt0wDQYJKoZIhvcNAQEFBQADggEBAHg7tJEqAEzwj2IwN3ijhCcH
-# bxiy3iXcoNSUA6qGTiWfmkADHN3O43nLIWgG2rYytG2/9CwmYzPkSWRtDebDZw73
-# BaQ1bHyJFsbpst+y6d0gxnEPzZV03LZc3r03H0N45ni1zSgEIKOq8UvEiCmRDoDR
-# EfzdXHZuT14ORUZBbg2w6jiasTraCXEQ/Bx5tIB7rGn0/Zy2DBYr8X9bCT2bW+IW
-# yhOBbQAuOA2oKY8s4bL0WqkBrxWcLC9JG9siu8P+eJRRw4axgohd8D20UaF5Mysu
-# e7ncIAkTcetqGVvP6KUwVyyJST+5z3/Jvz4iaGNTmr1pdKzFHTx/kuDDvBzYBHUw
-# ggaQMIIFeKADAgECAhAGnC2gXFmy7q5ox0B+K5/xMA0GCSqGSIb3DQEBBQUAMG8x
-# CzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3
-# dy5kaWdpY2VydC5jb20xLjAsBgNVBAMTJURpZ2lDZXJ0IEFzc3VyZWQgSUQgQ29k
-# ZSBTaWduaW5nIENBLTEwHhcNMTMwMTI4MDAwMDAwWhcNMTQwMjA1MTIwMDAwWjBc
-# MQswCQYDVQQGEwJMVjEKMAgGA1UECBMBLTENMAsGA1UEBxMEUmlnYTEYMBYGA1UE
-# ChMPU3lzYWRtaW5zIExWIElLMRgwFgYDVQQDEw9TeXNhZG1pbnMgTFYgSUswggEi
-# MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQChzYQDqMuYBs/jnfLsMvbbuZTV
-# wwY1yHJ92TvD7bNwVx1OFEENNGrXkLNz9Ro6XtJ8zcB/80FmxE9jL2ARLd2TmEJt
-# aYBvvmGMsS17zCGYDZZU7aVjaKZX2R665V+LWJUEIaHCcY5XjfmeZvCk1tHOtTAX
-# qKjUd6fGIWXpxrSP9WKxW7FpTDGzQ2BpkZ+snmPS9yWDgeu709zPeoSTbdEIva6J
-# ckzFj0uK7k2BqlLG3dsxBIzUqr+yTbdAuWfhR731iyWHk5GT6XCtBjBmuouKOCT1
-# Jn0xmYNAwgdtSiBlTL4A/Rm3YuP57VP+EBrrgA5g7Pekdo9APU+7QqWF51YhAgMB
-# AAGjggM5MIIDNTAfBgNVHSMEGDAWgBR7aM4pqsAXvkl64eU/1qf3RY81MjAdBgNV
-# HQ4EFgQUgiIRdHkZ2SctPGaLDBBOX67N7NQwDgYDVR0PAQH/BAQDAgeAMBMGA1Ud
-# JQQMMAoGCCsGAQUFBwMDMHMGA1UdHwRsMGowM6AxoC+GLWh0dHA6Ly9jcmwzLmRp
-# Z2ljZXJ0LmNvbS9hc3N1cmVkLWNzLTIwMTFhLmNybDAzoDGgL4YtaHR0cDovL2Ny
-# bDQuZGlnaWNlcnQuY29tL2Fzc3VyZWQtY3MtMjAxMWEuY3JsMIIBxAYDVR0gBIIB
-# uzCCAbcwggGzBglghkgBhv1sAwEwggGkMDoGCCsGAQUFBwIBFi5odHRwOi8vd3d3
-# LmRpZ2ljZXJ0LmNvbS9zc2wtY3BzLXJlcG9zaXRvcnkuaHRtMIIBZAYIKwYBBQUH
-# AgIwggFWHoIBUgBBAG4AeQAgAHUAcwBlACAAbwBmACAAdABoAGkAcwAgAEMAZQBy
-# AHQAaQBmAGkAYwBhAHQAZQAgAGMAbwBuAHMAdABpAHQAdQB0AGUAcwAgAGEAYwBj
-# AGUAcAB0AGEAbgBjAGUAIABvAGYAIAB0AGgAZQAgAEQAaQBnAGkAQwBlAHIAdAAg
-# AEMAUAAvAEMAUABTACAAYQBuAGQAIAB0AGgAZQAgAFIAZQBsAHkAaQBuAGcAIABQ
-# AGEAcgB0AHkAIABBAGcAcgBlAGUAbQBlAG4AdAAgAHcAaABpAGMAaAAgAGwAaQBt
-# AGkAdAAgAGwAaQBhAGIAaQBsAGkAdAB5ACAAYQBuAGQAIABhAHIAZQAgAGkAbgBj
-# AG8AcgBwAG8AcgBhAHQAZQBkACAAaABlAHIAZQBpAG4AIABiAHkAIAByAGUAZgBl
-# AHIAZQBuAGMAZQAuMIGCBggrBgEFBQcBAQR2MHQwJAYIKwYBBQUHMAGGGGh0dHA6
-# Ly9vY3NwLmRpZ2ljZXJ0LmNvbTBMBggrBgEFBQcwAoZAaHR0cDovL2NhY2VydHMu
-# ZGlnaWNlcnQuY29tL0RpZ2lDZXJ0QXNzdXJlZElEQ29kZVNpZ25pbmdDQS0xLmNy
-# dDAMBgNVHRMBAf8EAjAAMA0GCSqGSIb3DQEBBQUAA4IBAQAh3nRpJ8WxlJZ8NI1y
-# B4iM7RzjL7D57lVj/shWkbCp2znzBLVMGnYVK+Z0QL2PSxpxX52Khhc2MHXTM+Yf
-# 74sO5XZm5IMMAnlpK2FeyQBGIKcFmrzkvj3LUcCc7RU0duioVHQ+C+hOQmpmSYiA
-# 0zOoJgO4zFy5SKT1mzPEElup1B2aiE+WQZpcEWUv4I+/lYvYIBhyz+WZ2xm4kLbG
-# QYR/08cei9X70x02wpgMSK9yKhSzcpwbq+ccnOtFUlTLNyRr9OuRnTi3ZCM8w5Is
-# a2+UsnxsF5F5CGsw+GMRT/Jrm2mHMcKIW+qp8reUXattRTjobnbARJSQS3NBt4wp
-# wTIZMYIENDCCBDACAQEwgYMwbzELMAkGA1UEBhMCVVMxFTATBgNVBAoTDERpZ2lD
-# ZXJ0IEluYzEZMBcGA1UECxMQd3d3LmRpZ2ljZXJ0LmNvbTEuMCwGA1UEAxMlRGln
-# aUNlcnQgQXNzdXJlZCBJRCBDb2RlIFNpZ25pbmcgQ0EtMQIQBpwtoFxZsu6uaMdA
-# fiuf8TAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkq
-# hkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGC
-# NwIBFTAjBgkqhkiG9w0BCQQxFgQU/ix9ZAr39xxjbsYVBZ5BgjBjq+MwDQYJKoZI
-# hvcNAQEBBQAEggEAI0yNayiE8E3Ttsmvd5tvmAUN9ngGpez7qvGtjcUEFXyjRHjW
-# d3XieT98UHYL1/+IoX6QiEXP/t5SreMqQmql9wvlhyDt2Qw2+E80MXFCGvKuAJAp
-# LvTY3F4i9fY+wCT33B2dDUSAI+mFGbJxl1GgulqSxLOUiGnlpWvtJ07lgSki6xN0
-# MTlNCt4xem5P43iRLFtlkEJjYpznClPx0Ipu1IG3gND4hos5jVofxJ5ZcVbMQ07c
-# +9Rq4iTccmNE9oV4H0ZRRCrJbNfIart3je0/aSeOpo1WGwZr6hyJEvETGruyDbSW
-# uK9kIfAZbVSvpx4clfeP9SIxcyhom1e8xp6daKGCAgswggIHBgkqhkiG9w0BCQYx
-# ggH4MIIB9AIBATByMF4xCzAJBgNVBAYTAlVTMR0wGwYDVQQKExRTeW1hbnRlYyBD
-# b3Jwb3JhdGlvbjEwMC4GA1UEAxMnU3ltYW50ZWMgVGltZSBTdGFtcGluZyBTZXJ2
-# aWNlcyBDQSAtIEcyAhAOz/Q4yP6/NW4E2GqYGxpQMAkGBSsOAwIaBQCgXTAYBgkq
-# hkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0xMzA0MTQxMDU2
-# NTFaMCMGCSqGSIb3DQEJBDEWBBR3BvjwJvcH3OSIjiXabjSSjC3hizANBgkqhkiG
-# 9w0BAQEFAASCAQBa1lxJa2qVZmZKDY2Rm7XNJEIoxOzdw+WZViQC9qsi9FrFVPwj
-# y3UjlfVm5AynoSXs0+mXgyU4xW3c/xDgFKEyLN+mocD8mx+ufc/bG1l0SWVYITgV
-# WiQe5G0oOW/mRQNLhaiJGE3fZuxvTbN0rGYIOeZ5Nsl6yyJpsx96em0skNk2XxVA
-# rYoniI/OCP7a9VyqXZr/ScgG18ZreKZikyrjBz6zQh9ibrApLprm/nJ+7go+yeHA
-# hqUEwDtiRAyCJfH3DKLPCm6YqWOaT07+LWZSm2DM+mcRydj7gKGoOILfgLhjnUdz
-# IJUMgUNRqvIxWuUtU1wAquBSObIOtRD4hkBG
-# SIG # End signature block
+
+function GenerateCertificate
+{
+    param
+    (
+        [string] $Hostname
+    )
+
+    $cmd = Get-Command New-SelfSignedCertificate -ErrorAction Ignore
+    if ($cmd)
+    {
+        $certificateThumbprint = (New-SelfSignedCertificate -DnsName $hostname -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
+    }
+    else # Windows Server 2008, 2008 R2
+    {
+        $pfxFile = "$Hostname.pfx"
+        $password = New-Object System.Security.SecureString
+
+        New-SelfSignedCertificateEx -Subject "CN=$Hostname" -Exportable -Password $password -Path $pfxFile `
+            -KeyUsage 'DataEncipherment', 'KeyEncipherment', 'DigitalSignature' -EnhancedKeyUsage 'Server Authentication' | Out-Null
+
+        certutil -p $password -importpfx $pfxFile | Out-Null
+        if ($LASTEXITCODE)
+        {
+            throw 'CertUtil failed.'
+        }
+
+        Remove-Item $pfxFile | Out-Null
+
+        $existingCertificate = FindCertificate $Hostname
+        if ($existingCertificate)
+        {
+            $certificateThumbprint = $existingCertificate.Thumbprint
+        }
+        else
+        {
+            throw 'New certificate is not found.'
+        }
+    }
+
+    $certificateThumbprint
+}
+
+<#
+.SYNOPSIS
+Configures server to accept WinRM connections over HTTPS.
+
+.DESCRIPTION
+Generates self-signed certificate or uses existing. Configures HTTPS listener for WinRM service. Opens 5986 port in firewall.
+
+For Windows Server 2008 and 2008 R2 you should execute following statement to disable remote UAC:
+Set-ItemProperty –Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System –Name LocalAccountTokenFilterPolicy –Value 1 –Type DWord
+Restart-Computer
+#>
+function Install-WinrmHttps
+{
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "",
+                                                       Scope="Function", Target="*")]
+
+    [CmdletBinding()]
+    param
+    (
+        [string] $CertificateThumbprint,
+        [switch] $Force
+    )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    if (!$PSBoundParameters.ContainsKey('InformationAction'))
+    {
+        $InformationPreference = 'Continue'
+    }
+
+    $hostname = [System.Net.Dns]::GetHostByName('localhost').Hostname
+
+    if (!$CertificateThumbprint)
+    {
+        $existingCertificate = FindCertificate $hostname
+        if ($existingCertificate)
+        {
+            $CertificateThumbprint = $existingCertificate.Thumbprint
+            Write-Information 'Using existing certificate...'
+        }
+        else
+        {
+            $CertificateThumbprint = GenerateCertificate $hostname
+            Write-Information 'New certificate is generated.'
+        }
+    }
+
+    $existingListener = Get-ChildItem WSMan:\localhost\Listener |
+        Where-Object { $_.Keys[0] -eq 'Transport=HTTPS' }
+
+    if ($existingListener)
+    {
+        Write-Information 'Listener already exists.'
+        if ($Force)
+        {
+            Write-Information 'Reinstalling...'
+            Remove-Item "WSMan:\localhost\Listener\$($existingListener.Name)" -Recurse | Out-Null
+            $existingListener = $null
+        }
+    }
+
+    if (!$existingListener)
+    {
+        New-Item -Path WSMan:\localhost\Listener -Address * -Transport HTTPS -Hostname $hostname `
+            -CertificateThumbprint $CertificateThumbprint -Force | Out-Null
+        Write-Information 'New listener is created.'
+    }
+
+    try
+    {
+        $cmd = Get-Command New-NetFirewallRule -ErrorAction Ignore
+        $ruleName = 'Windows Remote Management (HTTPS-In)'
+        $port = 5986
+
+        if ($cmd)
+        {
+            New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Action Allow -Protocol TCP -LocalPort $port -ErrorAction Stop | Out-Null
+        }
+        else
+        {
+            netsh advfirewall firewall add rule name=$ruleName protocol=TCP dir=in localport=$port action=allow
+            if ($LASTEXITCODE)
+            {
+                throw 'Netsh failed.'
+            }
+        }
+
+        Write-Information 'Firewall rule is updated.'
+    }
+    catch [Microsoft.Management.Infrastructure.CimException]
+    {
+        if ($_.Exception.HResult -eq 0x80131500)
+        {
+            Write-Information 'Windows Firewall is not enabled.'
+        }
+        else
+        {
+            throw
+        }
+    }
+
+    Write-Information "`nWinRM is set up for host $hostname."
+}
