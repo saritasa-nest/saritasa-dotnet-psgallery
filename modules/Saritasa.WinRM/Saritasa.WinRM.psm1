@@ -503,20 +503,21 @@ function GenerateCertificate
 {
     param
     (
-        [string] $Hostname
+        [string[]] $DnsNames
     )
 
     $cmd = Get-Command New-SelfSignedCertificate -ErrorAction Ignore
     if ($cmd)
     {
-        $certificateThumbprint = (New-SelfSignedCertificate -DnsName $hostname -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
+        $certificateThumbprint = (New-SelfSignedCertificate -DnsName $DnsNames -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
     }
     else # Windows Server 2008, 2008 R2
     {
-        $pfxFile = "$Hostname.pfx"
+        $pfxFile = "$commonName.pfx"
         $password = New-Object System.Security.SecureString
 
-        New-SelfSignedCertificateEx -Subject "CN=$Hostname" -Exportable -Password $password -Path $pfxFile `
+        New-SelfSignedCertificateEx -Subject "CN=$commonName" -SubjectAlternativeName $DnsNames `  
+			-Exportable -Password $password -Path $pfxFile `
             -KeyUsage 'DataEncipherment', 'KeyEncipherment', 'DigitalSignature' -EnhancedKeyUsage 'Server Authentication' | Out-Null
 
         certutil -p $password -importpfx $pfxFile | Out-Null
@@ -527,7 +528,7 @@ function GenerateCertificate
 
         Remove-Item $pfxFile | Out-Null
 
-        $existingCertificate = FindCertificate $Hostname
+        $existingCertificate = FindCertificate $commonName
         if ($existingCertificate)
         {
             $certificateThumbprint = $existingCertificate.Thumbprint
@@ -561,7 +562,8 @@ function Install-WinrmHttps
     param
     (
         [string] $CertificateThumbprint,
-        [switch] $Force
+        [switch] $Force,
+		[String[]] $AlternativeDnsNames
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
@@ -571,11 +573,19 @@ function Install-WinrmHttps
         $InformationPreference = 'Continue'
     }
 
-    $hostname = [System.Net.Dns]::GetHostByName('localhost').Hostname
+    $fqdn = [System.Net.Dns]::GetHostByName('localhost').Hostname
+	$computerName = $env:COMPUTERNAME
+	
+	$dnsNames = @($fqdn, $computerName)
+
+	if ($AlternativeDnsNames)
+	{
+		$dnsNames += $AlternativeDnsNames
+	}
 
     if (!$CertificateThumbprint)
     {
-        $existingCertificate = FindCertificate $hostname
+        $existingCertificate = FindCertificate $fqdn
         if ($existingCertificate)
         {
             $CertificateThumbprint = $existingCertificate.Thumbprint
@@ -583,7 +593,7 @@ function Install-WinrmHttps
         }
         else
         {
-            $CertificateThumbprint = GenerateCertificate $hostname
+            $CertificateThumbprint = GenerateCertificate $dnsNames
             Write-Information 'New certificate is generated.'
         }
     }
@@ -604,7 +614,7 @@ function Install-WinrmHttps
 
     if (!$existingListener)
     {
-        New-Item -Path WSMan:\localhost\Listener -Address * -Transport HTTPS -Hostname $hostname `
+        New-Item -Path WSMan:\localhost\Listener -Address * -Transport HTTPS -Hostname * `
             -CertificateThumbprint $CertificateThumbprint -Force | Out-Null
         Write-Information 'New listener is created.'
     }
@@ -642,5 +652,6 @@ function Install-WinrmHttps
         }
     }
 
-    Write-Information "`nWinRM is set up for host $hostname."
+    Write-Information "`nWinRM is set up for DNS names:"
+	Write-Information ($dnsNames | Out-String)
 }
