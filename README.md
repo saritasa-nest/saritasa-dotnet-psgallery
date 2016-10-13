@@ -18,6 +18,7 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 | [Saritasa.Test](docs/Saritasa.Test.md)                                 | Contains functions to run unit tests. |
 | [Saritasa.Web](docs/Saritasa.Web.md)                                   | Contains various methods for web requests and SSL handling. |
 | [Saritasa.WebDeploy](docs/Saritasa.WebDeploy.md)                       | Contains functions to control app pools and synchronize IIS web sites using Microsoft WebDeploy tool. |
+| [Saritasa.WinRM](docs/Saritasa.WinRM.md)                               | Contains functions to set up WinRM and execute remote commands. |
 
 # Scripts
 
@@ -38,12 +39,6 @@ Microsoft scripts to set up msdeploy for web site. They are modified to skip SKU
 | ------------------------- | --------------- |
 | AddDelegationRules.ps1    |                 |
 | SetupSiteForPublish.ps1   |                 |
-
-## WinRM
-
-| Name                      | Description                                               |
-| ------------------------- | --------------------------------------------------------- |
-| Install-WinrmHttps.ps1    | Configures server to accept WinRM connections over HTTPS. |
 
 # Links
 
