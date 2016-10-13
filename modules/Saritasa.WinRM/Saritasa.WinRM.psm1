@@ -1,4 +1,4 @@
-$credential = $null
+﻿$credential = $null
 $winrmPort = 5986
 $authentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
 
@@ -338,7 +338,7 @@ function New-SelfSignedCertificateEx
 #region Enhanced Key Usages processing
 	if ($EnhancedKeyUsage) {
 		$OIDs = New-Object -ComObject X509Enrollment.CObjectIDs
-		$EnhancedKeyUsage | %{
+		$EnhancedKeyUsage | ForEach-Object {
 			$OID = New-Object -ComObject X509Enrollment.CObjectID
 			$OID.InitializeFromValue($_.Value)
 			# http://msdn.microsoft.com/en-us/library/aa376785(VS.85).aspx
@@ -352,7 +352,7 @@ function New-SelfSignedCertificateEx
 #endregion
 
 #region Key Usages processing
-	if ($KeyUsage -ne $null) {
+	if ($KeyUsage) {
 		$KU = New-Object -ComObject X509Enrollment.CX509ExtensionKeyUsage
 		$KU.InitializeEncode([int]$KeyUsage)
 		$KU.Critical = $true
@@ -460,7 +460,7 @@ function New-SelfSignedCertificateEx
 	if (![string]::IsNullOrEmpty($SerialNumber)) {
 		if ($SerialNumber -match "[^0-9a-fA-F]") {throw "Invalid serial number specified."}
 		if ($SerialNumber.Length % 2) {$SerialNumber = "0" + $SerialNumber}
-		$Bytes = $SerialNumber -split "(.{2})" | ?{$_} | %{[Convert]::ToByte($_,16)}
+		$Bytes = $SerialNumber -split "(.{2})" | Where-Object {$_} | ForEach-Object {[Convert]::ToByte($_,16)}
 		$ByteString = [Convert]::ToBase64String($Bytes)
 		$Cert.SerialNumber.InvokeSet($ByteString,1)
 	}
@@ -554,6 +554,9 @@ Restart-Computer
 #>
 function Install-WinrmHttps
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "",
+                                                       Scope="Function", Target="*")]
+
     [CmdletBinding()]
     param
     (

@@ -1,5 +1,3 @@
-$root = $PSScriptRoot
-
 function Initialize-Redis
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
