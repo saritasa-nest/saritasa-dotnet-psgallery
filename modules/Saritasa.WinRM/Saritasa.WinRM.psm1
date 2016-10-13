@@ -513,11 +513,6 @@ function GenerateCertificate
     }
     else # Windows Server 2008, 2008 R2
     {
-        $scriptPath = "$env:TEMP\New-SelfSignedCertificateEx.ps1"
-        Invoke-WebRequest 'https://raw.githubusercontent.com/Saritasa/PSGallery/master/scripts/WinRM/New-SelfSignedCertificateEx.ps1' -OutFile $scriptPath
-        . $scriptPath
-        Remove-Item $scriptPath | Out-Null
-
         $pfxFile = "$Hostname.pfx"
         $password = 'pwd'
 
