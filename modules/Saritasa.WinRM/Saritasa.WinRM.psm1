@@ -566,6 +566,11 @@ function Install-WinrmHttps
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
+    if (!$PSBoundParameters.ContainsKey('InformationAction'))
+    {
+        $InformationPreference = 'Continue'
+    }
+
     $hostname = [System.Net.Dns]::GetHostByName('localhost').Hostname
 
     if (!$CertificateThumbprint)
