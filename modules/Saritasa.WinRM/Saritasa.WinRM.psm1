@@ -514,10 +514,9 @@ function GenerateCertificate
     else # Windows Server 2008, 2008 R2
     {
         $pfxFile = "$Hostname.pfx"
-        $password = 'pwd'
+        $password = New-Object System.Security.SecureString
 
-        New-SelfSignedCertificateEx -Subject "CN=$Hostname" `
-            -Exportable -Password (ConvertTo-SecureString $password -AsPlainText -Force) -Path $pfxFile `
+        New-SelfSignedCertificateEx -Subject "CN=$Hostname" -Exportable -Password $password -Path $pfxFile `
             -KeyUsage 'DataEncipherment', 'KeyEncipherment', 'DigitalSignature' -EnhancedKeyUsage 'Server Authentication' | Out-Null
 
         certutil -p $password -importpfx $pfxFile | Out-Null
