@@ -597,7 +597,7 @@ function Install-WinrmHttps
         if ($Force)
         {
             Write-Information 'Reinstalling...'
-            Remove-Item "WSMan:\localhost\Listener\$($existingListener.Name)" -Recurse
+            Remove-Item "WSMan:\localhost\Listener\$($existingListener.Name)" -Recurse | Out-Null
             $existingListener = $null
         }
     }
@@ -605,7 +605,7 @@ function Install-WinrmHttps
     if (!$existingListener)
     {
         New-Item -Path WSMan:\localhost\Listener -Address * -Transport HTTPS -Hostname $hostname `
-            -CertificateThumbprint $CertificateThumbprint -Force
+            -CertificateThumbprint $CertificateThumbprint -Force | Out-Null
         Write-Information 'New listener is created.'
     }
 
@@ -617,7 +617,7 @@ function Install-WinrmHttps
 
         if ($cmd)
         {
-            New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Action Allow -Protocol TCP -LocalPort $port -ErrorAction Stop
+            New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Action Allow -Protocol TCP -LocalPort $port -ErrorAction Stop | Out-Null
         }
         else
         {
