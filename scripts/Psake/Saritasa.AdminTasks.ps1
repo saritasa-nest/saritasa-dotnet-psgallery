@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.3.1
+.VERSION 1.3.2
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -61,15 +61,15 @@ Task init-winrm -description 'Initializes WinRM configuration.' `
 Task import-sites -depends init-winrm -description 'Import app pools and sites to IIS.' `
     -requiredVariables @('Configuration', 'ServerHost') `
 {  
-    Import-AppPool $serverHost "$root\IIS\AppPools.${Configuration}.xml"
-    Import-Site $serverHost "$root\IIS\Sites.${Configuration}.xml"
+    Import-AppPool $ServerHost "$root\IIS\AppPools.${Configuration}.xml"
+    Import-Site $ServerHost "$root\IIS\Sites.${Configuration}.xml"
 }
 
 Task export-sites -depends init-winrm -description 'Export app pools and sites from IIS.' `
     -requiredVariables @('Configuration', 'ServerHost') `
 {
-    Export-AppPool $serverHost "$root\IIS\AppPools.${Configuration}.xml"
-    Export-Site $serverHost "$root\IIS\Sites.${Configuration}.xml"
+    Export-AppPool $ServerHost "$root\IIS\AppPools.${Configuration}.xml"
+    Export-Site $ServerHost "$root\IIS\Sites.${Configuration}.xml"
 }
 
 Task trust-host -description 'Add server''s certificate to trusted root CA store.' `

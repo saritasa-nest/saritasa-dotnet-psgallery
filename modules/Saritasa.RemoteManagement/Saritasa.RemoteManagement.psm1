@@ -12,11 +12,6 @@ function ExecuteAppCmd
     
     if ($ServerHost) # Remote server.
     {
-        if (!$credential)
-        {
-            throw 'Credentials are not set.'
-        }
-        
         $session = Start-RemoteSession $ServerHost
 
         Invoke-Command -Session $session -ScriptBlock { $using:config | &$using:appCmd $using:Arguments }
@@ -46,11 +41,6 @@ function GetAppCmdOutput
     
     if ($ServerHost) # Remote server.
     {
-        if (!$credential)
-        {
-            throw 'Credentials are not set.'
-        }
-        
         $session = Start-RemoteSession $ServerHost
 
         $output = Invoke-Command -Session $session -ScriptBlock { &$using:appCmd $using:Arguments }
