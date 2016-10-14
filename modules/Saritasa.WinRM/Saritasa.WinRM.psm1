@@ -516,6 +516,7 @@ function GenerateCertificate
     }
     else # Windows Server 2008, 2008 R2
     {
+        $commonName = $DnsNames[0]
         $pfxFile = "$commonName.pfx"
         $password = New-Object System.Security.SecureString
         $password.AppendChar('_')
@@ -524,7 +525,7 @@ function GenerateCertificate
             -Exportable -Password $password -Path $pfxFile `
             -KeyUsage 'DataEncipherment', 'KeyEncipherment', 'DigitalSignature' -EnhancedKeyUsage 'Server Authentication' | Out-Null
 
-        $result = certutil -p '_' -importpfx $pfxFile
+        $result = certutil -p '_' -importpfx $pfxFile | Out-String
         if ($LASTEXITCODE)
         {
             Write-Error $result
