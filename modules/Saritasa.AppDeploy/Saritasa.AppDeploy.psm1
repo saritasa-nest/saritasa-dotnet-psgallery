@@ -14,11 +14,9 @@ function Invoke-DesktopProjectDeployment
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.Runspaces.PSSession] $Session,
         [Parameter(Mandatory = $true)]
-        [string] $ApprootPath,
-        [Parameter(Mandatory = $true)]
-        [string] $InstanceName,
-        [Parameter(Mandatory = $true)]
         [string] $BinPath,
+        [Parameter(Mandatory = $true)]
+        [string] $DestinationPath,
         [ScriptBlock] $BeforeDeploy,
         [ScriptBlock] $AfterDeploy,
         [AppDeployOverwriteMode] $OverwriteMode = [AppDeployOverwriteMode]::Backup
@@ -27,13 +25,12 @@ function Invoke-DesktopProjectDeployment
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Write-Information 'Creating ZIP archive...'
-    $archiveName = "${InstanceName}.zip"
+    $archiveName = "$([guid]::NewGuid()).zip"
     Compress-Archive "$BinPath\*" $archiveName -Force
     Write-Information 'Done.'
     
     $remoteTempDir = Get-RemoteTempPath $Session
     $remoteArchive = "$remoteTempDir\$archiveName"
-    $destinationPath = "$ApprootPath\$InstanceName"
     
     Write-Information "Copying $archiveName to remote server..."
     Copy-Item ".\$archiveName" $remoteTempDir -ToSession $Session
@@ -45,20 +42,20 @@ function Invoke-DesktopProjectDeployment
     {
         Invoke-Command -Session $Session -ScriptBlock `
             {       
-                $backupPath = "$($using:destinationPath)Old"
+                $backupPath = "$($using:DestinationPath)Old"
                 if (Test-Path $backupPath)
                 {
                     Remove-Item $backupPath -Recurse
                 }
                 
-                if (Test-Path $using:destinationPath)
+                if (Test-Path $using:DestinationPath)
                 {
                     $retries = 0
                     while ($true)
                     {
                         try
                         {
-                            Rename-Item $using:destinationPath $backupPath -EA Stop
+                            Rename-Item $using:DestinationPath $backupPath -EA Stop
                             break
                         }
                         catch
@@ -78,16 +75,16 @@ function Invoke-DesktopProjectDeployment
                 }
                 
                 # Directory should exist, if PSCX is used.
-                New-Item -ItemType directory $using:destinationPath
+                New-Item -ItemType directory $using:DestinationPath
             
-                Expand-Archive $using:remoteArchive $using:destinationPath
+                Expand-Archive $using:remoteArchive $using:DestinationPath
             }
     } # OverwriteMode - Backup
     elseif ($OverwriteMode -eq [AppDeployOverwriteMode]::Overwrite)
     {
         Invoke-Command -Session $session -ScriptBlock `
             {
-                Expand-Archive $using:remoteArchive $using:destinationPath -Force
+                Expand-Archive $using:remoteArchive $using:DestinationPath -Force
             }
     }
     else
@@ -97,7 +94,8 @@ function Invoke-DesktopProjectDeployment
 
     Invoke-Command -Session $Session -ScriptBlock `
         {
-            Write-Information "$using:InstanceName app is updated."
+            $appName = (Get-Item $using:DestinationPath).BaseName
+            Write-Information "$appName app is updated."
             Remove-Item $using:remoteTempDir -Recurse -ErrorAction Stop
         }
 
@@ -117,19 +115,19 @@ function Invoke-ServiceProjectDeployment
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.Runspaces.PSSession] $Session,
         [Parameter(Mandatory = $true)]
-        [string] $ApprootPath,
-        [Parameter(Mandatory = $true)]
         [string] $ServiceName,
         [Parameter(Mandatory = $true)]
         [string] $ProjectName,
         [Parameter(Mandatory = $true)]
         [string] $BinPath,
+        [Parameter(Mandatory = $true)]
+        [string] $DestinationPath,        
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
         $ServiceCredential
     )
 
-    Invoke-DesktopProjectDeployment -Session $Session -ApprootPath $ApprootPath -InstanceName $ServiceName -BinPath $BinPath  `
+    Invoke-DesktopProjectDeployment -Session $Session -DestinationPath $DestinationPath -BinPath $BinPath  `
         -BeforeDeploy `
         {
             $service = Get-Service | ? { $_.Name -eq $using:ServiceName }
@@ -156,7 +154,7 @@ function Invoke-ServiceProjectDeployment
                 Write-Information "Creating $using:ServiceName service..."
                 
                 $service = New-Service -Name $using:ServiceName -ErrorAction Stop -Credential $using:ServiceCredential `
-                     -BinaryPathName "$using:ApprootPath\$using:ServiceName\$using:ProjectName.exe"
+                     -BinaryPathName "$using:DestinationPath\$using:ProjectName.exe"
                 Write-Information "Done."
                 
                 Start-Service $using:ServiceName -ErrorAction Stop
