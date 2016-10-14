@@ -1,3 +1,11 @@
+Add-Type -TypeDefinition @"
+   public enum AppDeployOverwriteMode
+   {
+      Backup = 0,
+      Overwrite = 1
+   }
+"@
+
 function Invoke-DesktopProjectDeployment
 {
     [CmdletBinding()]
@@ -12,7 +20,8 @@ function Invoke-DesktopProjectDeployment
         [Parameter(Mandatory = $true)]
         [string] $BinPath,
         [ScriptBlock] $BeforeDeploy,
-        [ScriptBlock] $AfterDeploy
+        [ScriptBlock] $AfterDeploy,
+        [AppDeployOverwriteMode] $OverwriteMode = [AppDeployOverwriteMode]::Backup
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
@@ -31,47 +40,67 @@ function Invoke-DesktopProjectDeployment
     Write-Information 'Done.'
     
     Invoke-Command -Session $Session -ScriptBlock $BeforeDeploy
-    Invoke-Command -Session $Session -ScriptBlock `
-        {       
-            $backupPath = "$($using:destinationPath)Old"
-            if (Test-Path $backupPath)
-            {
-                Remove-Item $backupPath -Recurse
-            }
-            
-            if (Test-Path $using:destinationPath)
-            {
-                $retries = 0
-                while ($true)
+
+    if ($OverwriteMode -eq [AppDeployOverwriteMode]::Backup)
+    {
+        Invoke-Command -Session $Session -ScriptBlock `
+            {       
+                $backupPath = "$($using:destinationPath)Old"
+                if (Test-Path $backupPath)
                 {
-                    try
+                    Remove-Item $backupPath -Recurse
+                }
+                
+                if (Test-Path $using:destinationPath)
+                {
+                    $retries = 0
+                    while ($true)
                     {
-                        Rename-Item $using:destinationPath $backupPath -EA Stop
-                        break
-                    }
-                    catch
-                    {
-                        $retries++
-                        if ($retries -eq 10)
+                        try
                         {
-                            throw
+                            Rename-Item $using:destinationPath $backupPath -EA Stop
+                            break
                         }
-                        else
+                        catch
                         {
-                            Write-Warning 'Warning: Rename operation failed. Retrying...'
-                            Start-Sleep $retries
+                            $retries++
+                            if ($retries -eq 10)
+                            {
+                                throw
+                            }
+                            else
+                            {
+                                Write-Warning 'Warning: Rename operation failed. Retrying...'
+                                Start-Sleep $retries
+                            }
                         }
                     }
                 }
-            }
+                
+                # Directory should exist, if PSCX is used.
+                New-Item -ItemType directory $using:destinationPath
             
-            # Directory should exist, if PSCX is used.
-            New-Item -ItemType directory $using:destinationPath
-        
-            Expand-Archive $using:remoteArchive $using:destinationPath
+                Expand-Archive $using:remoteArchive $using:destinationPath
+            }
+    } # OverwriteMode - Backup
+    elseif ($OverwriteMode -eq [AppDeployOverwriteMode]::Overwrite)
+    {
+        Invoke-Command -Session $session -ScriptBlock `
+            {
+                Expand-Archive $using:remoteArchive $using:destinationPath -Force
+            }
+    }
+    else
+    {
+        throw 'Unknown OverwriteMode.'
+    }
+
+    Invoke-Command -Session $Session -ScriptBlock `
+        {
             Write-Information "$using:InstanceName app is updated."
             Remove-Item $using:remoteTempDir -Recurse -ErrorAction Stop
         }
+
     Invoke-Command -Session $Session -ScriptBlock $AfterDeploy
 }
 
