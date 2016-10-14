@@ -153,7 +153,13 @@ function Invoke-ServiceProjectDeployment
             {
                 Write-Information "Creating $using:ServiceName service..."
                 
-                $service = New-Service -Name $using:ServiceName -ErrorAction Stop -Credential $using:ServiceCredential `
+                $credential = $using:ServiceCredential
+                if ($credential.UserName -notlike '*\*') # Not a domain user.
+                {
+                    $credential = New-Object System.Management.Automation.PSCredential(".\$($credential.UserName)", $credential.Password)
+                }
+
+                $service = New-Service -Name $using:ServiceName -ErrorAction Stop -Credential $credential `
                      -BinaryPathName "$using:DestinationPath\$using:ProjectName.exe"
                 Write-Information "Done."
                 
