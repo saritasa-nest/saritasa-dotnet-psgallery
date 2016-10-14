@@ -127,6 +127,8 @@ function Invoke-ServiceProjectDeployment
         $ServiceCredential
     )
 
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     Invoke-DesktopProjectDeployment -Session $Session -DestinationPath $DestinationPath -BinPath $BinPath  `
         -BeforeDeploy `
         {
