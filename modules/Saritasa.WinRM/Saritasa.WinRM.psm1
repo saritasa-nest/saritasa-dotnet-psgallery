@@ -614,7 +614,7 @@ function Install-WinrmHttps
 
     if (!$existingListener)
     {
-        New-Item -Path WSMan:\localhost\Listener -Address * -Transport HTTPS -Hostname * `
+        New-Item -Path WSMan:\localhost\Listener -Address * -Transport HTTPS `
             -CertificateThumbprint $CertificateThumbprint -Force | Out-Null
         Write-Information 'New listener is created.'
     }
