@@ -378,29 +378,6 @@ function Install-MsiPackage
         }
 }
 
-<#
-.SYNOPSIS
-Creates a new directory in remote server's %TEMP% and returns it.
-#>
-function Get-RemoteTempPath
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.Runspaces.PSSession] $Session
-    )
-
-    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-    Invoke-Command -Session $Session -ScriptBlock `
-        {
-            $tempPath = "$env:TEMP\" + [guid]::NewGuid()
-            New-Item $tempPath -ItemType directory -ErrorAction Stop | Out-Null
-            $tempPath
-        }
-}
-
 function Import-SslCertificate
 {
     [CmdletBinding()]
