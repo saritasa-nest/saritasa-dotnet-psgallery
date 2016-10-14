@@ -586,7 +586,7 @@ function Install-WinrmHttps
     if (!$CertificateThumbprint)
     {
         $existingCertificate = FindCertificate $fqdn
-        if ($existingCertificate)
+        if ($existingCertificate -and !$Force)
         {
             $CertificateThumbprint = $existingCertificate.Thumbprint
             Write-Information 'Using existing certificate...'
