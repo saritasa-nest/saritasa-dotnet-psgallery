@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.WinRM'
 
 # Version number of this module.
-ModuleVersion = '1.2.0'
+ModuleVersion = '1.2.4'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
