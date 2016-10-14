@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Publish'
 
 # Version number of this module.
-ModuleVersion = '1.7.1'
+ModuleVersion = '1.8.0'
 
 # ID used to uniquely identify this module
 GUID = '9295bc21-bc74-45bb-9d13-62acd728e4cc'
@@ -49,7 +49,8 @@ Description = 'Contains methods to generate ClickOnce packages.'
 
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
-    @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' }
+    @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' },
+    @{ ModuleName='Saritasa.Build'; ModuleVersion='1.10.0'; GUID='5d34804a-169a-4fb1-bc0d-cc81f925f992' }
 )
 
 # Assemblies that must be loaded prior to importing this module
@@ -69,7 +70,7 @@ RequiredModules = @(
 
 # Functions to export from this module
 FunctionsToExport = @('Set-ApplicationVersion', 'Update-ApplicationRevision',
-    'Invoke-ProjectBuildAndPublish', 'Invoke-FullPublish')
+    'Invoke-ProjectBuildAndPublish', 'Invoke-FullPublish', 'Invoke-DatabaseProjectPublish')
 
 # Cmdlets to export from this module
 CmdletsToExport = @()
@@ -95,7 +96,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = 'ClickOnce', 'Publish', 'Version', 'Revision'
+        Tags = 'ClickOnce', 'Publish', 'Version', 'Revision', 'SSDT', 'Sqlproj'
 
         # A URL to the license for this module.
         LicenseUri = 'https://raw.githubusercontent.com/Saritasa/PSGallery/master/LICENSE'
