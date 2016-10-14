@@ -100,18 +100,14 @@ function Invoke-ProjectBuildAndPublish
         Remove-Item $PublishDir -Recurse -ErrorAction Stop
     }
 
-    $params = @('/m', $ProjectFilename, '/t:Publish', '/p:Configuration=Release', "/p:PublishDir=$PublishDir\", '/verbosity:normal') + $BuildParams
-    
+    $params = @("/p:PublishDir=$PublishDir\") + $BuildParams
+
     if ($InstallUrl)
     {
         $params += "/p:InstallUrl=$InstallUrl"
     }
     
-    msbuild.exe $params
-    if ($LASTEXITCODE)
-    {
-        throw "Build failed."
-    }
+    Invoke-ProjectBuild -ProjectPath $ProjectFilename -Configuration 'Release' -Target 'Publish' -BuildParams $params
 
     $projectDir = Split-Path $ProjectFilename
     
@@ -168,4 +164,24 @@ function Invoke-FullPublish
     Invoke-ProjectBuildAndPublish $ProjectFilename $PublishDir $InstallUrl -BuildParams $BuildParams
     Update-PublishVersion $PublishDir $newVersion
     Write-Information "Published $projectName $newVersion to `"$PublishDir`" directory."
+}
+
+function Invoke-DatabaseProjectPublish
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to sql server database project.')]
+        [string] $ProjectPath,
+        [Parameter(HelpMessage = 'Build configuration (Release, Debug, etc.)')]
+        [string] $Configuration = 'Release',
+        [Parameter(HelpMessage = 'Build target (Deploy, Publish, etc.)')]
+        [string] $Target = 'Publish',
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to xml profile file.')]
+        [string] $ProfilePath
+    )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    Invoke-ProjectBuild $ProjectPath $Configuration $Target @("/p:SqlPublishProfilePath=$($ProfilePath)")
 }

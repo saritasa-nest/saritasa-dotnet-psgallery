@@ -12,11 +12,6 @@ function ExecuteAppCmd
     
     if ($ServerHost) # Remote server.
     {
-        if (!$credential)
-        {
-            throw 'Credentials are not set.'
-        }
-        
         $session = Start-RemoteSession $ServerHost
 
         Invoke-Command -Session $session -ScriptBlock { $using:config | &$using:appCmd $using:Arguments }
@@ -46,11 +41,6 @@ function GetAppCmdOutput
     
     if ($ServerHost) # Remote server.
     {
-        if (!$credential)
-        {
-            throw 'Credentials are not set.'
-        }
-        
         $session = Start-RemoteSession $ServerHost
 
         $output = Invoke-Command -Session $session -ScriptBlock { &$using:appCmd $using:Arguments }
@@ -375,29 +365,6 @@ function Install-MsiPackage
                 
                 Write-Information "$using:ProductName is installed."
             }
-        }
-}
-
-<#
-.SYNOPSIS
-Creates a new directory in remote server's %TEMP% and returns it.
-#>
-function Get-RemoteTempPath
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.Runspaces.PSSession] $Session
-    )
-
-    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-    Invoke-Command -Session $Session -ScriptBlock `
-        {
-            $tempPath = "$env:TEMP\" + [guid]::NewGuid()
-            New-Item $tempPath -ItemType directory -ErrorAction Stop | Out-Null
-            $tempPath
         }
 }
 
