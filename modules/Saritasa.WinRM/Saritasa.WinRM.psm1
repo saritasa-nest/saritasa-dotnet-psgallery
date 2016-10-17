@@ -48,26 +48,6 @@ function Start-RemoteSession
         -Authentication $authentication -Port $winrmPort
 }
 
-function CheckSession
-{
-    param
-    (
-        [string] $ServerHost,
-        [System.Management.Automation.Runspaces.PSSession] $Session
-    )
-    
-    if (!$Session)
-    {
-        if (!$ServerHost)
-        {
-            throw 'ServerHost is not set.'
-        }
-        $Session = Start-RemoteSession $ServerHost
-    }
-    
-    $Session
-}
-
 <#
 .SYNOPSIS
 Executes a script on a remote server.
@@ -78,24 +58,47 @@ http://stackoverflow.com/a/27799658/991267
 #>
 function Invoke-RemoteScript
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Server')]
     param
     (
         [string] $Path,
         [hashtable] $Parameters,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Server')]
         [string] $ServerHost,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Session')]
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
-    $Session = CheckSession $ServerHost $Session
+    if ($ServerHost)
+    {
+        $Session = Start-RemoteSession $ServerHost
+    }
     
     $scriptContent = Get-Content $Path -Raw
-    $scriptParams = &{$args} @Parameters
+    $scriptParams = `
+        &{
+            for ($i = 0; $i -lt $args.Length; $i++)
+            {
+                if ($i % 2 -eq 0)
+                {
+                    $args[$i]
+                }
+                else
+                {
+                    "`"$($args[$i])`""
+                }
+            }
+        } @Parameters
     $sb = [scriptblock]::create("&{ $scriptContent } $scriptParams")
 
     Invoke-Command -Session $Session -ScriptBlock $sb
+
+    if ($ServerHost)
+    {
+        Remove-PSSession $Session
+    }
 }
 
 <#

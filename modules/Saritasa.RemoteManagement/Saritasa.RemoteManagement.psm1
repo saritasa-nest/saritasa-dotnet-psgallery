@@ -191,18 +191,23 @@ function Install-Iis
 
 function Install-WebManagementService
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Server')]
     param
     (
+        [Parameter(Mandatory = $true, ParameterSetName = 'Server')]
         [string] $ServerHost,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Session')]
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    $Session = CheckSession $ServerHost $Session
-    
-    Invoke-Command -Session $session -ScriptBlock `
+    if ($ServerHost)
+    {
+        $Session = Start-RemoteSession $ServerHost
+    }
+
+    Invoke-Command -Session $Session -ScriptBlock `
         {
             # Install web management service.
             Add-WindowsFeature Web-Mgmt-Service
@@ -232,22 +237,32 @@ function Install-WebManagementService
         }
 
     Write-Information 'Web management service is installed and configured.'
+
+    if ($ServerHost)
+    {
+        Remove-PSSession $Session
+    }
 }
 
 function Install-WebDeploy
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Server')]
     param
     (
+        [Parameter(Mandatory = $true, ParameterSetName = 'Server')]
         [string] $ServerHost,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Session')]
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
-    $Session = CheckSession $ServerHost $Session
+    if ($ServerHost)
+    {
+        $Session = Start-RemoteSession $ServerHost
+    }
     
-    Invoke-Command -Session $session -ScriptBlock `
+    Invoke-Command -Session $Session -ScriptBlock `
         {
             # 1.1 = {0F37D969-1260-419E-B308-EF7D29ABDE20}
             # 2.0 = {5134B35A-B559-4762-94A4-FD4918977953}
@@ -278,22 +293,32 @@ function Install-WebDeploy
                 'WebDeploy is installed.'
             }
         }
+
+    if ($ServerHost)
+    {
+        Remove-PSSession $Session
+    }
 }
 
 function Install-UrlRewrite
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Server')]
     param
     (
+        [Parameter(Mandatory = $true, ParameterSetName = 'Server')]
         [string] $ServerHost,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Session')]
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
-    $Session = CheckSession $ServerHost $Session
+    if ($ServerHost)
+    {
+        $Session = Start-RemoteSession $ServerHost
+    }
 
-    Invoke-Command -Session $session -ScriptBlock `
+    Invoke-Command -Session $Session -ScriptBlock `
         {
             $urlRewrite20Guid = '{08F0318A-D113-4CF0-993E-50F191D397AD}'
             $installedProduct = Get-CimInstance -Class Win32_Product -Filter "IdentifyingNumber = '$urlRewrite20Guid'"
@@ -321,6 +346,11 @@ function Install-UrlRewrite
                 'URL Rewrite Module is installed.'
             }
         }
+
+    if ($ServerHost)
+    {
+        Remove-PSSession $Session
+    }
 }
 
 <#
@@ -329,10 +359,12 @@ Msiexec supports HTTP links.
 #>
 function Install-MsiPackage
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Server')]
     param
     (
+        [Parameter(Mandatory = $true, ParameterSetName = 'Server')]
         [string] $ServerHost,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Session')]
         [System.Management.Automation.Runspaces.PSSession] $Session,
         [Parameter(Mandatory = $true)]
         [string] $ProductName,
@@ -345,9 +377,12 @@ function Install-MsiPackage
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
-    $Session = CheckSession $ServerHost $Session
+    if ($ServerHost)
+    {
+        $Session = Start-RemoteSession $ServerHost
+    }
     
-    Invoke-Command -Session $session -ScriptBlock `
+    Invoke-Command -Session $Session -ScriptBlock `
         {
             $installedProduct = Get-CimInstance -Class Win32_Product -Filter "IdentifyingNumber = '$using:ProductId'"
             
@@ -366,6 +401,11 @@ function Install-MsiPackage
                 Write-Information "$using:ProductName is installed."
             }
         }
+
+    if ($ServerHost)
+    {
+        Remove-PSSession $Session
+    }
 }
 
 function Import-SslCertificate
