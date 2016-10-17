@@ -92,7 +92,20 @@ function Invoke-RemoteScript
     $Session = CheckSession $ServerHost $Session
     
     $scriptContent = Get-Content $Path -Raw
-    $scriptParams = &{$args} @Parameters
+    $scriptParams = `
+        &{
+            for ($i = 0; $i -lt $args.Length; $i++)
+            {
+                if ($i % 2 -eq 0)
+                {
+                    $args[$i]
+                }
+                else
+                {
+                    "`"$($args[$i])`""
+                }
+            }
+        } @Parameters
     $sb = [scriptblock]::create("&{ $scriptContent } $scriptParams")
 
     Invoke-Command -Session $Session -ScriptBlock $sb
