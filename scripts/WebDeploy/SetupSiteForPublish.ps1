@@ -1,4 +1,5 @@
-﻿
+﻿# 1.2.0
+
 param(
     [parameter(Mandatory = $false)]
     $siteName,
@@ -311,10 +312,12 @@ function GrantPermissionsOnDisk($username, $type, $options)
         write-log $SCRIPTERROR $Resources.NotGrantedPermissions $type $username $global:sitePath
     }
 
-    $acl = (Get-Item $global:sitePath).GetAccessControl("Access")
+    #$acl = (Get-Item $global:sitePath).GetAccessControl("Access") [AZ] 10/17/2016 Fix for paths with special characters. #9
+    $acl = (Get-Item -LiteralPath $global:sitePath).GetAccessControl("Access")
     $accessrule = New-Object system.security.AccessControl.FileSystemAccessRule($username, $type, $options, "None", "Allow")
     $acl.AddAccessRule($accessrule)
-    set-acl -aclobject $acl $global:sitePath
+    #set-acl -aclobject $acl $global:sitePath [AZ] 10/17/2016 Fix for paths with special characters. #9
+    Set-Acl -AclObject $acl -LiteralPath $global:sitePath
     write-log $INFO $Resources.GrantedPermissions $type $username $global:sitePath
 }
 
