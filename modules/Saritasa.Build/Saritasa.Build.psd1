@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Build'
 
 # Version number of this module.
-ModuleVersion = '1.10.0'
+ModuleVersion = '1.11.0'
 
 # ID used to uniquely identify this module
 GUID = '5d34804a-169a-4fb1-bc0d-cc81f925f992'
@@ -70,7 +70,7 @@ RequiredModules = @(
 # Functions to export from this module
 FunctionsToExport = @('Copy-DotnetConfig', 'Invoke-EFMigrate',
     'Install-NugetCli', 'Invoke-NugetRestore', 'Invoke-ProjectBuild',
-    'Invoke-SolutionBuild', 'Update-AssemblyInfoFile')
+    'Invoke-SolutionBuild', 'Update-AssemblyInfoFile', 'Update-VariablesInFile')
 
 # Cmdlets to export from this module
 CmdletsToExport = @()
