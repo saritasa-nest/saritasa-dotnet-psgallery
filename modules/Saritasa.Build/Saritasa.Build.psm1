@@ -210,3 +210,32 @@ function Invoke-EFMigrate
         throw "Migration failed."
     }
 }
+
+<#
+.SYNOPSIS
+Replaces placeholders $(UserName) with values from hashtable.
+.EXAMPLE
+Update-VariablesInFile -Path Config.xml @{UserName='sa'}
+#>
+function Update-VariablesInFile
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $Path,
+        [Parameter(Mandatory = $true)]
+        [hashtable] $Variables
+    )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    $content = Get-Content $Path
+
+    foreach ($key in $Variables.Keys)
+    {
+        $content = $content -ireplace"\`$\($key\)", $Variables[$key]
+    }
+
+    $content | Set-Content $Path
+}
