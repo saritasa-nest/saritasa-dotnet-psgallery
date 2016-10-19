@@ -111,8 +111,8 @@ Service user accounts: LocalService, NetworkService, LocalSystem
 https://msdn.microsoft.com/en-us/library/windows/desktop/ms686005(v=vs.85).aspx
 
 Credentials for built-in service user accounts:
-New-Object System.Management.Automation.PSCredential('NT AUTHORITY\LocalService', (New-Object System.Security.SecureString)) 
-New-Object System.Management.Automation.PSCredential('NT AUTHORITY\NetworkService', (New-Object System.Security.SecureString))
+New-Object System.Management.Automation.PSCredential('NT AUTHORITY\LocalService', (New-Object System.Security.SecureString)) 
+New-Object System.Management.Automation.PSCredential('NT AUTHORITY\NetworkService', (New-Object System.Security.SecureString))
 New-Object System.Management.Automation.PSCredential('.\LocalSystem', (New-Object System.Security.SecureString))
 #>
 function Invoke-ServiceProjectDeployment
