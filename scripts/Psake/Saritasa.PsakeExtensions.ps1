@@ -41,6 +41,8 @@ Checks file existence and dot-sources it.
 The file should contain Expand-PsakeConfiguration call.
 Call Import-PsakeConfigurationFile from TaskSetup block.
 .EXAMPLE
+Import-PsakeConfigurationFile ".\Config.$configuration.ps1"
+
 # default.ps1
 TaskSetup `
 {
