@@ -1,0 +1,24 @@
+{
+  "name": "generator-psgallery",
+  "version": "0.1.0",
+  "description": "Generates script templates for projects that use Psake and Saritasa PSGallery.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Saritasa/PSGallery.git"
+  },
+  "keywords": [
+    "psake",
+    "powershell",
+    "psgallery"
+  ],
+  "author": "Anton Zimin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Saritasa/PSGallery/issues"
+  },
+  "homepage": "https://github.com/Saritasa/PSGallery#readme"
+}
