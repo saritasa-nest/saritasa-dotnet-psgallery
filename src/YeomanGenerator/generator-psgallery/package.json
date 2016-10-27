@@ -1,7 +1,7 @@
 {
   "name": "generator-psgallery",
-  "version": "0.1.0",
-  "description": "Generates script templates for projects that use Psake and Saritasa PSGallery.",
+  "version": "0.1.2",
+  "description": "Yeoman generator for common Psake tasks",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
