@@ -3,3 +3,4 @@ modules/nuget.exe
 *.dll
 tmp/
 *.exe
+**/node_modules/
