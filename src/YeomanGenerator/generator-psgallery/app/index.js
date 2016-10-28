@@ -7,12 +7,12 @@ module.exports = generators.Base.extend({
     },
     prompting: function () {
         return this.prompt([{
-            type: 'list',
-            name: 'projectType',
-            message: 'Project type',
+            type: 'checkbox',
+            name: 'projectTypes',
+            message: 'Select all used project types:',
             choices: ['Web', 'Desktop']
         }]).then(function (answers) {
-            this.projectType = answers.projectType;
+            this.projectTypes = answers.projectTypes;
         }.bind(this));
     },
     writing: function () {
@@ -22,7 +22,8 @@ module.exports = generators.Base.extend({
         this.fs.copy(this.templatePath('default.ps1'), this.destinationPath('default.ps1'));
         this.fs.copy(this.templatePath('Scripts/Saritasa.PsakeTasks.ps1'), this.destinationPath('Scripts/Saritasa.PsakeTasks.ps1'));
 
-        if (this.projectType === 'Web') {
+        this.projectTypes = this.projectTypes || [];
+        if (this.projectTypes.indexOf('Web') > -1) {
             this.spawnCommand('powershell', ['-Command', '&{ Save-Module Saritasa.WebDeploy -Path ' + modulesPath + ' }']);
         }
     }
