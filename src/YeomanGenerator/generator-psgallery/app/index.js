@@ -2,8 +2,17 @@ var generators = require('yeoman-generator');
 var mkdirp = require('mkdirp');
 
 module.exports = generators.Base.extend({
+    constructor: function () {
+        generators.Base.apply(this, arguments);
+
+        this.installModule = function (name) {
+            this.log('Installing ' + name + ' module...');
+            this.spawnCommandSync('powershell', ['-Command', '&{ Save-Module ' + name + ' -Path ' + this.modulesPath + ' }']);
+            this.log('OK');
+        };
+    },
     initializing: function () {
-        console.log('PSGallery generator started.');
+        this.modulesPath = this.destinationPath('scripts/modules');
     },
     prompting: function () {
         return this.prompt([{
@@ -16,16 +25,14 @@ module.exports = generators.Base.extend({
         }.bind(this));
     },
     writing: function () {
-        var modulesPath = this.destinationPath('scripts/modules')
-        mkdirp.sync(modulesPath);
+        mkdirp.sync(this.modulesPath);
 
         this.fs.copy(this.templatePath('default.ps1'), this.destinationPath('default.ps1'));
         this.fs.copy(this.templatePath('Scripts/Saritasa.PsakeTasks.ps1'), this.destinationPath('Scripts/Saritasa.PsakeTasks.ps1'));
 
         this.projectTypes = this.projectTypes || [];
         if (this.projectTypes.indexOf('Web') > -1) {
-            this.spawnCommand('powershell', ['-Command', '&{ Save-Module Saritasa.WebDeploy -Path ' + modulesPath + ' }']);
+            this.installModule('Saritasa.WebDeploy');
         }
     }
 });
-
