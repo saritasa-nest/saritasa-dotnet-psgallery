@@ -18,6 +18,7 @@ module.exports = generators.Base.extend({
     },
     initializing: function () {
         this.modulesPath = this.destinationPath('scripts/modules');
+        this.adminTasksEnabled = false;
     },
     prompting: function () {
         return this.prompt([{
@@ -27,6 +28,19 @@ module.exports = generators.Base.extend({
             choices: [WEB, DESKTOP, CLICK_ONCE, WINDOWS_SERVICE]
         }]).then(function (answers) {
             this.projectTypes = answers.projectTypes;
+
+            if (this.projectTypes.indexOf(WEB) > -1) {
+                return this.prompt({
+                    type: 'confirm',
+                    name: 'adminTasksEnabled',
+                    message: 'Do you need admin tasks, remote management capabilities?',
+                    default: true
+                });
+            }
+        }.bind(this)).then(function (answers) {
+            if (answers !== undefined) {
+                this.adminTasksEnabled = answers.adminTasksEnabled;
+            }
         }.bind(this));
     },
     writing: function () {
@@ -53,6 +67,11 @@ module.exports = generators.Base.extend({
 
         if (desktopEnabled || windowsServiceEnabled) {
             this.installModule('Saritasa.AppDeploy');
+        }
+
+        if (this.adminTasksEnabled) {
+            this.fs.copy(this.templatePath('Scripts/Saritasa.AdminTasks.ps1'), this.destinationPath('Scripts/Saritasa.AdminTasks.ps1'));
+            this.installModule('Saritasa.RemoteManagement');
         }
     }
 });

@@ -4,4 +4,4 @@ modules/nuget.exe
 tmp/
 *.exe
 **/node_modules/
-src/YeomanGenerator/generator-psgallery/app/templates/Scripts/Saritasa.PsakeTasks.ps1
+src/YeomanGenerator/generator-psgallery/app/templates/Scripts/*.ps1
