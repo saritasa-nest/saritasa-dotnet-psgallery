@@ -1,6 +1,6 @@
 Framework 4.6
 $InformationPreference = 'Continue'
-$env:PSModulePath += ";$PSScriptRoot\Scripts\Modules"
+$env:PSModulePath += ";$PSScriptRoot\scripts\modules"
 
 . .\Scripts\Saritasa.PsakeTasks.ps1
 

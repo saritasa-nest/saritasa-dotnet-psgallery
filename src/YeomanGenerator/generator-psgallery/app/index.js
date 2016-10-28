@@ -1,5 +1,6 @@
 var generators = require('yeoman-generator');
 var mkdirp = require('mkdirp');
+var fs = require('fs');
 
 const WEB = 'Web';
 const DESKTOP = 'Desktop';
@@ -15,9 +16,15 @@ module.exports = generators.Base.extend({
         generators.Base.apply(this, arguments);
 
         this.installModule = function (name) {
-            this.log('Installing ' + name + ' module...');
-            this.spawnCommandSync('powershell', ['-Command', '&{ Save-Module ' + name + ' -Path ' + this.modulesPath + ' }']);
-            this.log('OK');
+            fs.access(this.modulesPath + '\\' + name, function (err) {
+                if (err) {
+                    this.log('Installing ' + name + ' module...');
+                    this.spawnCommandSync('powershell', ['-Command', '&{ Save-Module ' + name + ' -Path ' + this.modulesPath + ' }']);
+                    this.log('OK');
+                } else {
+                    this.log('Module ' + name + ' is installed already.');
+                }
+            }.bind(this));
         };
     },
     initializing: function () {
@@ -61,7 +68,7 @@ module.exports = generators.Base.extend({
 
         this.projectTypes = this.projectTypes || [];
         this.webServices = this.webServices || [];
-        
+
         var webEnabled = this.projectTypes.indexOf(WEB) > -1;
         var desktopEnabled = this.projectTypes.indexOf(DESKTOP) > -1;
         var clickOnceEnabled = this.projectTypes.indexOf(CLICK_ONCE) > -1;
