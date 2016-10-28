@@ -32,13 +32,19 @@ module.exports = generators.Base.extend({
         this.adminTasksEnabled = false;
     },
     prompting: function () {
-        return this.prompt({
+        return this.prompt([{
             type: 'checkbox',
             name: 'projectTypes',
             message: 'Select all used project types:',
             choices: [WEB, DESKTOP, CLICK_ONCE, WINDOWS_SERVICE]
-        }).then(function (answers) {
+        }, {
+            type: 'confirm',
+            name: 'nunitEnabled',
+            message: 'Do you need to run NUnit tests?',
+            default: false
+        }]).then(function (answers) {
             this.projectTypes = answers.projectTypes;
+            this.nunitEnabled = answers.nunitEnabled;
 
             if (this.projectTypes.indexOf(WEB) > -1) {
                 return this.prompt([{
@@ -86,6 +92,10 @@ module.exports = generators.Base.extend({
 
         if (desktopEnabled || windowsServiceEnabled) {
             this.installModule('Saritasa.AppDeploy');
+        }
+
+        if (this.nunitEnabled) {
+            this.installModule('Saritasa.Test');
         }
 
         if (this.adminTasksEnabled) {
