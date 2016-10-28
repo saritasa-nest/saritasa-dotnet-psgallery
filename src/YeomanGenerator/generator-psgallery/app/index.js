@@ -69,7 +69,7 @@ module.exports = generators.Base.extend({
     writing: function () {
         mkdirp.sync(this.modulesPath);
 
-        this.fs.copy(this.templatePath('default.ps1'), this.destinationPath('default.ps1'));
+        this.fs.copyTpl(this.templatePath('default.ps1'), this.destinationPath('default.ps1'), { adminTasksEnabled: this.adminTasksEnabled });
         this.fs.copy(this.templatePath('Scripts/Saritasa.PsakeTasks.ps1'), this.destinationPath('Scripts/Saritasa.PsakeTasks.ps1'));
 
         this.projectTypes = this.projectTypes || [];
