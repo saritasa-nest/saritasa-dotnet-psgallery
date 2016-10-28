@@ -1,6 +1,11 @@
 var generators = require('yeoman-generator');
 var mkdirp = require('mkdirp');
 
+const WEB = 'Web';
+const DESKTOP = 'Desktop';
+const CLICK_ONCE = 'ClickOnce';
+const WINDOWS_SERVICE = 'Windows Service';
+
 module.exports = generators.Base.extend({
     constructor: function () {
         generators.Base.apply(this, arguments);
@@ -19,7 +24,7 @@ module.exports = generators.Base.extend({
             type: 'checkbox',
             name: 'projectTypes',
             message: 'Select all used project types:',
-            choices: ['Web', 'Desktop']
+            choices: [WEB, DESKTOP, CLICK_ONCE, WINDOWS_SERVICE]
         }]).then(function (answers) {
             this.projectTypes = answers.projectTypes;
         }.bind(this));
@@ -31,8 +36,23 @@ module.exports = generators.Base.extend({
         this.fs.copy(this.templatePath('Scripts/Saritasa.PsakeTasks.ps1'), this.destinationPath('Scripts/Saritasa.PsakeTasks.ps1'));
 
         this.projectTypes = this.projectTypes || [];
-        if (this.projectTypes.indexOf('Web') > -1) {
+        var webEnabled = this.projectTypes.indexOf(WEB) > -1;
+        var desktopEnabled = this.projectTypes.indexOf(DESKTOP) > -1;
+        var clickOnceEnabled = this.projectTypes.indexOf(CLICK_ONCE) > -1;
+        var windowsServiceEnabled = this.projectTypes.indexOf(WINDOWS_SERVICE) > -1;
+
+        this.installModule('Saritasa.Build');
+
+        if (webEnabled) {
             this.installModule('Saritasa.WebDeploy');
+        }
+
+        if (clickOnceEnabled) {
+            this.installModule('Saritasa.Publish');
+        }
+
+        if (desktopEnabled || windowsServiceEnabled) {
+            this.installModule('Saritasa.AppDeploy');
         }
     }
 });
