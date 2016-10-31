@@ -4,6 +4,8 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 
 [Getting Started](docs/GettingStarted.md)
 
+[How do I...](docs/HowDoI.md)
+
 # Modules
 
 | Name                      | Description                                                                                                                       |
