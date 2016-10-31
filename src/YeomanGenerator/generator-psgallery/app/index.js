@@ -69,9 +69,6 @@ module.exports = generators.Base.extend({
     writing: function () {
         mkdirp.sync(this.modulesPath);
 
-        this.fs.copyTpl(this.templatePath('default.ps1'), this.destinationPath('default.ps1'), { adminTasksEnabled: this.adminTasksEnabled });
-        this.fs.copy(this.templatePath('Scripts/Saritasa.PsakeTasks.ps1'), this.destinationPath('Scripts/Saritasa.PsakeTasks.ps1'));
-
         this.projectTypes = this.projectTypes || [];
         this.webServices = this.webServices || [];
 
@@ -79,6 +76,18 @@ module.exports = generators.Base.extend({
         var desktopEnabled = this.projectTypes.indexOf(DESKTOP) > -1;
         var clickOnceEnabled = this.projectTypes.indexOf(CLICK_ONCE) > -1;
         var windowsServiceEnabled = this.projectTypes.indexOf(WINDOWS_SERVICE) > -1;
+
+        var templateParams = {
+            adminTasksEnabled: this.adminTasksEnabled,
+            desktopEnabled: desktopEnabled,
+            webEnabled: webEnabled,
+            windowsServiceEnabled: windowsServiceEnabled
+        };
+
+        this.fs.copyTpl(this.templatePath('default.ps1'), this.destinationPath('default.ps1'), templateParams);
+        this.fs.copyTpl(this.templatePath('scripts/BuildTasks.ps1'), this.destinationPath('scripts/BuildTasks.ps1'), templateParams);
+        this.fs.copyTpl(this.templatePath('scripts/PublishTasks.ps1'), this.destinationPath('scripts/PublishTasks.ps1'), templateParams);
+        this.fs.copy(this.templatePath('scripts/Saritasa.PsakeTasks.ps1'), this.destinationPath('scripts/Saritasa.PsakeTasks.ps1'));
 
         this.installModule('Saritasa.Build');
 
