@@ -100,4 +100,8 @@ Task build `
     Invoke-NugetRestore -SolutionPath "$src\Saritasa.PSGallery.sln"
     Invoke-SolutionBuild -SolutionPath "$src\Saritasa.PSGallery.sln" -Configuration 'Release'
     Copy-Item "$src\Saritasa.Git.GitFlowStatus\bin\Release\Saritasa.Git.GitFlowStatus.dll" $gitRoot
+
+    $yeomanScriptsPath = "$src\YeomanGenerator\generator-psgallery\app\templates\Scripts"
+    Copy-Item "$scripts\Psake\Saritasa.AdminTasks.ps1" $yeomanScriptsPath
+    Copy-Item "$scripts\Psake\Saritasa.PsakeTasks.ps1" $yeomanScriptsPath
 }
