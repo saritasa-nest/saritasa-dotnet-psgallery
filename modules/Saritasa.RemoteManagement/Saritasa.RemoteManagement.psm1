@@ -65,7 +65,6 @@ function Import-AppPool
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
         [string] $ServerHost,
         [Parameter(Mandatory = $true)]
         [string] $ConfigFilename
@@ -82,7 +81,6 @@ function Import-Site
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
         [string] $ServerHost,
         [Parameter(Mandatory = $true)]
         [string] $ConfigFilename
@@ -108,7 +106,6 @@ function Export-AppPool
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
         [string] $ServerHost,
         [Parameter(Mandatory = $true)]
         [string] $OutputFilename
@@ -126,7 +123,7 @@ function Export-Site
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true, HelpMessage = 'Hostname of the server with IIS site configured.')]
+        [Parameter(HelpMessage = 'Hostname of the server with IIS site configured.')]
         [string] $ServerHost,
         [Parameter(Mandatory = $true)]
         [string] $OutputFilename

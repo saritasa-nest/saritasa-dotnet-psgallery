@@ -173,11 +173,11 @@ function Invoke-RemoteScript
     Specifies whether the certificate is CA (IsCA = $true) or end entity (IsCA = $false)
     certificate. If this parameter is set to $false, PathLength parameter is ignored.
     Basic Constraints extension is marked as critical.
-.PathLength
+.Parameter PathLength
     Specifies the number of additional CA certificates in the chain under this certificate. If
     PathLength parameter is set to zero, then no additional (subordinate) CA certificates are
     permitted under this CA.
-.CustomExtension
+.Parameter CustomExtension
     Specifies the custom extension to include to a self-signed certificate. This parameter
     must not be used to specify the extension that is supported via other parameters. In order
     to use this parameter, the extension must be formed in a collection of initialized
@@ -211,26 +211,19 @@ function Invoke-RemoteScript
     Marks private key as exportable. Smart card providers usually do not allow
     exportable keys.
 .Example
-    New-SelfsignedCertificateEx -Subject "CN=Test Code Signing" -EKU "Code Signing" -KeySpec "Signature" `
-    -KeyUsage "DigitalSignature" -FriendlyName "Test code signing" -NotAfter [datetime]::now.AddYears(5)
+    New-SelfsignedCertificateEx -Subject "CN=Test Code Signing" -EKU "Code Signing" -KeySpec "Signature" -KeyUsage "DigitalSignature" -FriendlyName "Test code signing" -NotAfter [datetime]::now.AddYears(5)
     
     Creates a self-signed certificate intended for code signing and which is valid for 5 years. Certificate
     is saved in the Personal store of the current user account.
 .Example
-    New-SelfsignedCertificateEx -Subject "CN=www.domain.com" -EKU "Server Authentication", "Client authentication" `
-    -KeyUsage "KeyEcipherment, DigitalSignature" -SAN "sub.domain.com","www.domain.com","192.168.1.1" `
-    -AllowSMIME -Path C:\test\ssl.pfx -Password (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force) -Exportable `
-    -StoreLocation "LocalMachine"
+    New-SelfsignedCertificateEx -Subject "CN=www.domain.com" -EKU "Server Authentication", "Client authentication" -KeyUsage "KeyEcipherment, DigitalSignature" -SAN "sub.domain.com","www.domain.com","192.168.1.1" -AllowSMIME -Path C:\test\ssl.pfx -Password (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force) -Exportable -StoreLocation "LocalMachine"
     
     Creates a self-signed SSL certificate with multiple subject names and saves it to a file. Additionally, the
     certificate is saved in the Personal store of the Local Machine store. Private key is marked as exportable,
     so you can export the certificate with a associated private key to a file at any time. The certificate
     includes SMIME capabilities.
 .Example
-    New-SelfsignedCertificateEx -Subject "CN=www.domain.com" -EKU "Server Authentication", "Client authentication" `
-    -KeyUsage "KeyEcipherment, DigitalSignature" -SAN "sub.domain.com","www.domain.com","192.168.1.1" `
-    -StoreLocation "LocalMachine" -ProviderName "Microsoft Software Key Storae Provider" -AlgorithmName ecdh_256 `
-    -KeyLength 256 -SignatureAlgorithm sha256
+    New-SelfsignedCertificateEx -Subject "CN=www.domain.com" -EKU "Server Authentication", "Client authentication" -KeyUsage "KeyEcipherment, DigitalSignature" -SAN "sub.domain.com","www.domain.com","192.168.1.1" -StoreLocation "LocalMachine" -ProviderName "Microsoft Software Key Storage Provider" -AlgorithmName ecdh_256 -KeyLength 256 -SignatureAlgorithm sha256
     
     Creates a self-signed SSL certificate with multiple subject names and saves it to a file. Additionally, the
     certificate is saved in the Personal store of the Local Machine store. Private key is marked as exportable,
@@ -238,8 +231,7 @@ function Invoke-RemoteScript
     Ellyptic Curve Cryptography (ECC) key algorithm ECDH with 256-bit key. The certificate is signed by using
     SHA256 algorithm.
 .Example
-    New-SelfsignedCertificateEx -Subject "CN=Test Root CA, OU=Sandbox" -IsCA $true -ProviderName `
-    "Microsoft Software Key Storage Provider" -Exportable
+    New-SelfsignedCertificateEx -Subject "CN=Test Root CA, OU=Sandbox" -IsCA $true -ProviderName "Microsoft Software Key Storage Provider" -Exportable
     
     Creates self-signed root CA certificate.
 .NOTES

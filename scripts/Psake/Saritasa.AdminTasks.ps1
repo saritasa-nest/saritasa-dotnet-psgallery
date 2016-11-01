@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.3.2
+.VERSION 1.3.3
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -39,10 +39,13 @@ Properties `
     $AdminPassword = $null
     $Configuration = $null
     $ServerHost = $null
+    $SiteName = $null
+    $WwwrootPath = $null
     $WinrmPort = 5986
     $WinrmAuthentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
 }
 
+Import-Module Saritasa.Build
 Import-Module Saritasa.RemoteManagement
 
 Task init-winrm -description 'Initializes WinRM configuration.' `
@@ -62,7 +65,13 @@ Task import-sites -depends init-winrm -description 'Import app pools and sites t
     -requiredVariables @('Configuration', 'ServerHost') `
 {  
     Import-AppPool $ServerHost "$root\IIS\AppPools.${Configuration}.xml"
-    Import-Site $ServerHost "$root\IIS\Sites.${Configuration}.xml"
+
+    $sitesPath = "$root\IIS\Sites.${Configuration}.xml"
+
+    $params = @{ SiteName = $SiteName; WwwrootPath = $WwwrootPath }
+    Update-VariablesInFile -Path $sitesPath -Variables $params
+
+    Import-Site $ServerHost $sitesPath
 }
 
 Task export-sites -depends init-winrm -description 'Export app pools and sites from IIS.' `
