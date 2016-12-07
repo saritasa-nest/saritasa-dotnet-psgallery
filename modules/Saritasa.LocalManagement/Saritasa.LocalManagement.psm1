@@ -16,7 +16,7 @@ Sets 'password never expires' flag for local user.
 .NOTES
 Requires administrator permissions.
 #>
-function Set-PasswordNeverExpired
+function Set-PasswordNeverExpires
 {
     [CmdletBinding()]
     param
