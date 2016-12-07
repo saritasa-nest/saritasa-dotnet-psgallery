@@ -1,4 +1,6 @@
-﻿# Web Deploy: Powershell script to set up delegated deployments with Web Deploy
+﻿# 1.2.0
+
+# Web Deploy: Powershell script to set up delegated deployments with Web Deploy
 # Copyright (C) Microsoft Corp. 2010
 #
 # Requirements: IIS 7, Windows Server 2008 (or higher)
@@ -581,7 +583,7 @@ function CheckSharedConfigNotInUse()
         }
         else
         {
-            write-log $SCRIPTERROR $Resources.HandlerNotInstalledQ
+            write-log $SCRIPTERROR $Resources.HandlerNotInstalled
             break
         }
      }

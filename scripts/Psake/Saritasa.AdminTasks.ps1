@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.3.3
+.VERSION 1.3.4
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -62,7 +62,7 @@ Task init-winrm -description 'Initializes WinRM configuration.' `
 }
 
 Task import-sites -depends init-winrm -description 'Import app pools and sites to IIS.' `
-    -requiredVariables @('Configuration', 'ServerHost') `
+    -requiredVariables @('Configuration', 'ServerHost', 'SiteName', 'WwwrootPath') `
 {  
     Import-AppPool $ServerHost "$root\IIS\AppPools.${Configuration}.xml"
 

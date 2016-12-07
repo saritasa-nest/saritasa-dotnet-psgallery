@@ -13,7 +13,7 @@ Task pre-build -description 'Restore NuGet packages, copy configs.' `
 }
 
 Task build -depends pre-build -description '* Build all projects.' `
-    -requiredVariables @('Configuration')
+    -requiredVariables @('Configuration') `
 {
     # Invoke-SolutionBuild -SolutionPath "$src\Example.sln" -Configuration $Configuration
 }

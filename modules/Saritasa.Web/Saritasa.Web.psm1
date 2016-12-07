@@ -47,7 +47,7 @@ function Import-SslCertificate
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    if (!(IsAdmin))
+    if (!(Test-UserIsAdministrator))
     {
         throw 'Administrator permissions are required.'
     }
@@ -97,9 +97,4 @@ function Import-SslCertificate
     }
     
     Remove-Item $tempFilename
-}
-
-function IsAdmin
-{
-    ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')
 }

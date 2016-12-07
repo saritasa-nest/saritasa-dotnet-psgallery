@@ -12,8 +12,10 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | [Saritasa.AppDeploy](docs/Saritasa.AppDeploy.md)                       | Contains functions to deploy desktop, ClickOnce and service projects to remote servers. |
 | [Saritasa.Build](docs/Saritasa.Build.md)                               | Contains functions to execute MSBuild targets, restore NuGet packages, run EntityFramework migrations. |
+| [Saritasa.FileSystem](docs/Saritasa.FileSystem.md)                     | Contains functions to manage files and directories. |
 | [Saritasa.General](docs/Saritasa.General.md)                           | Contains general PowerShell helpers. |
 | [Saritasa.Git](docs/Saritasa.Git.md)                                   | Contains functions which help to maintain gitflow branches in target git repository. |
+| [Saritasa.LocalManagement](docs/Saritasa.LocalManagement.md)           | Contains functions to control local computer. |
 | [Saritasa.NewRelic](docs/Saritasa.NewRelic.md)                         | Contains functions to call New Relic (newrelic.com) service APIs. |
 | [Saritasa.Prtg](docs/Saritasa.Prtg.md)                                 | Contains functions to call PRTG monitoring service (www.paessler.com/prtg) APIs. |
 | [Saritasa.Web](docs/Saritasa.Web.md)                                   | Contains various methods for web requests and SSL handling. |
