@@ -21,6 +21,7 @@ function Set-PasswordNeverExpires
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $true)]
         [string] $Username
     )
 
