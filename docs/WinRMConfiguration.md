@@ -4,7 +4,7 @@
 
         $PSVersionTable.PSVersion
 
-2. Run as administrator in PowerShell after restart:
+2. Run as administrator in PowerShell:
 
         # Install a module to local repository. Hit <Enter> to approve NuGet installation.
         Install-Module Saritasa.WinRM -Force
@@ -35,6 +35,10 @@ Run as administrator in PowerShell:
         dism /online /enable-feature:NetFx2-ServerCore-WOW64
 
 2. Start PowerShell 2.0: `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`
+
+3. Install ServerManager cmdlets:
+
+        Dism.exe /Online /Enable-Feature /FeatureName:ServerManager-PSH-Cmdlets
 
 3. Run in PowerShell:
 
