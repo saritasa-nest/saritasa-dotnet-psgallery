@@ -699,7 +699,7 @@ function Repair-SslBindings
             if (!$storeName)
             {
                 Set-ItemProperty -Path $_.PSPath -Name 'SslCertStoreName' -Value 'My'
-                Write-Information "Updated SslCertStoreName property for $_.PSChildName binding."
+                Write-Information "Updated SslCertStoreName property for $($_.PSChildName) binding."
             }
         }
 }
