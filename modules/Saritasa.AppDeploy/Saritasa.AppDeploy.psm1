@@ -140,7 +140,7 @@ function Invoke-ServiceProjectDeployment
     Invoke-DesktopProjectDeployment -Session $Session -DestinationPath $DestinationPath -BinPath $BinPath  `
         -BeforeDeploy `
         {
-            $service = Get-Service | ? { $_.Name -eq $using:ServiceName }
+            $service = Get-Service | Where-Object { $_.Name -eq $using:ServiceName }
             if ($service)
             {
                 Stop-Service $service
@@ -153,7 +153,7 @@ function Invoke-ServiceProjectDeployment
         } `
         -AfterDeploy `
         {
-            $service = Get-Service | ? { $_.Name -eq $using:ServiceName }
+            $service = Get-Service | Where-Object { $_.Name -eq $using:ServiceName }
             if ($service)
             {
                 Start-Service $service -ErrorAction Stop

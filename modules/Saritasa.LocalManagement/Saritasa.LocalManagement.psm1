@@ -18,6 +18,9 @@ Requires administrator permissions.
 #>
 function Set-PasswordNeverExpires
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "",
+                                                       Scope="Function", Target="*")]
+
     [CmdletBinding()]
     param
     (
