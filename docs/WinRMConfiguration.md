@@ -15,12 +15,26 @@
 
 [Installing Windows PowerShell](https://msdn.microsoft.com/en-us/powershell/scripting/setup/installing-windows-powershell)
 
-### Windows Server 2008, 2008 R2, 2012, 2012 R2
+### Windows Server 2012, 2012 R2
 
 Run as administrator in PowerShell:
 
         # Install Chocolatey.
         iwr https://chocolatey.org/install.ps1 -UseBasicParsing | iex
+        # Update WMF and PowerShell to version 5.
+        cinst powershell -y
+        # Restart server to apply PowerShell updates.
+        Restart-Computer
+
+### Windows Server 2008, 2008 R2
+
+Run as administrator in PowerShell:
+
+        Set-ExecutionPolicy RemoteSigned
+        # Install Chocolatey.
+        iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+        # Update .NET Framework.
+        cinst dotnet4.5.2 -y
         # Update WMF and PowerShell to version 5.
         cinst powershell -y
         # Restart server to apply PowerShell updates.
