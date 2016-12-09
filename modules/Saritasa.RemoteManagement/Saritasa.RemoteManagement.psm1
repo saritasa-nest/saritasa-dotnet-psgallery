@@ -10,7 +10,7 @@ function ExecuteAppCmd
     $config = Get-Content $ConfigFilename
     $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
     
-    if ($ServerHost) # Remote server.
+    if (!(Test-IsLocalhost $ServerHost)) # Remote server.
     {
         $session = Start-RemoteSession $ServerHost
 
@@ -155,7 +155,12 @@ function Install-Iis
     
     $session = Start-RemoteSession $ServerHost
     
-    Invoke-Command -Session $session -ScriptBlock { Add-WindowsFeature Web-Server, Web-Asp-Net45 }
+    Invoke-Command -Session $session -ScriptBlock `
+        {
+            # Get available features, they can differ in Windows Server 2008 and 2012.
+            $features = Get-WindowsFeature Web-Server, Web-Asp-Net45, Web-Asp-Net
+            Add-WindowsFeature $features
+        }
     Write-Information 'IIS is set up successfully.'
 
     if ($ManagementService)
@@ -434,4 +439,19 @@ function Import-SslCertificate
         }
         
     Remove-PSSession $Session
+}
+
+<#
+.SYNOPSIS
+Returns $true if hostname represents local PC.
+#>
+function Test-IsLocalhost
+{
+    [CmdletBinding()]
+    param
+    (
+        [string] $ComputerName
+    )
+
+    $ComputerName -match "^(\.|localhost|$env:COMPUTERNAME)`$"
 }

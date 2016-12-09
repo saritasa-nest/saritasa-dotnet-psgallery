@@ -571,13 +571,18 @@ function Install-WinrmHttps
 
     if (!$PSBoundParameters.ContainsKey('InformationAction'))
     {
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignment", "")]
         $InformationPreference = 'Continue'
     }
 
     $fqdn = [System.Net.Dns]::GetHostByName('localhost').Hostname
     $computerName = $env:COMPUTERNAME
     
-    $dnsNames = @($fqdn, $computerName)
+    $dnsNames = @($fqdn)
+    if ($fqdn -ne $computerName)
+    {
+        $dnsNames += $computerName
+    }
 
     if ($AlternativeDnsNames)
     {
@@ -619,6 +624,9 @@ function Install-WinrmHttps
             -CertificateThumbprint $CertificateThumbprint -Force | Out-Null
         Write-Information 'New listener is created.'
     }
+
+    # Create required properties in registry.
+    Repair-SslBindings
 
     try
     {
@@ -677,5 +685,28 @@ function Get-RemoteTempPath
             $tempPath = "$env:TEMP\" + [guid]::NewGuid()
             New-Item $tempPath -ItemType directory -ErrorAction Stop | Out-Null
             $tempPath
+        }
+}
+
+<#
+.SYNOPSIS
+Fixes 'Failed to enumerate SSL bindings, error code 234' error.
+#>
+function Repair-SslBindings
+{
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "",
+                                                       Scope="Function", Target="*")]
+
+    [CmdletBinding()]
+    param ()
+
+    Get-ChildItem HKLM:\SYSTEM\CurrentControlSet\Services\HTTP\Parameters\SslBindingInfo | ForEach-Object `
+        {
+            $storeName = Get-ItemProperty -Path $_.PSPath -Name 'SslCertStoreName' -ErrorAction SilentlyContinue
+            if (!$storeName)
+            {
+                Set-ItemProperty -Path $_.PSPath -Name 'SslCertStoreName' -Value 'My'
+                Write-Information "Updated SslCertStoreName property for $($_.PSChildName) binding."
+            }
         }
 }

@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.3.4
+.VERSION 1.3.5
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -45,22 +45,21 @@ Properties `
     $WinrmAuthentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
 }
 
-Import-Module Saritasa.Build
-Import-Module Saritasa.RemoteManagement
-
 Task init-winrm -description 'Initializes WinRM configuration.' `
 {
     if ($AdminPassword)
     {
         $credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (ConvertTo-SecureString $AdminPassword -AsPlainText -Force))
     }
-    else
+    elseif (!(Test-IsLocalhost $ServerHost)) # Not localhost.
     {
         $credential = Get-Credential
     }
     Initialize-RemoteManagement -Credential $credential -Port $WinrmPort -Authentication $WinrmAuthentication
 }
 
+# Use following params to import sites on localhost:
+# psake import-sites -properties @{ServerHost='.';Configuration='Debug'}
 Task import-sites -depends init-winrm -description 'Import app pools and sites to IIS.' `
     -requiredVariables @('Configuration', 'ServerHost', 'SiteName', 'WwwrootPath') `
 {  
@@ -74,6 +73,8 @@ Task import-sites -depends init-winrm -description 'Import app pools and sites t
     Import-Site $ServerHost $sitesPath
 }
 
+# Use following params to export sites from localhost:
+# psake export-sites -properties @{ServerHost='.';Configuration='Debug'}
 Task export-sites -depends init-winrm -description 'Export app pools and sites from IIS.' `
     -requiredVariables @('Configuration', 'ServerHost') `
 {
