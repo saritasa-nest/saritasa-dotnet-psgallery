@@ -10,7 +10,7 @@ function ExecuteAppCmd
     $config = Get-Content $ConfigFilename
     $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
     
-    if ($ServerHost) # Remote server.
+    if (!(Test-IsLocalhost $ServerHost)) # Remote server.
     {
         $session = Start-RemoteSession $ServerHost
 
@@ -439,4 +439,19 @@ function Import-SslCertificate
         }
         
     Remove-PSSession $Session
+}
+
+<#
+.SYNOPSIS
+Returns $true if hostname represents local PC.
+#>
+function Test-IsLocalhost
+{
+    [CmdletBinding()]
+    param
+    (
+        [string] $ComputerName
+    )
+
+    $ComputerName -match "^(\.|localhost|$env:COMPUTERNAME)`$"
 }
