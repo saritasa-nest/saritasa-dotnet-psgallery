@@ -6,11 +6,11 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 
 [Scripts](docs/Scripts.md)
 
+[How do I...](docs/HowDoI.md)
+
 # Articles
 
 [Getting Started](docs/GettingStarted.md)
-
-[How do I...](docs/HowDoI.md)
 
 [WinRM Configuration](docs/WinRMConfiguration.md)
 
