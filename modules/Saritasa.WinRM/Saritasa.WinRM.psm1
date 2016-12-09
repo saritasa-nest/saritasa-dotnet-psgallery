@@ -620,6 +620,9 @@ function Install-WinrmHttps
         Write-Information 'New listener is created.'
     }
 
+    # Create required properties in registry.
+    Repair-SslBindings
+
     try
     {
         $cmd = Get-Command New-NetFirewallRule -ErrorAction Ignore
@@ -677,5 +680,22 @@ function Get-RemoteTempPath
             $tempPath = "$env:TEMP\" + [guid]::NewGuid()
             New-Item $tempPath -ItemType directory -ErrorAction Stop | Out-Null
             $tempPath
+        }
+}
+
+<#
+.SYNOPSIS
+Fixes 'Failed to enumerate SSL bindings, error code 234' error.
+#>
+function Repair-SslBindings
+{
+    Get-ChildItem HKLM:\SYSTEM\CurrentControlSet\Services\HTTP\Parameters\SslBindingInfo | For-EachObject `
+        {
+            $storeName = Get-ItemProperty $_.PSPath SslCertStoreName -ErrorAction SilentlyContinue
+            if (!$storeName)
+            {
+                Set-ItemProperty -Path $_.PSPath -Name 'SslCertStoreName' -Value 'My'
+                Write-Information 'Updated SslCertStoreName property for $_.PSChildName binding.'
+            }
         }
 }
