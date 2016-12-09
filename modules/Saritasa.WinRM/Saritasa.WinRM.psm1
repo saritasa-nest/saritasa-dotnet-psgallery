@@ -571,6 +571,7 @@ function Install-WinrmHttps
 
     if (!$PSBoundParameters.ContainsKey('InformationAction'))
     {
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignment", "")]
         $InformationPreference = 'Continue'
     }
 
@@ -693,6 +694,12 @@ Fixes 'Failed to enumerate SSL bindings, error code 234' error.
 #>
 function Repair-SslBindings
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "",
+                                                       Scope="Function", Target="*")]
+
+    [CmdletBinding()]
+    param ()
+
     Get-ChildItem HKLM:\SYSTEM\CurrentControlSet\Services\HTTP\Parameters\SslBindingInfo | ForEach-Object `
         {
             $storeName = Get-ItemProperty -Path $_.PSPath -Name 'SslCertStoreName' -ErrorAction SilentlyContinue
