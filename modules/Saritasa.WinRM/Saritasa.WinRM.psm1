@@ -577,7 +577,11 @@ function Install-WinrmHttps
     $fqdn = [System.Net.Dns]::GetHostByName('localhost').Hostname
     $computerName = $env:COMPUTERNAME
     
-    $dnsNames = @($fqdn, $computerName)
+    $dnsNames = @($fqdn)
+    if ($fqdn -ne $computerName)
+    {
+        $dnsNames += $computerName
+    }
 
     if ($AlternativeDnsNames)
     {
@@ -695,7 +699,7 @@ function Repair-SslBindings
             if (!$storeName)
             {
                 Set-ItemProperty -Path $_.PSPath -Name 'SslCertStoreName' -Value 'My'
-                Write-Information 'Updated SslCertStoreName property for $_.PSChildName binding.'
+                Write-Information "Updated SslCertStoreName property for $_.PSChildName binding."
             }
         }
 }
