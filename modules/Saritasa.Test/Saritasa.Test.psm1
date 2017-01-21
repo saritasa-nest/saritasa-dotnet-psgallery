@@ -47,7 +47,7 @@ function Invoke-Nunit3Runner
         throw 'Cannot find nunit console runner package.'
     }
     $nunitExe = Join-Path $nunitExeDirectory.FullName '.\tools\nunit3-console.exe'
-    Write-Information "Found $nunitExeDirectory.FullName"
+    Write-Information "Found $($nunitExeDirectory.FullName)"
 
     # Run nunit
     $args = @($TestAssembly, '--noresult', '--stoponerror', '--noheader')
