@@ -440,18 +440,3 @@ function Import-SslCertificate
         
     Remove-PSSession $Session
 }
-
-<#
-.SYNOPSIS
-Returns $true if hostname represents local PC.
-#>
-function Test-IsLocalhost
-{
-    [CmdletBinding()]
-    param
-    (
-        [string] $ComputerName
-    )
-
-    $ComputerName -match "^(\.|localhost|$env:COMPUTERNAME)`$"
-}
