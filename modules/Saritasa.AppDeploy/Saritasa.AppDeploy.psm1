@@ -28,26 +28,29 @@ function Invoke-DesktopProjectDeployment
     $archiveName = "$([guid]::NewGuid()).zip"
     Compress-Archive "$BinPath\*" $archiveName -Force
     Write-Information 'Done.'
-    
+
     $remoteTempDir = Get-RemoteTempPath $Session
     $remoteArchive = "$remoteTempDir\$archiveName"
-    
+
     Write-Information "Copying $archiveName to remote server..."
     Copy-Item ".\$archiveName" $remoteTempDir -ToSession $Session
     Write-Information 'Done.'
-    
-    Invoke-Command -Session $Session -ScriptBlock $BeforeDeploy
+
+    if ($BeforeDeploy)
+    {
+        Invoke-Command -Session $Session -ScriptBlock $BeforeDeploy
+    }
 
     if ($OverwriteMode -eq [AppDeployOverwriteMode]::Backup)
     {
         Invoke-Command -Session $Session -ScriptBlock `
-            {       
+            {
                 $backupPath = "$($using:DestinationPath)Old"
                 if (Test-Path $backupPath)
                 {
                     Remove-Item $backupPath -Recurse
                 }
-                
+
                 if (Test-Path $using:DestinationPath)
                 {
                     $retries = 0
@@ -73,10 +76,10 @@ function Invoke-DesktopProjectDeployment
                         }
                     }
                 }
-                
+
                 # Directory should exist, if PSCX is used.
                 New-Item -ItemType directory $using:DestinationPath
-            
+
                 Expand-Archive $using:remoteArchive $using:DestinationPath
             }
     } # OverwriteMode - Backup
@@ -99,7 +102,10 @@ function Invoke-DesktopProjectDeployment
             Remove-Item $using:remoteTempDir -Recurse -ErrorAction Stop
         }
 
-    Invoke-Command -Session $Session -ScriptBlock $AfterDeploy
+    if ($AfterDeploy)
+    {
+        Invoke-Command -Session $Session -ScriptBlock $AfterDeploy
+    }
 }
 
 <#
@@ -111,7 +117,7 @@ Service user accounts: LocalService, NetworkService, LocalSystem
 https://msdn.microsoft.com/en-us/library/windows/desktop/ms686005(v=vs.85).aspx
 
 Credentials for built-in service user accounts:
-New-Object System.Management.Automation.PSCredential('NT AUTHORITY\LocalService', (New-Object System.Security.SecureString)) 
+New-Object System.Management.Automation.PSCredential('NT AUTHORITY\LocalService', (New-Object System.Security.SecureString))
 New-Object System.Management.Automation.PSCredential('NT AUTHORITY\NetworkService', (New-Object System.Security.SecureString))
 New-Object System.Management.Automation.PSCredential('.\LocalSystem', (New-Object System.Security.SecureString))
 #>
@@ -129,7 +135,7 @@ function Invoke-ServiceProjectDeployment
         [Parameter(Mandatory = $true)]
         [string] $BinPath,
         [Parameter(Mandatory = $true)]
-        [string] $DestinationPath,        
+        [string] $DestinationPath,
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
         $ServiceCredential
@@ -162,7 +168,7 @@ function Invoke-ServiceProjectDeployment
             else
             {
                 Write-Information "Creating $using:ServiceName service..."
-                
+
                 $credential = $using:ServiceCredential
                 if ($credential.UserName -notlike '*\*') # Not a domain user.
                 {
@@ -172,7 +178,7 @@ function Invoke-ServiceProjectDeployment
                 $service = New-Service -Name $using:ServiceName -ErrorAction Stop -Credential $credential `
                      -BinaryPathName "$using:DestinationPath\$using:ProjectName.exe"
                 Write-Information "Done."
-                
+
                 Start-Service $using:ServiceName -ErrorAction Stop
                 Write-Information "Service $using:ServiceName is started."
             }

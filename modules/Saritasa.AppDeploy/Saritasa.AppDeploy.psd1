@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.AppDeploy'
 
 # Version number of this module.
-ModuleVersion = '1.2.3'
+ModuleVersion = '1.2.4'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@ Author = 'Anton Zimin'
 CompanyName = 'Saritasa'
 
 # Copyright statement for this module
-Copyright = '(c) 2016 Saritasa. All rights reserved.'
+Copyright = '(c) 2016-2017 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Contains functions to deploy desktop, ClickOnce and service projects to remote servers.'
