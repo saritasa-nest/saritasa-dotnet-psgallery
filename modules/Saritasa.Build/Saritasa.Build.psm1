@@ -15,6 +15,12 @@
     {
         Invoke-WebRequest 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe' -OutFile $nugetExePath
     }
+
+    $nugetVersion = ((Get-Item $nugetExePath).VersionInfo.ProductVersion).Split('.')[0]
+    if ($nugetVersion -lt 4)
+    {
+        Invoke-WebRequest 'https://dist.nuget.org/win-x86-commandline/v4.0.0/nuget.exe' -OutFile $nugetExePath
+    }
 }
 
 function Invoke-NugetRestore
