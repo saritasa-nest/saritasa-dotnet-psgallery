@@ -10,7 +10,7 @@
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $nugetExePath = "$Destination\nuget.exe"
-    
+
     if (!(Test-Path $nugetExePath))
     {
         Invoke-WebRequest 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe' -OutFile $nugetExePath
@@ -106,16 +106,16 @@ function Update-AssemblyInfoFile
     $fileVersionPattern = 'AssemblyFileVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)'
     $assemblyVersion = 'AssemblyVersion("' + $Version + '")';
     $fileVersion = 'AssemblyFileVersion("' + $Version + '")';
-    
+
     Get-ChildItem -r -Include AssemblyInfo.cs, AssemblyInfo.vb | ForEach-Object `
         {
             $filename = $_.Directory.ToString() + '\' + $_.Name
-        
-            # If you are using a source control that requires to check-out files before 
+
+            # If you are using a source control that requires to check-out files before
             # modifying them, make sure to check-out the file here.
             # For example, TFS will require the following command:
             # tf checkout $filename
-        
+
             if ($PSCmdlet.ShouldProcess($filename))
             {
                 (Get-Content $filename) | ForEach-Object `
@@ -123,7 +123,7 @@ function Update-AssemblyInfoFile
                         ForEach-Object { $_ -replace $assemblyVersionPattern, $assemblyVersion } |
                         ForEach-Object { $_ -replace $fileVersionPattern, $fileVersion }
                     } | Set-Content $filename -Encoding UTF8
-                    
+
                 Write-Information ($filename + ' -> ' + $Version)
             }
         }
@@ -187,7 +187,7 @@ function Invoke-EFMigrate
     }
 
     # Find migrate.exe
-    $packagesDirectory = Get-ChildItem 'packages' -Recurse -Depth 3 | 
+    $packagesDirectory = Get-ChildItem 'packages' -Recurse -Depth 3 |
         Where-Object { $_.PSIsContainer } | Select-Object -First 1
     if (!$packagesDirectory)
     {
@@ -245,4 +245,25 @@ function Update-VariablesInFile
     }
 
     $content | Set-Content $Path
+}
+
+<#
+.SYNOPSIS
+Adds correct path to MSBuild to Path environment variable.
+#>
+function Initialize-MSBuild
+{
+    $vsPath = (@((Get-VSSetupInstance | Select-VSSetupInstance -Version 15.0 -Require Microsoft.Component.MSBuild).InstallationPath,
+        (Get-VSSetupInstance | Select-VSSetupInstance -Version 15.0 -Product Microsoft.VisualStudio.Product.BuildTools).InstallationPath) -ne $null)[0]
+
+    if ([System.IntPtr]::Size -eq 8)
+    {
+        $msbuildPath = Join-Path $vsPath 'MSBuild\15.0\Bin\amd64'
+    }
+    else
+    {
+        $msbuildPath = Join-Path $vsPath 'MSBuild\15.0\Bin'
+    }
+
+    $env:Path = $msbuildPath + ";$env:Path"
 }
