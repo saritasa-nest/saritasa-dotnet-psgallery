@@ -57,10 +57,10 @@ Task gitflow-features -description 'Display list of all remote feature/* branche
 
 Task gitflow-status -depends gitflow-features, gitflow-old-features, gitflow-hotfixes-releases -description '* Display information about GitFlow issues.'
 
-Task delete-merged-branches -description 'Delete merged remote-tracking branches modified before start date.' `
+Task delete-merged-branches -description 'Delete merged remote-tracking branches modified before last commit date.' `
 {
     $defaultStartDate = (Get-Date).AddDays(-3)
-    $startDate = Read-Host -Prompt ([string]::Format('Start date (default {0:d})', $defaultStartDate))
+    $startDate = Read-Host -Prompt ([string]::Format('Last commit date (default {0:d})', $defaultStartDate))
     if (!$startDate)
     {
         $startDate = $defaultStartDate
