@@ -58,3 +58,15 @@ Task gitflow-features -description 'Display list of all remote feature/* branche
 }
 
 Task gitflow-status -depends gitflow-features, gitflow-old-features, gitflow-hotfixes-releases -description '* Display information about GitFlow issues.'
+
+Task delete-merged-branches -description 'Delete merged remote-tracking branches.' `
+{
+    Get-GitFlowStatus -BranchType Feature | Where-Object { $_.Merged -eq $true } | ForEach-Object { DeleteRemoteBranch($_.Name) }
+    Get-GitFlowStatus -BranchType Release | Where-Object { $_.Merged -eq $true } | ForEach-Object { DeleteRemoteBranch($_.Name) }
+    Get-GitFlowStatus -BranchType Hotfix | Where-Object { $_.Merged -eq $true } | ForEach-Object { DeleteRemoteBranch($_.Name) }
+}
+
+function DeleteRemoteBranch([string] $BranchName)
+{
+    Exec { git.exe branch -r -d $BranchName }
+}
