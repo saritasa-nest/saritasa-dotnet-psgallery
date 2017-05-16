@@ -49,7 +49,7 @@ function GenerateMarkdown([string] $moduleName)
 }
 
 # Before run, make sure that required modules are installed.
-# Install-Module psake, Saritasa.General, Saritasa.Web -Scope CurrentUser -Force
+# Install-Module psake, VSSetup -Scope CurrentUser -Force
 Task publish-modules -depends build -requiredVariables @('nugetApiKey') `
 {
     Get-ChildItem -Directory $modules | % `
