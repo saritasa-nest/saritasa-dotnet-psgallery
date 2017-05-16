@@ -57,11 +57,20 @@ Task gitflow-features -description 'Display list of all remote feature/* branche
 
 Task gitflow-status -depends gitflow-features, gitflow-old-features, gitflow-hotfixes-releases -description '* Display information about GitFlow issues.'
 
-Task delete-merged-branches -description 'Delete merged remote-tracking branches.' `
+Task delete-merged-branches -description 'Delete merged remote-tracking branches modified before last commit date.' `
 {
-    Get-GitFlowStatus -BranchType Feature | Where-Object { $_.Merged -eq $true } | ForEach-Object { DeleteRemoteBranch($_.Name) }
-    Get-GitFlowStatus -BranchType Release | Where-Object { $_.Merged -eq $true } | ForEach-Object { DeleteRemoteBranch($_.Name) }
-    Get-GitFlowStatus -BranchType Hotfix | Where-Object { $_.Merged -eq $true } | ForEach-Object { DeleteRemoteBranch($_.Name) }
+    $defaultStartDate = (Get-Date).AddDays(-3)
+    $startDate = Read-Host -Prompt ([string]::Format('Last commit date (default {0:d})', $defaultStartDate))
+    if (!$startDate)
+    {
+        $startDate = $defaultStartDate
+    }
+
+    $condition = { $_.Merged -eq $true -and $_.LastCommitDate -lt $startDate }
+
+    Get-GitFlowStatus -BranchType Feature | Where-Object $condition | ForEach-Object { DeleteRemoteBranch($_.Name) }
+    Get-GitFlowStatus -BranchType Release | Where-Object $condition | ForEach-Object { DeleteRemoteBranch($_.Name) }
+    Get-GitFlowStatus -BranchType Hotfix | Where-Object $condition | ForEach-Object { DeleteRemoteBranch($_.Name) }
 }
 
 function DeleteRemoteBranch([string] $BranchName)
