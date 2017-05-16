@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.1.0
+.VERSION 1.2.0
 
 .GUID a8bc41d0-c2bd-459a-9e39-544b6f70724f
 
@@ -35,13 +35,11 @@ gitflow-* commands -- show status of gitflow branches with statistic and useful 
 
 #>
 
-Import-Module Saritasa.Git
-
 Task gitflow-hotfixes-releases -description 'Display remote release/* and hotfix/* branches.' `
 {
     Write-Information 'This is a list of remote release branches. If release is done, need to remove the branch.'
     Get-GitFlowStatus -BranchType Release | Sort-Object Merged, Name | Format-Table
-    Write-Information 'This is a list of remote hotfix branches. Usually we don''t push hotfix branches, because they are short living. Need to remove them.' 
+    Write-Information 'This is a list of remote hotfix branches. Usually we don''t push hotfix branches, because they are short living. Need to remove them.'
     Get-GitFlowStatus -BranchType Hotfix | Sort-Object Merged, Name | Format-Table
 }
 
