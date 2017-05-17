@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.0.0
+.VERSION 1.0.1
 
 .GUID 5bf3b9dd-b754-4e71-bb03-cb5c5a8101c7
 
@@ -124,10 +124,15 @@ Task setup-workspace -depends init-winrm -description 'Install Git, generate SSH
                 Write-Information 'Done.'
             }
 
-            if (!(Test-Path $using:WorkspacePath))
+            $workspaceExists = Test-Path $using:WorkspacePath
+            $gitExists = Test-Path "$using:WorkspacePath\.git"
+            if (!($workspaceExists -and $gitExists))
             {
                 Write-Information 'Creating workspace...'
-                New-Item -ItemType directory $using:WorkspacePath
+                if (!$workspaceExists)
+                {
+                    New-Item -ItemType directory $using:WorkspacePath
+                }
 
                 # Make sure PATH variable is updated after Git install.
                 $env:PATH = (@(,[Environment]::GetEnvironmentVariable('PATH', 'Machine') -Split ';') + @([Environment]::GetEnvironmentVariable('PATH', 'User') -Split ';') | Select -Unique) -Join ';'
