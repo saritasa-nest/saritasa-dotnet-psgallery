@@ -190,3 +190,39 @@ Task export-jenkins -depends init-winrm -description 'Download Jenkins config an
         }
     Remove-PSSession $session
 }
+
+Task write-ssh-key -description 'Display public SSH key for Git.' `
+    -requiredVariables @('ServerHost') `
+{
+    $session = Start-RemoteSession -ServerHost $ServerHost
+
+    Invoke-Command -Session $session -ScriptBlock `
+        {
+            Write-Information "`n`n`nSSH public key:"
+            Write-Information (Get-Content "$env:HOMEDRIVE$env:HOMEPATH\.ssh\id_rsa.pub")
+        }
+
+    Remove-PSSession $session
+}
+
+Task write-jenkins-password -description 'Display Jenkins default password for initial configuration.' `
+    -requiredVariables @('ServerHost') `
+{
+    $session = Start-RemoteSession -ServerHost $ServerHost
+
+    Invoke-Command -Session $session -ScriptBlock `
+        {
+            $jenkinsPasswordFile = 'C:\Program Files (x86)\Jenkins\secrets\initialAdminPassword'
+            if (Test-Path $jenkinsPasswordFile)
+            {
+                Write-Information "`nJenkins admin password:"
+                Write-Information (Get-Content $jenkinsPasswordFile)
+            }
+            else
+            {
+                Write-Information "`nJenkins is configured already."
+            }
+        }
+
+    Remove-PSSession $session
+}
