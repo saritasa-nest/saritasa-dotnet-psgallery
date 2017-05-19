@@ -282,6 +282,12 @@ function Initialize-MSBuild
     $vsPath = (@((Get-VSSetupInstance | Select-VSSetupInstance -Version 15.0 -Require Microsoft.Component.MSBuild).InstallationPath,
         (Get-VSSetupInstance | Select-VSSetupInstance -Version 15.0 -Product Microsoft.VisualStudio.Product.BuildTools).InstallationPath) -ne $null)[0]
 
+    if (!$vsPath)
+    {
+        Write-Information 'VS 2017 not found.'
+        return
+    }
+
     if ([System.IntPtr]::Size -eq 8)
     {
         $msbuildPath = Join-Path $vsPath 'MSBuild\15.0\Bin\amd64'
