@@ -12,6 +12,8 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 
 [Getting Started](docs/GettingStarted.md)
 
+[Psake Guidelines](docs/PsakeGuidelines.md)
+
 [WinRM Configuration](docs/WinRMConfiguration.md)
 
 # Links
