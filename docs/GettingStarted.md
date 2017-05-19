@@ -1,5 +1,7 @@
 # Getting Started
 
+## Scaffolding
+
 Use [Yeoman](http://yeoman.io/) to quickly generate script templates and start editing them.
 
 * Install [Chocolatey](https://chocolatey.org/).
@@ -17,4 +19,34 @@ Use [Yeoman](http://yeoman.io/) to quickly generate script templates and start e
 
 * Follow the wizard steps.
 
-Note: The generator does not work in VS Code Yeoman extension.
+Note: You may use VS Code Yeoman extension.
+
+## Add Module
+
+- Open repository root directory in PowerShell.
+- Execute command (`Saritasa.Git` is example):
+    ```
+    Save-Module Saritasa.Git -Path .\scripts\modules\
+    ```
+- Execute command:
+    ```
+    psake add-scripts-to-git
+    ```
+- Make Git commit.
+
+## Add Script
+
+- Open repository root directory in PowerShell.
+- Execute command (replace URL):
+    ```
+    iwr https://raw.githubusercontent.com/Saritasa/PSGallery/master/scripts/Psake/Saritasa.GitTasks.ps1 -OutFile .\scripts\Saritasa.GitTasks.ps1
+    ```
+- Add a line to `default.ps1`:
+    ```
+    . .\scripts\Saritasa.GitTasks.ps1
+    ```
+- Execute command:
+    ```
+    psake add-scripts-to-git
+    ```
+- Make Git commit.
