@@ -52,6 +52,8 @@ function GenerateMarkdown([string] $moduleName)
 # Install-Module psake, VSSetup -Scope CurrentUser -Force
 Task publish-modules -depends build -requiredVariables @('NugetApiKey') `
 {
+    Remove-Item "$modules\Saritasa.Build\nuget.exe" -ErrorAction SilentlyContinue
+
     Get-ChildItem -Directory $modules | % `
         {
             Write-Information "Publishing $_ module..."
