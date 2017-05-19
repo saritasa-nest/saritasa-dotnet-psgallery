@@ -4,7 +4,7 @@ $env:PSModulePath += ";$PSScriptRoot\modules"
 
 Properties `
 {
-    $nugetApiKey = $null
+    $NugetApiKey = $null
 }
 
 $root = $PSScriptRoot
@@ -18,7 +18,7 @@ Task analyze -description 'Run PowerShell static analysis tool on all modules an
         -Exclude 'AddDelegationRules.ps1', 'SetupSiteForPublish.ps1' | Invoke-ScriptAnalyzer
 }
 
-Task generate-docs -depends build `
+Task build-docs -depends build `
 {
     $descriptionRegex = [regex] "Description = '(.*)'"
 
@@ -50,14 +50,14 @@ function GenerateMarkdown([string] $moduleName)
 
 # Before run, make sure that required modules are installed.
 # Install-Module psake, VSSetup -Scope CurrentUser -Force
-Task publish-modules -depends build -requiredVariables @('nugetApiKey') `
+Task publish-modules -depends build -requiredVariables @('NugetApiKey') `
 {
     Get-ChildItem -Directory $modules | % `
         {
             Write-Information "Publishing $_ module..."
             try
             {
-                Publish-Module -Path $_.FullName -NuGetApiKey $nugetApiKey 
+                Publish-Module -Path $_.FullName -NuGetApiKey $NugetApiKey
             }
             catch [System.Exception]
             {
@@ -66,12 +66,12 @@ Task publish-modules -depends build -requiredVariables @('nugetApiKey') `
         }
 }
 
-Task publish-scripts -requiredVariables @('nugetApiKey') `
+Task publish-scripts -requiredVariables @('NugetApiKey') `
 {
     try
     {
         Write-Information "Publishing Install-WinrmHttps script..."
-        Publish-Script -Path "$scripts\WinRM\Install-WinrmHttps.ps1" -NuGetApiKey $nugetApiKey 
+        Publish-Script -Path "$scripts\WinRM\Install-WinrmHttps.ps1" -NuGetApiKey $NugetApiKey
     }
     catch [System.Exception]
     {
@@ -81,8 +81,6 @@ Task publish-scripts -requiredVariables @('nugetApiKey') `
 
 Task build `
 {
-    Import-Module "$modules\Saritasa.General\Saritasa.General.psd1"
-    Import-Module "$modules\Saritasa.Build\Saritasa.Build.psd1"
     Install-NugetCli -Destination "$root\tools"
     $nugetExePath = "$root\tools\nuget.exe"
 
@@ -96,7 +94,7 @@ Task build `
     $redisRoot = "$modules\Saritasa.Redis"
     Copy-Item "$root\tmp\StackExchange.Redis.*\lib\net46\StackExchange.Redis.dll" $redisRoot
 
-    $gitRoot = "$modules\Saritasa.Git"    
+    $gitRoot = "$modules\Saritasa.Git"
     Invoke-NugetRestore -SolutionPath "$src\Saritasa.PSGallery.sln"
     Invoke-SolutionBuild -SolutionPath "$src\Saritasa.PSGallery.sln" -Configuration 'Release'
     Copy-Item "$src\Saritasa.Git.GitFlowStatus\bin\Release\Saritasa.Git.GitFlowStatus.dll" $gitRoot
