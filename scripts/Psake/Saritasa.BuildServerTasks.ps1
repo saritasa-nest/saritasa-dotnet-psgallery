@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.0.1
+.VERSION 1.1.0
 
 .GUID 5bf3b9dd-b754-4e71-bb03-cb5c5a8101c7
 
@@ -36,13 +36,12 @@ Contains Psake tasks for build server configuration.
 Properties `
 {
     $ServerHost = $null
-    $AdminUsername = $null
-    $AdminPassword = $null
+    $AdminCredential = $null
     $WorkspacePath = $null
 }
 
 Task setup-jenkins -depends init-winrm -description 'Install Jenkins, change service account.' `
-    -requiredVariables @('ServerHost') `
+    -requiredVariables @('ServerHost', 'AdminCredential') `
 {
     $session = Start-RemoteSession -ServerHost $ServerHost
 
@@ -62,19 +61,21 @@ Task setup-jenkins -depends init-winrm -description 'Install Jenkins, change ser
                     throw 'Chocolatey failed.'
                 }
 
+                $credential = $using:AdminCredential
+                $username = $credential.GetNetworkCredential().UserName
+
                 # Set 'Log on as a service' security policy using Carbon.
-                Grant-Privilege -Identity $using:AdminUsername -Privilege SeServiceLogonRight
+                Grant-Privilege -Identity $username -Privilege SeServiceLogonRight
                 Write-Information 'User privileges are updated.'
 
                 Write-Information 'Changing service account...'
 
-                $username = $using:AdminUsername
                 if ($username -notlike '*\*')
                 {
                     $username = ".\$username"
                 }
 
-                $args = @('config', 'Jenkins', 'obj=', $username, 'password=', $using:AdminPassword)
+                $args = @('config', 'Jenkins', 'obj=', $username, 'password=', $credential.GetNetworkCredential().Password)
                 sc.exe $args
                 if ($LASTEXITCODE)
                 {
