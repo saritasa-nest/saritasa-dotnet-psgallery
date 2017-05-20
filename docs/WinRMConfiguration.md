@@ -15,6 +15,10 @@
 
 [Installing Windows PowerShell](https://msdn.microsoft.com/en-us/powershell/scripting/setup/installing-windows-powershell)
 
+### Windows Server 2016
+
+PowerShell 5 is installed already.
+
 ### Windows Server 2012, 2012 R2
 
 Run as administrator in PowerShell:

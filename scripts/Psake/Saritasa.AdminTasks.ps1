@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.3.5
+.VERSION 1.4.0
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -35,6 +35,7 @@ Contains Psake tasks for remote server administration.
 
 Properties `
 {
+    $AdminCredential = $null # If it's not set, new credential will be assigned there.
     $AdminUsername = $null
     $AdminPassword = $null
     $Configuration = $null
@@ -45,17 +46,28 @@ Properties `
     $WinrmAuthentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
 }
 
+<#
+AdminCredential will be used for WinRM connection.
+If it's empty, AdminUsername and AdminPassword will be converted to AdminCredential.
+If AdminPassword is empty, new credential will be requested (if target server is not localhost).
+#>
 Task init-winrm -description 'Initializes WinRM configuration.' `
 {
-    if ($AdminPassword)
+    if (!$AdminCredential)
     {
-        $credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (ConvertTo-SecureString $AdminPassword -AsPlainText -Force))
+        if ($AdminPassword)
+        {
+            $credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (ConvertTo-SecureString $AdminPassword -AsPlainText -Force))
+        }
+        elseif (!(Test-IsLocalhost $ServerHost)) # Not localhost.
+        {
+            $credential = Get-Credential
+        }
+
+        Expand-PsakeConfiguration @{ AdminCredential = $credential }
     }
-    elseif (!(Test-IsLocalhost $ServerHost)) # Not localhost.
-    {
-        $credential = Get-Credential
-    }
-    Initialize-RemoteManagement -Credential $credential -Port $WinrmPort -Authentication $WinrmAuthentication
+
+    Initialize-RemoteManagement -Credential $AdminCredential -Port $WinrmPort -Authentication $WinrmAuthentication
 }
 
 # Use following params to import sites on localhost:
