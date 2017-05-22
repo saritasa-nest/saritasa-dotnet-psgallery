@@ -279,6 +279,11 @@ Adds correct path to MSBuild to Path environment variable.
 #>
 function Initialize-MSBuild
 {
+    [CmdletBinding()]
+    param ()
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     $vsPath = (@((Get-VSSetupInstance | Select-VSSetupInstance -Version 15.0 -Require Microsoft.Component.MSBuild).InstallationPath,
         (Get-VSSetupInstance | Select-VSSetupInstance -Version 15.0 -Product Microsoft.VisualStudio.Product.BuildTools).InstallationPath) -ne $null)[0]
 
@@ -298,4 +303,48 @@ function Initialize-MSBuild
     }
 
     $env:Path = $msbuildPath + ";$env:Path"
+}
+
+<#
+.SYNOPSIS
+Loads packages from many packages.config and saves to a single file.
+.EXAMPLE
+Merge-PackageConfigs -SolutionDirectory .\src -OutputPath .\src\packages.merged.config
+.EXAMPLE
+Merge-PackageConfigs -SolutionDirectory .\src -OutputPath .\src\packages.merged.net40.config -Framework net40
+Merge-PackageConfigs -SolutionDirectory .\src -OutputPath .\src\packages.merged.net452.config -Framework net452
+#>
+function Merge-PackageConfigs
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $SolutionDirectory,
+        [Parameter(Mandatory = $true)]
+        [string] $OutputPath,
+        [Parameter]
+        [string] $Framework
+    )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    $files = Get-ChildItem $src -Recurse packages.config
+
+    $packagesSet = New-Object 'System.Collections.Generic.HashSet[string]'
+
+    foreach ($file in $files)
+    {
+        [xml] $xml = Get-Content $file.FullName
+        $xml.packages.package | % `
+            {
+                if (!$Framework -or $_.targetFramework -eq $Framework)
+                {
+                    $packagesSet.Add($_.OuterXml) | Out-Null
+                }
+            }
+    }
+
+    [xml] $finalXml = '<?xml version="1.0" encoding="utf-8"?><packages>' + $packagesSet + '</packages>'
+    $finalXml.Save($OutputPath)
 }
