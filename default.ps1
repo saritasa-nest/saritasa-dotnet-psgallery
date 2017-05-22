@@ -97,6 +97,7 @@ Task build `
     Copy-Item "$root\tmp\StackExchange.Redis.*\lib\net46\StackExchange.Redis.dll" $redisRoot
 
     $gitRoot = "$modules\Saritasa.Git"
+    Initialize-MSBuild
     Invoke-NugetRestore -SolutionPath "$src\Saritasa.PSGallery.sln"
     Invoke-SolutionBuild -SolutionPath "$src\Saritasa.PSGallery.sln" -Configuration 'Release'
     Copy-Item "$src\Saritasa.Git.GitFlowStatus\bin\Release\Saritasa.Git.GitFlowStatus.dll" $gitRoot
