@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.1.1
+.VERSION 1.1.2
 
 .GUID a55519ec-c877-4480-8496-6c87ca097332
 
@@ -61,10 +61,11 @@ function Import-PsakeConfigurationFile
     param
     (
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string] $Path
     )
 
-    if (Test-Path $Path)
+    if ($Path -and (Test-Path $Path))
     {
         . (Resolve-Path $Path)
     }
