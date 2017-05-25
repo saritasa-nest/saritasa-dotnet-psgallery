@@ -40,8 +40,8 @@ module.exports = generators.Base.extend({
         }, {
             type: 'input',
             name: 'srcPath',
-            message: 'Where are project source files located?',
-            default: '..\src'
+            message: 'Where are project source files located (relative to default.ps1)?',
+            default: '..\\src'
         }, {
             type: 'confirm',
             name: 'nunitEnabled',
@@ -84,6 +84,7 @@ module.exports = generators.Base.extend({
         var windowsServiceEnabled = this.projectTypes.indexOf(WINDOWS_SERVICE) > -1;
 
         var templateParams = {
+            srcPath: this.srcPath,
             adminTasksEnabled: this.adminTasksEnabled,
             desktopEnabled: desktopEnabled,
             webEnabled: webEnabled,
