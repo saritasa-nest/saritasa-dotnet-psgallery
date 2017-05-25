@@ -38,6 +38,11 @@ module.exports = generators.Base.extend({
             message: 'Select all used project types:',
             choices: [WEB, DESKTOP, CLICK_ONCE, WINDOWS_SERVICE]
         }, {
+            type: 'input',
+            name: 'srcPath',
+            message: 'Where are project source files located?',
+            default: '..\src'
+        }, {
             type: 'confirm',
             name: 'nunitEnabled',
             message: 'Do you need to run NUnit tests?',
@@ -45,6 +50,7 @@ module.exports = generators.Base.extend({
         }]).then(function (answers) {
             this.projectTypes = answers.projectTypes;
             this.nunitEnabled = answers.nunitEnabled;
+            this.srcPath = answers.srcPath;
 
             if (this.projectTypes.indexOf(WEB) > -1) {
                 return this.prompt([{

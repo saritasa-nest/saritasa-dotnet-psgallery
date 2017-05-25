@@ -4,7 +4,7 @@ Properties `
 }
 
 $root = $PSScriptRoot
-$src = Resolve-Path "$root\..\src"
+$src = Resolve-Path "$root\<%= srcPath %>"
 
 Task pre-build -description 'Restore NuGet packages, copy configs.' `
 {
