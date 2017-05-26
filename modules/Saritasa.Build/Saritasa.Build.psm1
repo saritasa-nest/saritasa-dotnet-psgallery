@@ -50,8 +50,17 @@ function Invoke-NugetRestore
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    Install-NugetCli -Destination $PSScriptRoot
-    $nugetExePath = "$PSScriptRoot\nuget.exe"
+    $nugetCli = Get-Command nuget.exe -ErrorAction SilentlyContinue
+
+    if ($nugetCli)
+    {
+        $nugetExePath = $nugetCli.Source
+    }
+    else
+    {
+        Install-NugetCli -Destination $PSScriptRoot
+        $nugetExePath = "$PSScriptRoot\nuget.exe"
+    }
 
     $params = @('restore')
     if ($SolutionPath)
