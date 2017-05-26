@@ -52,6 +52,8 @@ function GenerateMarkdown([string] $moduleName)
 # Install-Module psake, VSSetup -Scope CurrentUser -Force
 Task publish-modules -depends build -requiredVariables @('NugetApiKey') `
 {
+    Remove-Item "$modules\Saritasa.Build\nuget.exe" -ErrorAction SilentlyContinue
+
     Get-ChildItem -Directory $modules | % `
         {
             Write-Information "Publishing $_ module..."
@@ -95,11 +97,14 @@ Task build `
     Copy-Item "$root\tmp\StackExchange.Redis.*\lib\net46\StackExchange.Redis.dll" $redisRoot
 
     $gitRoot = "$modules\Saritasa.Git"
+    Initialize-MSBuild
     Invoke-NugetRestore -SolutionPath "$src\Saritasa.PSGallery.sln"
     Invoke-SolutionBuild -SolutionPath "$src\Saritasa.PSGallery.sln" -Configuration 'Release'
     Copy-Item "$src\Saritasa.Git.GitFlowStatus\bin\Release\Saritasa.Git.GitFlowStatus.dll" $gitRoot
 
     $yeomanScriptsPath = "$src\YeomanGenerator\generator-psgallery\app\templates\Scripts"
     Copy-Item "$scripts\Psake\Saritasa.AdminTasks.ps1" $yeomanScriptsPath
+    Copy-Item "$scripts\Psake\Saritasa.GitTasks.ps1" $yeomanScriptsPath
+    Copy-Item "$scripts\Psake\Saritasa.PsakeExtensions.ps1" $yeomanScriptsPath
     Copy-Item "$scripts\Psake\Saritasa.PsakeTasks.ps1" $yeomanScriptsPath
 }

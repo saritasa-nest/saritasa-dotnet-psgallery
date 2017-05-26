@@ -38,12 +38,25 @@ module.exports = generators.Base.extend({
             message: 'Select all used project types:',
             choices: [WEB, DESKTOP, CLICK_ONCE, WINDOWS_SERVICE]
         }, {
+            type: 'input',
+            name: 'srcPath',
+            message: 'Where are project source files located (relative to default.ps1)?',
+            default: '..\\src'
+        }, {
+            type: 'confirm',
+            name: 'gitTasksEnabled',
+            message: 'Do you need GitFlow helper tasks?',
+            default: true
+        },
+        {
             type: 'confirm',
             name: 'nunitEnabled',
             message: 'Do you need to run NUnit tests?',
             default: false
         }]).then(function (answers) {
             this.projectTypes = answers.projectTypes;
+            this.srcPath = answers.srcPath;
+            this.gitTasksEnabled = answers.gitTasksEnabled;
             this.nunitEnabled = answers.nunitEnabled;
 
             if (this.projectTypes.indexOf(WEB) > -1) {
@@ -78,15 +91,18 @@ module.exports = generators.Base.extend({
         var windowsServiceEnabled = this.projectTypes.indexOf(WINDOWS_SERVICE) > -1;
 
         var templateParams = {
+            srcPath: this.srcPath,
             adminTasksEnabled: this.adminTasksEnabled,
             desktopEnabled: desktopEnabled,
             webEnabled: webEnabled,
-            windowsServiceEnabled: windowsServiceEnabled
+            windowsServiceEnabled: windowsServiceEnabled,
+            gitTasksEnabled: this.gitTasksEnabled
         };
 
         this.fs.copyTpl(this.templatePath('default.ps1'), this.destinationPath('default.ps1'), templateParams);
         this.fs.copyTpl(this.templatePath('scripts/BuildTasks.ps1'), this.destinationPath('scripts/BuildTasks.ps1'), templateParams);
         this.fs.copyTpl(this.templatePath('scripts/PublishTasks.ps1'), this.destinationPath('scripts/PublishTasks.ps1'), templateParams);
+        this.fs.copy(this.templatePath('scripts/Saritasa.PsakeExtensions.ps1'), this.destinationPath('scripts/Saritasa.PsakeExtensions.ps1'));
         this.fs.copy(this.templatePath('scripts/Saritasa.PsakeTasks.ps1'), this.destinationPath('scripts/Saritasa.PsakeTasks.ps1'));
 
         this.installModule('Saritasa.Build');
@@ -110,6 +126,11 @@ module.exports = generators.Base.extend({
         if (this.adminTasksEnabled) {
             this.fs.copy(this.templatePath('Scripts/Saritasa.AdminTasks.ps1'), this.destinationPath('Scripts/Saritasa.AdminTasks.ps1'));
             this.installModule('Saritasa.RemoteManagement');
+        }
+
+        if (this.gitTasksEnabled) {
+            this.fs.copy(this.templatePath('Scripts/Saritasa.GitTasks.ps1'), this.destinationPath('Scripts/Saritasa.GitTasks.ps1'));
+            this.installModule('Saritasa.Git');
         }
 
         if (this.webServices.indexOf(NEWRELIC) > -1) {

@@ -21,6 +21,10 @@ Use [Yeoman](http://yeoman.io/) to quickly generate script templates and start e
 
 Note: You may use VS Code Yeoman extension.
 
+### Update Generator
+
+    npm update -g generator-psgallery
+
 ## Add Module
 
 - Open repository root directory in PowerShell.

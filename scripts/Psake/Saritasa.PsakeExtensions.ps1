@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.1.0
+.VERSION 1.1.2
 
 .GUID a55519ec-c877-4480-8496-6c87ca097332
 
@@ -41,19 +41,19 @@ Checks file existence and dot-sources it.
 The file should contain Expand-PsakeConfiguration call.
 Call Import-PsakeConfigurationFile from TaskSetup block.
 .EXAMPLE
-Import-PsakeConfigurationFile ".\Config.$configuration.ps1"
+Import-PsakeConfigurationFile ".\Config.$Configuration.ps1"
 
 # default.ps1
 TaskSetup `
 {
-    Import-PsakeConfigurationFile ".\Config.$configuration.ps1"
+    Import-PsakeConfigurationFile ".\Config.$Configuration.ps1"
 }
 
 # Config.Debug.ps1
 
 Expand-PsakeConfiguration `
 @{
-    serverHost = 'dev.example.com'
+    ServerHost = 'dev.example.com'
 }
 #>
 function Import-PsakeConfigurationFile
@@ -61,13 +61,13 @@ function Import-PsakeConfigurationFile
     param
     (
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string] $Path
     )
 
-    $fileName = Resolve-Path $Path
-    if (Test-Path $fileName)
+    if ($Path -and (Test-Path $Path))
     {
-        . $fileName
+        . (Resolve-Path $Path)
     }
 }
 
@@ -98,7 +98,7 @@ function Expand-PsakeConfiguration
     $maxScope = $i - 1
     $cmdLineScope = $maxScope - 2
     $propertiesScope = $cmdLineScope - 3
-    
+
     # Override properties from passed hashtable.
     foreach ($key in $NewConfiguration.Keys)
     {

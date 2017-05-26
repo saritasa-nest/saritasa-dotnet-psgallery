@@ -7,7 +7,7 @@ Properties `
 }
 
 $root = $PSScriptRoot
-$src = Resolve-Path "$root\..\src"
+$src = Resolve-Path "$root\<%= srcPath %>"
 $workspace = Resolve-Path "$root\.."
 
 <% if (webEnabled) { %>
