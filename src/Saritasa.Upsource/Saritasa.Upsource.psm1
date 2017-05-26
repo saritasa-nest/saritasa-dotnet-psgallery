@@ -239,16 +239,16 @@ function Get-RevisionWithoutReview {
 
     $branchQuery = "branch:$Branch and date:$startDateString .. $endDateString"
 
-    Write-Output $dateQuery
-
     $allRevisions = Get-RevisionListFiltered -ProjectId $Project -Limit 10000 -Query $branchQuery
 
     $allReviews = Get-ReviewsList -ProjectId $Project -Limit 100 -Query $dateQuery
 
+    $allRevisionsCount = $allRevisions.Count
+    $allReviewsCount = $allReviews.Count
 
-    Write-Output $allRevisions.Count
+    Write-Output "Revisions: $allRevisionsCount"
 
-    Write-Output $allReviews.Count
+    Write-Output "Reviews: $allReviewsCount"
 }
 
 Export-ModuleMember -Function "Get-*"
