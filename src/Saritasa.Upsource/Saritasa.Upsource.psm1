@@ -69,8 +69,6 @@ function Invoke-Request {
 
     $credentialsEncoded = CredentialsEncoded
 
-    $jsonBody = ConvertTo-Json -InputObject $Body | Out-File "request-body.json"
-
     Invoke-RestMethod  -ContentType 'application/json' -Headers @{'Authorization' = "Basic $credentialsEncoded"} `
         -Body $Body `
         -Method Post `
