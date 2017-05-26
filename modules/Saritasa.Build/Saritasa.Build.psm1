@@ -21,14 +21,6 @@ function Install-NugetCli
         Invoke-WebRequest 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe' -OutFile $nugetExePath
         Write-Information 'Done.'
     }
-
-    $nugetVersion = ((Get-Item $nugetExePath).VersionInfo.ProductVersion).Split('.')[0]
-    if ($nugetVersion -lt 4)
-    {
-        Write-Information 'Downloading nuget.exe...'
-        Invoke-WebRequest 'https://dist.nuget.org/win-x86-commandline/v4.0.0/nuget.exe' -OutFile $nugetExePath
-        Write-Information 'Done.'
-    }
 }
 
 <#
