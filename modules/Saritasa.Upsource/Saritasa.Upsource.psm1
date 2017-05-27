@@ -21,6 +21,20 @@ function Initialize-Upsource {
     $script:UpsourceCredentials = $Credential
 }
 
+function Convert-Time {
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $Milliseconds
+    )
+
+    $origin = New-Object -Type DateTime -ArgumentList 1970, 1, 1, 0, 0, 0, 0
+    $origin = $origin.AddMilliseconds($Milliseconds).ToLocalTime()
+
+    $origin
+}
+
 
 <#
     Encoding string to base64
@@ -311,7 +325,7 @@ function Get-RevisionWithoutReview {
             if ($containsStopwords -eq $false) {                
                 $revisionsWithoutReview += @{
                     Revision      = $revisionInfo.result.revisionId
-                    Date          = $revisionInfo.result.revisionDate
+                    Date          = Convert-Time -Milliseconds $revisionInfo.result.revisionDate 
                     Author        = $revisionInfo.result.authorId
                     CommitMessage = $revisionInfo.result.revisionCommitMessage
                 }
