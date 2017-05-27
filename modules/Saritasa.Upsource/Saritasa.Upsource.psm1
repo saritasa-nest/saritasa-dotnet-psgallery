@@ -336,7 +336,9 @@ function Get-RevisionWithoutReview {
     $userIds = @()
 
     $revisionsWithoutReview | ForEach-Object {
-        $userIds += $_.Author   
+        if ($userIds -notcontains $_.Author) {
+            $userIds += $_.Author   
+        }
     }
 
     if ($userIds.Length -gt 0) {
