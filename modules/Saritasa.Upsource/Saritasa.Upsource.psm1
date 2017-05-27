@@ -254,7 +254,7 @@ function Get-RevisionWithoutReview {
     param
     (
         [Parameter(Mandatory = $true)]
-        [string]$Project,
+        [string]$ProjectId,
         [string]$Branch = 'develop',
         [int]$DaysLimit = 30,
         [string[]]$Stopwords
@@ -270,9 +270,9 @@ function Get-RevisionWithoutReview {
 
     $branchQuery = "branch:$Branch and date:$startDateString .. $endDateString"
 
-    $allRevisions = Get-RevisionListFiltered -ProjectId $Project -Limit 10000 -Query $branchQuery
+    $allRevisions = Get-RevisionListFiltered -ProjectId $ProjectId -Limit 10000 -Query $branchQuery
 
-    $allReviews = Get-ReviewsList -ProjectId $Project -Limit 100 -Query $dateQuery
+    $allReviews = Get-ReviewsList -ProjectId $ProjectId -Limit 100 -Query $dateQuery
 
     $revisionsInReviews = @()
 
@@ -280,7 +280,7 @@ function Get-RevisionWithoutReview {
 
         if ($_ -ne $null -and $_ -ne [string]::Empty) {
 
-            $revisionsInReview = Get-RevisionsInReview -ProjectId $Project -ReviewId $_
+            $revisionsInReview = Get-RevisionsInReview -ProjectId $ProjectId -ReviewId $_
 
             $revisionsInReview | ForEach-Object { $revisionsInReviews += $_ }
         }
@@ -296,7 +296,7 @@ function Get-RevisionWithoutReview {
     $allRevisions | ForEach-Object {
         
         if ($revisionsInReviews -notcontains $_ -and $_ -ne $null) {
-            $revisionInfo = Get-RevisionInfo -ProjectId $Project -RevisionId $_
+            $revisionInfo = Get-RevisionInfo -ProjectId $ProjectId -RevisionId $_
 
             $containsStopwords = $false
 
