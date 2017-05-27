@@ -19,9 +19,6 @@ function Initialize-Upsource {
 
     $script:UpsourceUrl = $UpsourceUrl
     $script:UpsourceCredentials = $Credential
-
-    Write-Debug $script:UpsourceUrl
-    Write-Debug $script:UpsourceCredentials
 }
 
 
@@ -118,7 +115,28 @@ function Get-RevisionsList {
         }
     }
 
-    return $revisionIds
+    $revisionIds
+}
+
+function Get-RevisionInfo {
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string]$ProjectId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$RevisionId
+    )
+
+    $url = "$UpsourceUrl/~rpc/getRevisionInfo"
+
+    $params = @{
+        projectId  = $ProjectId
+        revisionId = $RevisionId
+    } | ConvertTo-Json
+
+    Invoke-Request -Url $url -Body $params
 }
 
 function Get-RevisionListFiltered {
@@ -149,8 +167,6 @@ function Get-RevisionListFiltered {
     $result.result.revision | ForEach-Object { $revisionIds += $_.revisionId }
 
     $revisionIds
-
-    return
 }
 
 function Get-RevisionsInReview {
@@ -175,11 +191,12 @@ function Get-RevisionsInReview {
 
     $result = Invoke-Request -Url $url -Body $params
 
-    ([string]$result.result.newRevisions.revisions).Split(' ') | ForEach-Object { $revisionIds += $_ }
+    $result.result.allRevisions.revision | ForEach-Object {
+
+        $revisionIds += $_.revisionId 
+    }
 
     $revisionIds
-
-    return 
 }
 
 function Get-ReviewsList {
@@ -212,8 +229,23 @@ function Get-ReviewsList {
     $result.result.reviews.reviewId.reviewId | ForEach-Object { $reviewIds += $_ }
 
     $reviewIds
+}
 
-    return
+function Get-UserInfo {
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string[]]$UserIds
+    )
+
+    $url = "$UpsourceUrl/~rpc/getUserInfo"
+
+    $params = @{
+        ids = $UserIds
+    } | ConvertTo-Json
+
+    Invoke-Request -Url $url -Body $params
 }
 
 function Get-RevisionWithoutReview {
@@ -224,16 +256,17 @@ function Get-RevisionWithoutReview {
         [Parameter(Mandatory = $true)]
         [string]$Project,
         [string]$Branch = 'develop',
-        [int]$DaysLimit = 30
+        [int]$DaysLimit = 30,
+        [string[]]$Stopwords
     )
 
     [datetime]$now = [datetime]::Now
-    $from = $now.Date.AddDays(-$DaysLimit)
+    $from = $now.Date.AddDays( - $DaysLimit)
 
     $endDateString = $now.ToString("yyyy-MMM-dd")
     $startDateString = $from.Date.ToString("yyyy-MMM-dd")
 
-    [string]$dateQuery = "created: $startDateString .. $endDateString"
+    [string]$dateQuery = "created: $startDateString .. $endDateString or updated: $startDateString .. $endDateString"
 
     $branchQuery = "branch:$Branch and date:$startDateString .. $endDateString"
 
@@ -241,12 +274,77 @@ function Get-RevisionWithoutReview {
 
     $allReviews = Get-ReviewsList -ProjectId $Project -Limit 100 -Query $dateQuery
 
-    $allRevisionsCount = $allRevisions.Count
-    $allReviewsCount = $allReviews.Count
+    $revisionsInReviews = @()
 
-    Write-Output "Revisions: $allRevisionsCount"
+    $allReviews | ForEach-Object { 
 
-    Write-Output "Reviews: $allReviewsCount"
+        if ($_ -ne $null -and $_ -ne [string]::Empty) {
+
+            $revisionsInReview = Get-RevisionsInReview -ProjectId $Project -ReviewId $_
+
+            $revisionsInReview | ForEach-Object { $revisionsInReviews += $_ }
+        }
+    }
+
+    $revisionsWithoutReview = @()
+
+    $stopwordsFilter = $null
+    if ($Stopwords -ne $null -and $Stopwords.Length -gt 0) {
+        $stopwordsFilter = [string]::Join('|', $Stopwords)
+    }
+
+    $allRevisions | ForEach-Object {
+        
+        if ($revisionsInReviews -notcontains $_ -and $_ -ne $null) {
+            $revisionInfo = Get-RevisionInfo -ProjectId $Project -RevisionId $_
+
+            $containsStopwords = $false
+
+            if ($stopwordsFilter -ne $null) {
+                $Stopwords | ForEach-Object { 
+                    if ($revisionInfo.result.revisionCommitMessage -match $stopwordsFilter) {
+                        $containsStopwords = $true
+                    }
+                }
+            }
+
+            if ($containsStopwords -eq $false) {                
+                $revisionsWithoutReview += @{
+                    Revision      = $revisionInfo.result.revisionId
+                    Date          = $revisionInfo.result.revisionDate
+                    Author        = $revisionInfo.result.authorId
+                    CommitMessage = $revisionInfo.result.revisionCommitMessage
+                }
+            }
+        }
+    }
+
+    $userIds = @()
+
+    $revisionsWithoutReview | ForEach-Object {
+        $userIds += $_.Author   
+    }
+
+    if ($userIds.Length -gt 0) {
+
+        $userInfos = Get-UserInfo -UserIds $userIds
+
+        $userInfos.result.infos | ForEach-Object {
+
+            $info = $_
+
+            $authors = @()
+
+            $revisionsWithoutReview | ForEach-Object {
+
+                if ($_.Author -eq $info.userId) {
+                    $_.Author = $info.name
+                }
+            }
+        }
+    }
+
+    $revisionsWithoutReview
 }
 
 Export-ModuleMember -Function "Get-*"
