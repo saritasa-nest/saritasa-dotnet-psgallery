@@ -39,7 +39,7 @@ function Convert-Time {
 <#
     Encoding string to base64
  #>
-function EncodeBase64 {
+function Invoke-EncodeBase64 {
     [CmdletBinding()]
     param
     (
@@ -58,10 +58,10 @@ function EncodeBase64 {
 <#
     Credentials encoding helper
  #>
-function CredentialsEncoded {
+function Invoke-EncodeCredentials {
 
     $value = $UpsourceCredentials.UserName + ":" + $UpsourceCredentials.GetNetworkCredential().Password
-    return EncodeBase64 -Value $value
+    return Invoke-EncodeBase64 -Value $value
 }
 
 <#
@@ -78,7 +78,7 @@ function Invoke-Request {
         [string]$Body
     )
 
-    $credentialsEncoded = CredentialsEncoded
+    $credentialsEncoded = Invoke-EncodeCredentials
 
     Invoke-RestMethod  -ContentType 'application/json' -Headers @{'Authorization' = "Basic $credentialsEncoded"} `
         -Body $Body `
