@@ -36,7 +36,6 @@ Converting time from response of Upsource which provide only milliseconds from U
 #>
 function ConvertTime
 {
-    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -56,7 +55,6 @@ Encoding string value to base64.
 #>
 function EncodeBase64
 {
-    [CmdletBinding()]
     [OutputType('System.String')]
     param
     (
@@ -88,7 +86,6 @@ Invoking REST web request to retrieve data.
 #>
 function InvokeWebRequest
 {
-    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -112,7 +109,6 @@ Get information about revision.
 #>
 function GetRevisionInfo
 {
-    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -140,7 +136,6 @@ function GetRevision
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignment", "",
         Scope = "Function", Target = "*")]
-    [CmdletBinding()]
     [OutputType('System.Object[]')]
     param
     (
@@ -178,7 +173,6 @@ function GetRevisionInReview
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignment", "",
         Scope = "Function", Target = "*")]
-    [CmdletBinding()]
     [OutputType('System.Object[]')]
     param
     (
@@ -216,7 +210,6 @@ function GetReviewList
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignment", "",
         Scope = "Function", Target = "*")]
-    [CmdletBinding()]
     [OutputType('System.Object[]')]
     param
     (
@@ -254,7 +247,6 @@ Returns information about user.
 #>
 function GetUserInfo
 {
-    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
