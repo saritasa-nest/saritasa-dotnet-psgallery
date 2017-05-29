@@ -362,6 +362,3 @@ function Get-RevisionWithoutReview {
 
     $revisionsWithoutReview
 }
-
-Export-ModuleMember -Function "Get-*"
-Export-ModuleMember -Function "Initialize-Upsource"
