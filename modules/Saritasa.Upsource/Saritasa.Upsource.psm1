@@ -108,54 +108,6 @@ function InvokeWebRequest
 
 <#
 .SYNOPSIS
-Getting all revisions in project.
-#>
-function GetRevision
-{
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignment", "",
-        Scope = "Function", Target = "*")]
-    [CmdletBinding()]
-    [OutputType('System.Object[]')]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [string]$Project,
-
-        [int]$Limit = [int]::MaxValue
-    )
-
-    $revisionListDto = @{
-        projectId    = $Project
-        limit        = $Limit
-        requestGraph = $false
-    } | ConvertTo-Json
-
-    $url = "$UpsourceUrl/~rpc/getRevisionsList"
-
-    $revisionList = InvokeWebRequest -Url $url -Body $revisionListDto
-
-    $revisionIds = @()
-
-    $revisionList.result.revision | ForEach-Object `
-    {
-        if ($_ -ne $null)
-        {
-            $revisionObject = @{
-                RevisionId    = $_.revisionId
-                Date          = $_.revisionDate
-                CommitMessage = $_.revisionCommitMessage
-                Author        = $_.authorId
-            }
-
-            $revisionIds += $revisionObject
-        }
-    }
-
-    $revisionIds
-}
-
-<#
-.SYNOPSIS
 Get information about revision.
 #>
 function GetRevisionInfo
