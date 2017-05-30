@@ -78,14 +78,7 @@ function IsModuleVersionAvailableInGallery
     try
     {
         $module = Find-Module -Name $moduleData.RootModule -RequiredVersion $moduleVersion
-        if ($module.Version -eq $moduleVersion -or $module.Version -gt $moduleVersion)
-        {
-            $true
-        }
-        else
-        {
-            $false
-        }
+        return $module.Version -eq $moduleVersion -or $module.Version -gt $moduleVersion
     }
     catch [System.Exception]
     {
