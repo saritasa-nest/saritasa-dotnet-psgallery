@@ -2,7 +2,7 @@ param(
     [parameter(Mandatory=$true, Position=0)] [string] $moduleName,
     [parameter(Mandatory=$false, Position=1)] [string] $template = "./out-html-template.ps1",
     [parameter(Mandatory=$false, Position=2)] [string] $outputDir = './help',
-    [parameter(Mandatory=$false, Position=3)] [string] $fileName = 'index.md'
+    [parameter(Mandatory=$false, Position=3)] [string] $fileName = 'index.html'
 )
 
 function FixString ($in = '', [bool]$includeBreaks = $false){
