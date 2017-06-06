@@ -51,12 +51,13 @@ function GenerateMarkdown([string] $moduleName)
 function ParsePsd1
 {
     [CmdletBinding()]
-    Param (
+    param
+    (
         [Parameter(Mandatory = $true)]
         [Microsoft.PowerShell.DesiredStateConfiguration.ArgumentToConfigurationDataTransformation()]
-        [hashtable] $data
+        [hashtable] $Data
     )
-    return $data
+    return $Data
 }
 
 function IsModuleVersionAvailableInGallery
@@ -68,22 +69,12 @@ function IsModuleVersionAvailableInGallery
     )
 
     $psd1 = Get-ChildItem -Path $ModulePath -Filter "*.psd1"
-
     $fullPath = "$ModulePath\$psd1"
-
-    $moduleData = ParsePsd1 -data $fullPath
-
+    $moduleData = ParsePsd1 -Data $fullPath
     $moduleVersion = $moduleData.ModuleVersion
 
-    try
-    {
-        $module = Find-Module -Name $moduleData.RootModule -RequiredVersion $moduleVersion
-        return $module.Version -eq $moduleVersion -or $module.Version -gt $moduleVersion
-    }
-    catch [System.Exception]
-    {
-        $false
-    }
+    $module = Find-Module -Name $moduleData.RootModule -RequiredVersion $moduleVersion -ErrorAction SilentlyContinue
+    return $module -ne $null -and $module.Version -eq $moduleVersion -or $module.Version -gt $moduleVersion
 }
 
 # Before run, make sure that required modules are installed.
@@ -97,7 +88,7 @@ Task publish-modules -depends build -requiredVariables @('NugetApiKey') `
             Write-Information "Publishing $_ module..."
             try
             {
-                if((IsModuleVersionAvailableInGallery -ModulePath $_.FullName) -eq $false)
+                if ((IsModuleVersionAvailableInGallery -ModulePath $_.FullName) -eq $false)
                 {
                     Publish-Module -Path $_.FullName -NuGetApiKey $NugetApiKey
                 }
