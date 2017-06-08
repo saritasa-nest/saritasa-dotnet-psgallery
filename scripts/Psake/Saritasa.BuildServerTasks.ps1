@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.1.0
+.VERSION 1.2.0
 
 .GUID 5bf3b9dd-b754-4e71-bb03-cb5c5a8101c7
 
@@ -38,12 +38,33 @@ Properties `
     $ServerHost = $null
     $AdminCredential = $null
     $WorkspacePath = $null
+    $JenkinsPlugins = $null
 }
 
+<#
+.EXAMPLE
+psake setup-jenkins -properties @{ServerHost='example.com';JenkinsPlugins='git workflow-aggregator')}
+.EXAMPLE
+Invoke-psake setup-jenkins -properties @{ServerHost='example.com';JenkinsPlugins=@('cloudbees-folder', 'git', 'workflow-aggregator')}
+#>
 Task setup-jenkins -depends init-winrm -description 'Install Jenkins, change service account.' `
     -requiredVariables @('ServerHost', 'AdminCredential') `
 {
     $session = Start-RemoteSession -ServerHost $ServerHost
+
+    $plugins = ''
+    if ($JenkinsPlugins)
+    {
+        if ($JenkinsPlugins -is [array])
+        {
+            $plugins = [string]::Join(' ', $JenkinsPlugins)
+        }
+        else
+        {
+            $plugins = $JenkinsPlugins
+        }
+    }
+    $initGroovyContent = $initGroovyTemplate.Replace('$(Plugins)', $plugins)
 
     Invoke-Command -Session $session -ScriptBlock `
         {
@@ -60,6 +81,15 @@ Task setup-jenkins -depends init-winrm -description 'Install Jenkins, change ser
                 {
                     throw 'Chocolatey failed.'
                 }
+
+
+                $jenkinsHome = 'C:\Program Files (x86)\Jenkins'
+                Copy-Item "$jenkinsHome\jenkins.install.UpgradeWizard.state" "$jenkinsHome\jenkins.install.InstallUtil.lastExecVersion"
+                Write-Information 'Disabled Jenkins setup wizard.'
+
+                Set-Content "$jenkinsHome\init.groovy" $using:initGroovyContent
+                Write-Information "Created init.groovy script to setup Jenkins plugins: $using:plugins"
+
 
                 $credential = $using:AdminCredential
                 $username = $credential.GetNetworkCredential().UserName
@@ -232,3 +262,40 @@ Task write-jenkins-password -description 'Display Jenkins default password for i
 
     Remove-PSSession $session
 }
+
+$initGroovyTemplate = @'
+import jenkins.model.*
+import hudson.security.*
+import java.util.logging.Logger
+import java.io.File
+
+def plugins = '$(Plugins)'.split()
+
+
+
+def instance = Jenkins.instance
+def logger = Logger.getLogger("")
+
+def pm = instance.getPluginManager()
+def uc = instance.getUpdateCenter()
+uc.updateAllSites()
+
+plugins.each {
+    logger.info("Checking " + it)
+
+    if (!pm.getPlugin(it)) {
+        logger.info("Looking UpdateCenter for " + it)
+
+        def plugin = uc.getPlugin(it)
+        if (plugin) {
+            logger.info("Installing " + it)
+        	plugin.deploy()
+        }
+    }
+}
+
+
+
+f = new File('C:\\Program Files (x86)\\Jenkins\\init.groovy')
+f.delete()
+'@
