@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.2.0
+.VERSION 1.3.0
 
 .GUID 5bf3b9dd-b754-4e71-bb03-cb5c5a8101c7
 
@@ -39,6 +39,8 @@ Properties `
     $AdminCredential = $null
     $WorkspacePath = $null
     $JenkinsPlugins = $null
+    $GitServer = $null
+    $GitUsername = $null
 }
 
 <#
@@ -120,7 +122,7 @@ Task setup-jenkins -depends init-winrm -description 'Install Jenkins, change ser
 }
 
 Task setup-workspace -depends init-winrm -description 'Install Git, generate SSH keys, init workspace.' `
-    -requiredVariables @('ServerHost', 'WorkspacePath') `
+    -requiredVariables @('ServerHost', 'WorkspacePath', 'GitServer', 'GitUsername') `
 {
     $session = Start-RemoteSession -ServerHost $ServerHost
     Invoke-Command -Session $session -ScriptBlock `
@@ -143,7 +145,7 @@ Task setup-workspace -depends init-winrm -description 'Install Git, generate SSH
             if (!(Test-Path $knownHostsFile))
             {
                 Write-Information 'Adding host signature to SSH known hosts...'
-                $hostname = 'gitblit.saritasa.com'
+                $hostname = $using:GitServer
                 $tempFile = "$env:TEMP\" + [guid]::NewGuid()
                 Resolve-DnsName $hostname | foreach `
                     {
@@ -152,6 +154,15 @@ Task setup-workspace -depends init-winrm -description 'Install Git, generate SSH
                         Get-Content $tempFile | Add-Content "$env:HOMEDRIVE$env:HOMEPATH\.ssh\known_hosts"
                     }
                 Remove-Item $tempFile
+                Write-Information 'Done.'
+            }
+
+            $sshConfigFile = "$env:HOMEDRIVE$env:HOMEPATH\.ssh\config"
+            if (!(Test-Path $sshConfigFile))
+            {
+                Write-Information 'Creating SSH config...'
+                Write-Information "Host $using:GitServer`nUser $using:GitUsername"
+                Add-Content -Path $sshConfigFile -Value "Host $using:GitServer`nUser $using:GitUsername"
                 Write-Information 'Done.'
             }
 
