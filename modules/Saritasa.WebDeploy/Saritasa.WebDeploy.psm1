@@ -160,13 +160,24 @@ function Stop-AppPool
 
 function GetComputerName([string] $ServerHost, [string] $SiteName)
 {
-    if (!(Test-IsLocalhost $ServerHost)) # Remote server.
+    $useAgent = $false
+    if (Test-IsLocalhost $ServerHost) # Local server.
     {
-        "https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName"
+        # Check if Web Deployment Agent Service exists.
+        $agentService = Get-Service MsDepSvc -ErrorAction SilentlyContinue
+        if ($agentService)
+        {
+            $useAgent = $true
+        }
     }
-    else
+
+    if ($useAgent)
     {
         'localhost'
+    }
+    else # Use Web Management Service.
+    {
+        "https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName"
     }
 }
 
