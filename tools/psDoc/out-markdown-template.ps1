@@ -26,6 +26,8 @@ function FixMarkdownString([string] $in = '', [bool] $includeBreaks = $false) {
 		'#' = '\#'
 		'+' = '\+'
 		'!' = '\!'
+		'<' = '&lt;'
+		'>' = '&gt;'
 	}
 
 	$rtn = $in.Trim()
@@ -44,11 +46,12 @@ function FixMarkdownString([string] $in = '', [bool] $includeBreaks = $false) {
 
 function FixMarkdownCodeString([string] $in) {
 	if ($in -eq $null) { return }
-	
+
 	TrimAllLines $in
 }
 
 @"
+
 # $moduleName
 "@
 $progress = 0
@@ -56,6 +59,7 @@ $commandsHelp | % {
 	Update-Progress $_.Name 'Documentation'
 	$progress++
 @"
+
 ## $(FixMarkdownString($_.Name))
 "@
 	$synopsis = $_.synopsis.Trim()
@@ -64,15 +68,17 @@ $commandsHelp | % {
 		$tmp = $synopsis
 		$synopsis = $syntax
 		$syntax = $tmp
-@"	
+@"
+
 ### Synopsis
 $(FixMarkdownString($syntax))
 "@
 	}
-@"	
+@"
+
 ### Syntax
 $(FixMarkdownString($synopsis))
-"@	
+"@
 
 	if (!($_.alias.Length -eq 0)) {
 @"
@@ -87,9 +93,10 @@ $(FixMarkdownString($synopsis))
 
 "@
 	}
-	
+
 	if($_.parameters){
 @"
+
 ### Parameters
 
 <table class="table table-striped table-bordered table-condensed visible-on">
@@ -119,12 +126,13 @@ $(FixMarkdownString($synopsis))
 		}
 @"
 	</tbody>
-</table>			
+</table>
 "@
 	}
 	$inputTypes = $(FixMarkdownString($_.inputTypes  | out-string))
 	if ($inputTypes.Length -gt 0 -and -not $inputTypes.Contains('inputType')) {
 @"
+
 ### Inputs
  - $inputTypes
 
@@ -133,6 +141,7 @@ $(FixMarkdownString($synopsis))
 	$returnValues = $(FixMarkdownString($_.returnValues  | out-string))
 	if ($returnValues.Length -gt 0 -and -not $returnValues.StartsWith("returnValue")) {
 @"
+
 ### Outputs
  - $returnValues
 
@@ -141,6 +150,7 @@ $(FixMarkdownString($synopsis))
 	$notes = $(FixMarkdownString($_.alertSet  | out-string))
 	if ($notes.Trim().Length -gt 0) {
 @"
+
 ### Note
 $notes
 
@@ -148,14 +158,15 @@ $notes
 	}
 	if(($_.examples | Out-String).Trim().Length -gt 0) {
 @"
+
 ### Examples
 "@
 		$_.examples.example | % {
 @"
 **$(FixMarkdownString($_.title.Trim(('-',' '))))**
-
-		$(FixMarkdownCodeString($_.code | out-string ))
-		
+``````
+$(FixMarkdownCodeString($_.code) | out-string)
+``````
 $(FixMarkdownString($_.remarks | out-string ) $true)
 "@
 		}
@@ -165,7 +176,7 @@ $(FixMarkdownString($_.remarks | out-string ) $true)
 ### Links
 
 "@
-		$_.links | % { 
+		$_.links | % {
 @"
  - [$_.name]($_.link)
 "@

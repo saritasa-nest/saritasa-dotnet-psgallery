@@ -15,6 +15,7 @@
 | [Saritasa.Redis](Saritasa.Redis.md)                               | Contains Redis management cmdlets. |
 | [Saritasa.RemoteManagement](Saritasa.RemoteManagement.md)         | Contains functions to execute actions on a remote server. Allows to set up IIS, import sites and app pools, install MSI packages. |
 | [Saritasa.Test](Saritasa.Test.md)                                 | Contains functions to run unit tests. |
+| [Saritasa.Upsource](docs/Saritasa.Upsource.md)                        | Contains functions related to JetBrains Upsource. |
 | [Saritasa.Web](Saritasa.Web.md)                                   | Contains various methods for web requests and SSL handling. |
 | [Saritasa.WebDeploy](Saritasa.WebDeploy.md)                       | Contains functions to control app pools and synchronize IIS web sites using Microsoft WebDeploy tool. |
 | [Saritasa.WinRM](Saritasa.WinRM.md)                               | Contains functions to set up WinRM and execute remote commands. |

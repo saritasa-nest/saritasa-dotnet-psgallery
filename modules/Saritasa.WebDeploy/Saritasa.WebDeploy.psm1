@@ -112,8 +112,9 @@ function Start-AppPool
     Assert-WebDeployCredential
     Write-Information 'Starting app pool...'
 
+    $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StartAppPool'," +
-        "computername=https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName," + $credential
+        "computerName='$computerName',tempAgent='$useTempAgent'," + $credential
     $args = @('-verb:sync', '-source:recycleApp', $destArg)
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
@@ -147,8 +148,9 @@ function Stop-AppPool
     Assert-WebDeployCredential
     Write-Information 'Stopping app pool...'
 
+    $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StopAppPool'," +
-        "computername=https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName," + $credential
+        "computerName='$computerName',tempAgent='$useTempAgent'," + $credential
     $args = @('-verb:sync', '-source:recycleApp', $destArg)
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
@@ -158,16 +160,43 @@ function Stop-AppPool
     }
 }
 
+<#
+.OUTPUTS
+computerName, useTempAgent
+#>
 function GetComputerName([string] $ServerHost, [string] $SiteName)
 {
-    if (!(Test-IsLocalhost $ServerHost)) # Remote server.
+    $computerName = $null
+    $useAgent = $false
+    $useTempAgent = $false
+
+    if (Test-IsLocalhost $ServerHost) # Local server.
     {
-        "https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName"
+        # Check if Web Deployment Agent Service exists.
+        $agentService = Get-Service MsDepSvc -ErrorAction SilentlyContinue
+        if ($agentService)
+        {
+            $useAgent = $true
+        }
+        elseif (Test-Path "$env:ProgramFiles\IIS\Microsoft Web Deploy\MsDepSvc.exe")
+        {
+            # Temp agent is available.
+            $useAgent = $true
+            $useTempAgent = $true
+        }
     }
-    else
+
+    if ($useAgent) # Local server, Agent Service available.
     {
-        'localhost'
+        $computerName = 'localhost'
     }
+    else # Remote server, use Web Management Service.
+    {
+        $computerName = "https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName"
+    }
+
+    $computerName
+    $useTempAgent
 }
 
 <#
@@ -199,9 +228,9 @@ function Invoke-WebDeployment
     Assert-WebDeployCredential
     Write-Information "Deploying $PackagePath to $ServerHost/$Application..."
 
-    $computerName = GetComputerName $ServerHost $SiteName
+    $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $args = @("-source:package='$PackagePath'",
-              ("-dest:auto,computerName='$computerName',includeAcls='False'," + $credential),
+              ("-dest:auto,computerName='$computerName',tempAgent='$useTempAgent',includeAcls='False'," + $credential),
               '-verb:sync', '-disableLink:AppPoolExtension', '-disableLink:ContentExtension', '-disableLink:CertificateExtension',
               "-setParam:name='IIS Web Application Name',value='$SiteName/$Application'")
 
@@ -243,8 +272,10 @@ function Sync-IisApp
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Assert-WebDeployCredential
+
+    $computerName, $useTempAgent = GetComputerName $DestinationServer $SiteName
     $args = @('-verb:sync', "-source:iisApp='$SiteName/$Application'",
-              ("-dest:auto,computerName='https://${DestinationServer}:$msdeployPort/msdeploy.axd?site=$SiteName'," + $credential))
+              ("-dest:auto,computerName='$computerName',tempAgent='$useTempAgent'," + $credential))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
     if ($result.ExitCode)
@@ -278,8 +309,10 @@ function Sync-WebContent
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Assert-WebDeployCredential
+
+    $computerName, $useTempAgent = GetComputerName $DestinationServer $SiteName
     $args = @('-verb:sync', "-source:contentPath='$ContentPath'",
-              ("-dest:'$SiteName/$Application',computerName='https://${DestinationServer}:$msdeployPort/msdeploy.axd?site=$SiteName'," + $credential))
+              ("-dest:contentPath='$SiteName/$Application',computerName='$computerName',tempAgent='$useTempAgent'," + $credential))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
     if ($result.ExitCode)
@@ -292,7 +325,7 @@ function Sync-WebContent
 
 <#
 .SYNOPSIS
-Deploys ASP.NET web site (app without project) to remote server.
+Deploys ASP.NET web site (app without project) to remote server. It's similar to Sync-WebContent, but creates IIS application.
 #>
 function Invoke-WebSiteDeployment
 {
@@ -317,9 +350,9 @@ function Invoke-WebSiteDeployment
     Assert-WebDeployCredential
     Write-Information "Deploying web site from $Path to $ServerHost/$Application..."
 
-    $computerName = GetComputerName $ServerHost $SiteName
+    $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $args = @('-verb:sync', "-source:iisApp='$Path'",
-              ("-dest:iisApp='$SiteName/$Application',computerName='$computerName'," + $credential))
+              ("-dest:iisApp='$SiteName/$Application',computerName='$computerName',tempAgent='$useTempAgent'," + $credential))
 
     if ($AllowUntrusted)
     {
