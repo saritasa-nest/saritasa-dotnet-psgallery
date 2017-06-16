@@ -325,7 +325,7 @@ function Sync-WebContent
 
 <#
 .SYNOPSIS
-Deploys ASP.NET web site (app without project) to remote server.
+Deploys ASP.NET web site (app without project) to remote server. It's similar to Sync-WebContent, but creates IIS application.
 #>
 function Invoke-WebSiteDeployment
 {
