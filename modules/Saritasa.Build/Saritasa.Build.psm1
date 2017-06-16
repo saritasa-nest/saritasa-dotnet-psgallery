@@ -115,9 +115,6 @@ function Invoke-SolutionBuild
 .SYNOPSIS
 Builds project.
 
-.DESCRIPTION
-Long description
-
 .PARAMETER Target
 Build the specified targets in the project.
 Use a semicolon or comma to separate multiple targets.
