@@ -1,14 +1,30 @@
+<#
+.SYNOPSIS
+Configure some base Redis parameters.
+
+.EXAMPLE
+$password = "123" | ConvertTo-SecureString -asPlainText -Force
+$credential = New-Object System.Management.Automation.PSCredential "username", $password
+Initialize-Redis myredis.host.com -Port 1433 -Credential $credential
+
+.NOTES
+StackExchange.Redis.dll file should be located in the same directory with this script.
+#>
 function Initialize-Redis
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
     [CmdletBinding()]
     param
     (
+        # Redis hostname.
         [string] $Host,
+        # Redis port.
         [int] $Port,
+        # Credential containing password to Redis.
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
         $Credential,
+        # Whether or not use secure connection.
         [bool] $UseSsl = $true
     )
 
@@ -27,6 +43,10 @@ function Initialize-Redis
     $script:credentialInitialized = $true
 }
 
+<#
+.SYNOPSIS
+Get a connection multiplexer from configured Redis parameters
+#>
 function Get-Multiplexer 
 { 
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
@@ -41,11 +61,13 @@ function Get-Multiplexer
     }
 
     $password = $credential.GetNetworkCredential().Password
-    $mux = [StackExchange.Redis.ConnectionMultiplexer]::Connect("${redisHost}:${redisPort}, allowAdmin=true, Password=${password}, Ssl=$useSsl, abortConnect=False, ConnectTimeout=100000")
-
-    return $mux
+    [StackExchange.Redis.ConnectionMultiplexer]::Connect("${redisHost}:${redisPort}, allowAdmin=true, Password=${password}, Ssl=$useSsl, abortConnect=False, ConnectTimeout=100000")
 }
 
+<#
+.SYNOPSIS
+Pings the redis instance.
+#>
 function Ping-Redis 
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
@@ -55,26 +77,32 @@ function Ping-Redis
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $mux = Get-Multiplexer
-
-    Write-Information "Pinging redis instance"
-
-    $endpoints = $mux.GetEndPoints()
-
-    foreach ($endpoint in $endpoints)
+    Use-Object $mux `
     {
-        Write-Information "Endpoint - $endpoint"
+        Write-Information "Pinging redis instance"
 
-        $server = $mux.GetServer($endpoint)
+        $endpoints = $mux.GetEndPoints()
 
-        $result = $server.Ping()
+        foreach ($endpoint in $endpoints)
+        {
+            Write-Information "Endpoint - $endpoint"
 
-        Write-Information "${result} at endpoint $endpoint"
+            $server = $mux.GetServer($endpoint)
+
+            $result = $server.Ping()
+
+            Write-Information "${result} at endpoint $endpoint"
+        }
     }
-
-    $mux.Dispose()
 }
 
+<#
+.SYNOPSIS
+Delete all the keys of the redis database.
 
+.NOTES
+For more info, see http://redis.io/commands/flushdb
+#>
 function Invoke-FlushRedis 
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
@@ -84,23 +112,23 @@ function Invoke-FlushRedis
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $mux = Get-Multiplexer
-
-    Write-Information "Flushing redis instance"
-
-    $endpoints = $mux.GetEndPoints()
-
-    foreach ($endpoint in $endpoints)
+    Use-Object $mux `
     {
-        Write-Information "Endpoint - $endpoint"
+        Write-Information "Flushing redis instance"
 
-        $server = $mux.GetServer($endpoint, $null)
+        $endpoints = $mux.GetEndPoints()
 
-        Write-Information "Flushing database at endpoint - $endpoint"
+        foreach ($endpoint in $endpoints)
+        {
+            Write-Information "Endpoint - $endpoint"
 
-        $result = $server.FlushDatabase(0, 0)
+            $server = $mux.GetServer($endpoint, $null)
 
-        Write-Information "Database flushed at endpoint - $endpoint"
+            Write-Information "Flushing database at endpoint - $endpoint"
+
+            $server.FlushDatabase(0, 0)
+
+            Write-Information "Database flushed at endpoint - $endpoint"
+        }
     }
-
-    $mux.Dispose()
 }
