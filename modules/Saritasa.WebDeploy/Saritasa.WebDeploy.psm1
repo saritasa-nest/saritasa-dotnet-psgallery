@@ -112,8 +112,9 @@ function Start-AppPool
     Assert-WebDeployCredential
     Write-Information 'Starting app pool...'
 
+    $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StartAppPool'," +
-        "computername=https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName," + $credential
+        "computerName='$computerName',tempAgent='$useTempAgent'," + $credential
     $args = @('-verb:sync', '-source:recycleApp', $destArg)
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
@@ -147,8 +148,9 @@ function Stop-AppPool
     Assert-WebDeployCredential
     Write-Information 'Stopping app pool...'
 
+    $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StopAppPool'," +
-        "computername=https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName," + $credential
+        "computerName='$computerName',tempAgent='$useTempAgent'," + $credential
     $args = @('-verb:sync', '-source:recycleApp', $destArg)
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
@@ -270,8 +272,10 @@ function Sync-IisApp
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Assert-WebDeployCredential
+
+    $computerName, $useTempAgent = GetComputerName $DestinationServer $SiteName
     $args = @('-verb:sync', "-source:iisApp='$SiteName/$Application'",
-              ("-dest:auto,computerName='https://${DestinationServer}:$msdeployPort/msdeploy.axd?site=$SiteName'," + $credential))
+              ("-dest:auto,computerName='$computerName',tempAgent='$useTempAgent'," + $credential))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
     if ($result.ExitCode)
@@ -305,8 +309,10 @@ function Sync-WebContent
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Assert-WebDeployCredential
+
+    $computerName, $useTempAgent = GetComputerName $DestinationServer $SiteName
     $args = @('-verb:sync', "-source:contentPath='$ContentPath'",
-              ("-dest:contentPath='$SiteName/$Application',computerName='https://${DestinationServer}:$msdeployPort/msdeploy.axd?site=$SiteName'," + $credential))
+              ("-dest:contentPath='$SiteName/$Application',computerName='$computerName',tempAgent='$useTempAgent'," + $credential))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
     if ($result.ExitCode)
