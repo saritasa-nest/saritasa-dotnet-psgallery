@@ -158,9 +158,16 @@ function Stop-AppPool
     }
 }
 
+<#
+.OUTPUTS
+computerName, useTempAgent
+#>
 function GetComputerName([string] $ServerHost, [string] $SiteName)
 {
+    $computerName = $null
     $useAgent = $false
+    $useTempAgent = $false
+
     if (Test-IsLocalhost $ServerHost) # Local server.
     {
         # Check if Web Deployment Agent Service exists.
@@ -169,16 +176,25 @@ function GetComputerName([string] $ServerHost, [string] $SiteName)
         {
             $useAgent = $true
         }
+        elseif (Test-Path "$env:ProgramFiles\IIS\Microsoft Web Deploy\MsDepSvc.exe")
+        {
+            # Temp agent is available.
+            $useAgent = $true
+            $useTempAgent = $true
+        }
     }
 
-    if ($useAgent)
+    if ($useAgent) # Local server, Agent Service available.
     {
-        'localhost'
+        $computerName = 'localhost'
     }
-    else # Use Web Management Service.
+    else # Remote server, use Web Management Service.
     {
-        "https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName"
+        $computerName = "https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName"
     }
+
+    $computerName
+    $useTempAgent
 }
 
 <#
@@ -210,9 +226,9 @@ function Invoke-WebDeployment
     Assert-WebDeployCredential
     Write-Information "Deploying $PackagePath to $ServerHost/$Application..."
 
-    $computerName = GetComputerName $ServerHost $SiteName
+    $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $args = @("-source:package='$PackagePath'",
-              ("-dest:auto,computerName='$computerName',includeAcls='False'," + $credential),
+              ("-dest:auto,computerName='$computerName',tempAgent='$useTempAgent',includeAcls='False'," + $credential),
               '-verb:sync', '-disableLink:AppPoolExtension', '-disableLink:ContentExtension', '-disableLink:CertificateExtension',
               "-setParam:name='IIS Web Application Name',value='$SiteName/$Application'")
 
@@ -328,9 +344,9 @@ function Invoke-WebSiteDeployment
     Assert-WebDeployCredential
     Write-Information "Deploying web site from $Path to $ServerHost/$Application..."
 
-    $computerName = GetComputerName $ServerHost $SiteName
+    $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $args = @('-verb:sync', "-source:iisApp='$Path'",
-              ("-dest:iisApp='$SiteName/$Application',computerName='$computerName'," + $credential))
+              ("-dest:iisApp='$SiteName/$Application',computerName='$computerName',tempAgent='$useTempAgent'," + $credential))
 
     if ($AllowUntrusted)
     {
