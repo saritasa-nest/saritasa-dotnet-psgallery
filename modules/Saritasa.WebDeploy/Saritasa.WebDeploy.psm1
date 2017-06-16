@@ -306,7 +306,7 @@ function Sync-WebContent
 
     Assert-WebDeployCredential
     $args = @('-verb:sync', "-source:contentPath='$ContentPath'",
-              ("-dest:'$SiteName/$Application',computerName='https://${DestinationServer}:$msdeployPort/msdeploy.axd?site=$SiteName'," + $credential))
+              ("-dest:contentPath='$SiteName/$Application',computerName='https://${DestinationServer}:$msdeployPort/msdeploy.axd?site=$SiteName'," + $credential))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
     if ($result.ExitCode)
