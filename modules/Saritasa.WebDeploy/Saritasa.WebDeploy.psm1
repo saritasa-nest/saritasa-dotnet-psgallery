@@ -338,9 +338,11 @@ function Invoke-WebSiteDeployment
         [string] $ServerHost,
         [Parameter(Mandatory = $true)]
         [string] $SiteName,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'IIS')]
         [AllowEmptyString()]
         [string] $Application,
+        [Parameter(Mandatory = $true, ParameterSetName = 'FileSystem')]
+        [switch] $AutoDestination,
         [switch] $AllowUntrusted,
         [string[]] $MSDeployParams
     )
@@ -350,9 +352,19 @@ function Invoke-WebSiteDeployment
     Assert-WebDeployCredential
     Write-Information "Deploying web site from $Path to $ServerHost/$Application..."
 
+    $destinationParam = $null
+    if ($AutoDestination)
+    {
+        $destinationParam = '-dest:auto'
+    }
+    else
+    {
+        $destinationParam = "-dest:iisApp='$SiteName/$Application'"
+    }
+
     $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $args = @('-verb:sync', "-source:iisApp='$Path'",
-              ("-dest:iisApp='$SiteName/$Application',computerName='$computerName',tempAgent='$useTempAgent'," + $credential))
+              ("$destinationParam,computerName='$computerName',tempAgent='$useTempAgent'," + $credential))
 
     if ($AllowUntrusted)
     {
