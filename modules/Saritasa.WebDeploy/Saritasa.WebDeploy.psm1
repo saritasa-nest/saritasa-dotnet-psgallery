@@ -301,18 +301,30 @@ function Sync-WebContent
         [string] $DestinationServer,
         [Parameter(Mandatory = $true)]
         [string] $SiteName,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'IIS')]
         [AllowEmptyString()]
-        [string] $Application
+        [string] $Application,
+        [Parameter(Mandatory = $true, ParameterSetName = 'FileSystem')]
+        [switch] $AutoDestination
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Assert-WebDeployCredential
 
+    $destinationParam = $null
+    if ($AutoDestination)
+    {
+        $destinationParam = '-dest:auto'
+    }
+    else
+    {
+        $destinationParam = "-dest:iisApp='$SiteName/$Application'"
+    }
+
     $computerName, $useTempAgent = GetComputerName $DestinationServer $SiteName
     $args = @('-verb:sync', "-source:contentPath='$ContentPath'",
-              ("-dest:contentPath='$SiteName/$Application',computerName='$computerName',tempAgent='$useTempAgent'," + $credential))
+              ("$destinationParam,computerName='$computerName',tempAgent='$useTempAgent'," + $credential))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
     if ($result.ExitCode)
@@ -338,11 +350,9 @@ function Invoke-WebSiteDeployment
         [string] $ServerHost,
         [Parameter(Mandatory = $true)]
         [string] $SiteName,
-        [Parameter(Mandatory = $true, ParameterSetName = 'IIS')]
+        [Parameter(Mandatory = $true)]
         [AllowEmptyString()]
         [string] $Application,
-        [Parameter(Mandatory = $true, ParameterSetName = 'FileSystem')]
-        [switch] $AutoDestination,
         [switch] $AllowUntrusted,
         [string[]] $MSDeployParams
     )
@@ -352,19 +362,9 @@ function Invoke-WebSiteDeployment
     Assert-WebDeployCredential
     Write-Information "Deploying web site from $Path to $ServerHost/$Application..."
 
-    $destinationParam = $null
-    if ($AutoDestination)
-    {
-        $destinationParam = '-dest:auto'
-    }
-    else
-    {
-        $destinationParam = "-dest:iisApp='$SiteName/$Application'"
-    }
-
     $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $args = @('-verb:sync', "-source:iisApp='$Path'",
-              ("$destinationParam,computerName='$computerName',tempAgent='$useTempAgent'," + $credential))
+              ("-dest:iisApp='$SiteName/$Application',computerName='$computerName',tempAgent='$useTempAgent'," + $credential))
 
     if ($AllowUntrusted)
     {
