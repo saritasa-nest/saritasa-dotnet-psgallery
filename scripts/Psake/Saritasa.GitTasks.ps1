@@ -78,6 +78,11 @@ function DeleteRemoteBranches($Branches, [scriptblock] $Condition)
     $Branches | Where-Object $Condition | ForEach-Object `
         {
             Exec { git.exe branch -r -d $_.Name }
-            Exec { git.exe push --delete origin $_.Name }
+
+            $slashIndex = $_.Name.IndexOf('/')
+            $remoteName = $_.Name.Substring(0, $slashIndex)
+            $branchName = $_.Name.Substring($slashIndex + 1)
+
+            Exec { git.exe push --delete $remoteName $branchName }
         }
 }
