@@ -1,3 +1,16 @@
+<#
+.SYNOPSIS
+Execute an App CMD command.
+
+.PARAMETER ServerHost
+Hostname of the machine where to execute the command.
+
+.PARAMETER ConfigFilename
+Path to configuration file on local machine.
+
+.PARAMETER Arguments
+Argument list to be passed to appCmd.
+#>
 function ExecuteAppCmd
 {
     param
@@ -8,27 +21,43 @@ function ExecuteAppCmd
     )
 
     $config = Get-Content $ConfigFilename
-    $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
     
     if (!(Test-IsLocalhost $ServerHost)) # Remote server.
     {
         $session = Start-RemoteSession $ServerHost
 
-        Invoke-Command -Session $session -ScriptBlock { $using:config | &$using:appCmd $using:Arguments }
+        Invoke-Command -Session $session -ScriptBlock `
+        {
+            $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
+            $using:config | &$appCmd $using:Arguments
+        }
+        $remoteLastExitCode = Invoke-Command -Session $session -ScriptBlock { $LASTEXITCODE }
 
         Remove-PSSession $session
     }
     else # Local server.
     {
+        $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
         Invoke-Command { $config | &$appCmd $Arguments }
+        $remoteLastExitCode = $LASTEXITCODE
     }
     
-    if ($LASTEXITCODE)
+    if ($remoteLastExitCode)
     {
         throw 'AppCmd failed.'
     }
 }
 
+<#
+.SYNOPSIS
+Execute the AppCmd and retrieve its output.
+
+.PARAMETER ServerHost
+Hostname of the machine where to execute the command.
+
+.PARAMETER Arguments
+Argument list to be passed to appCmd.
+#>
 function GetAppCmdOutput
 {
     param
@@ -37,22 +66,28 @@ function GetAppCmdOutput
         [string[]] $Arguments
     )
 
-    $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
     
     if ($ServerHost) # Remote server.
     {
         $session = Start-RemoteSession $ServerHost
 
-        $output = Invoke-Command -Session $session -ScriptBlock { &$using:appCmd $using:Arguments }
+        $output = Invoke-Command -Session $session -ScriptBlock `
+        {
+            $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
+            &$appCmd $using:Arguments
+        }
+        $remoteLastExitCode = Invoke-Command -Session $session -ScriptBlock { $LASTEXITCODE }
 
         Remove-PSSession $session
     }
     else # Local server.
     {
+        $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
         $output = Invoke-Command { &$appCmd $Arguments }
+        $remoteLastExitCode = $LASTEXITCODE
     }
     
-    if ($LASTEXITCODE)
+    if ($remoteLastExitCode)
     {
         throw 'AppCmd failed.'
     }
@@ -60,6 +95,16 @@ function GetAppCmdOutput
     $output | Where-Object { $_.Length -ne 0 }
 }
 
+<#
+.SYNOPSIS
+Update app pool information.
+
+.PARAMETER ServerHost
+Hostname of the machine with the app pools.
+
+.PARAMETER ConfigFilename
+Path to config file containing app pool config information.
+#>
 function Import-AppPool
 {
     [CmdletBinding()]
@@ -76,6 +121,16 @@ function Import-AppPool
     Write-Information 'App pools are updated.'
 }
 
+<#
+.SYNOPSIS
+Update website information.
+
+.PARAMETER ServerHost
+Hostname of the machine with the website.
+
+.PARAMETER ConfigFilename
+Path to config file containing website config information.
+#>
 function Import-Site
 {
     [CmdletBinding()]
@@ -92,6 +147,18 @@ function Import-Site
     Write-Information 'Web sites are updated.'
 }
 
+<#
+.SYNOPSIS
+Create file directory if it not exists.
+
+.PARAMETER Filename
+File path which directory should be created.
+
+.EXAMPLE
+CreateOutputDirectory C:\test\1.txt
+
+Will create C:\test folder if it not exists.
+#>
 function CreateOutputDirectory([string] $Filename)
 {
     $dir = Split-Path $Filename
@@ -101,6 +168,16 @@ function CreateOutputDirectory([string] $Filename)
     }
 }
 
+<#
+.SYNOPSIS
+Export information about all app pools to a file.
+
+.PARAMETER ServerHost
+Hostname of the machine with the app pools.
+
+.PARAMETER OutputFilename
+Path where to save the app pools configuration.
+#>
 function Export-AppPool
 {
     [CmdletBinding()]
@@ -118,6 +195,16 @@ function Export-AppPool
     $xml | Set-Content $OutputFilename
 }
 
+<#
+.SYNOPSIS
+Export information about all websites to a file.
+
+.PARAMETER ServerHost
+Hostname of the machine with the websites.
+
+.PARAMETER OutputFilename
+Path where to save the websites configuration.
+#>
 function Export-Site
 {
     [CmdletBinding()]
@@ -136,6 +223,22 @@ function Export-Site
     $xml | Set-Content $OutputFilename
 }
 
+<#
+.SYNOPSIS
+Install IIS web server on target machine.
+
+.PARAMETER ServerHost
+Hostname of the machine where IIS should be installed.
+
+.PARAMETER ManagementService
+Whether or not Web Management Service should be installed.
+
+.PARAMETER WebDeploy
+Whether or not WebDeploy should be installed.
+
+.PARAMETER UrlRewrite
+Whether or not URL Rewrite module should be installed.
+#>
 function Install-Iis
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "",
@@ -191,6 +294,16 @@ function Install-Iis
     Remove-PSSession $session
 }
 
+<#
+.SYNOPSIS
+Install Web Management Service on target machine.
+
+.PARAMETER ServerHost
+Hostname of the machine where the service should be installed.
+
+.PARAMETER Session
+Session which should be used to install the service.
+#>
 function Install-WebManagementService
 {
     [CmdletBinding(DefaultParameterSetName = 'Server')]
@@ -226,8 +339,8 @@ function Install-WebManagementService
                 Select-Object -First 1 -ExpandProperty Thumbprint
             if (!$thumbprint)
             {
-                "SSL certificate for $hostname host is not found."
-            }            
+                Write-Warning "SSL certificate for $hostname host is not found."
+            }
             if (Test-Path IIS:\SslBindings\0.0.0.0!8172)
             {
                 Remove-Item -Path IIS:\SslBindings\0.0.0.0!8172
@@ -237,15 +350,24 @@ function Install-WebManagementService
             # Start web management service.
             Start-Service WMSVC
         }
-
+    
     Write-Information 'Web management service is installed and configured.'
-
     if ($ServerHost)
     {
         Remove-PSSession $Session
     }
 }
 
+<#
+.SYNOPSIS
+Install WebDeploy module.
+
+.PARAMETER ServerHost
+Hostname of the machine where the module should be installed.
+
+.PARAMETER Session
+Session which should be used to install the module.
+#>
 function Install-WebDeploy
 {
     [CmdletBinding(DefaultParameterSetName = 'Server')]
@@ -274,16 +396,16 @@ function Install-WebDeploy
             
             if ($installedProduct)
             {
-                'WebDeploy is installed already.'
+                Write-Information 'WebDeploy is installed already.'
             }
             else
             {       
                 $webDeploy36Url = 'https://download.microsoft.com/download/0/1/D/01DC28EA-638C-4A22-A57B-4CEF97755C6C/WebDeploy_amd64_en-US.msi'
                 $tempPath = "$env:TEMP\" + [guid]::NewGuid()
                 
-                'Downloading WebDeploy installer...'
+                Write-Information 'Downloading WebDeploy installer...'
                 Invoke-WebRequest $webDeploy36Url -OutFile $tempPath -ErrorAction Stop
-                'OK'
+                Write-Information 'OK'
                 
                 msiexec.exe /i $tempPath ADDLOCAL=MSDeployFeature,MSDeployUIFeature,DelegationUIFeature,MSDeployWMSVCHandlerFeature | Out-Null
                 if ($LASTEXITCODE)
@@ -292,7 +414,7 @@ function Install-WebDeploy
                 }
         
                 Remove-Item $tempPath -ErrorAction SilentlyContinue
-                'WebDeploy is installed.'
+                Write-Information 'WebDeploy is installed.'
             }
         }
 
@@ -302,6 +424,16 @@ function Install-WebDeploy
     }
 }
 
+<#
+.SYNOPSIS
+Install UrlRewrite module.
+
+.PARAMETER ServerHost
+Hostname of the machine where the module should be installed.
+
+.PARAMETER Session
+Session which should be used to install the module.
+#>
 function Install-UrlRewrite
 {
     [CmdletBinding(DefaultParameterSetName = 'Server')]
@@ -327,16 +459,16 @@ function Install-UrlRewrite
             
             if ($installedProduct)
             {
-                'URL Rewrite Module is installed already.'
+                Write-Information 'URL Rewrite Module is installed already.'
             }
             else
             {       
                 $urlRewrite20Url = 'http://download.microsoft.com/download/C/9/E/C9E8180D-4E51-40A6-A9BF-776990D8BCA9/rewrite_amd64.msi'
                 $tempPath = "$env:TEMP\" + [guid]::NewGuid()
                 
-                'Downloading URL Rewrite Module installer...'
+                Write-Information 'Downloading URL Rewrite Module installer...'
                 Invoke-WebRequest $urlRewrite20Url -OutFile $tempPath -ErrorAction Stop
-                'OK'
+                Write-Information 'OK'
                 
                 msiexec.exe /i $tempPath ADDLOCAL=ALL | Out-Null
                 if ($LASTEXITCODE)
@@ -345,7 +477,7 @@ function Install-UrlRewrite
                 }
         
                 Remove-Item $tempPath
-                'URL Rewrite Module is installed.'
+                Write-Information 'URL Rewrite Module is installed.'
             }
         }
 
@@ -356,6 +488,27 @@ function Install-UrlRewrite
 }
 
 <#
+.SYNOPSIS
+Install a product using the msi installer.
+
+.PARAMETER ServerHost
+Hostname of the machine where the package should be installed.
+
+.PARAMETER Session
+Session which should be used to install the module.
+
+.PARAMETER ProductName
+Name of the installing product (will be outputted in the information log).
+
+.PARAMETER ProductId
+Identifying number of the product.
+
+.PARAMETER MsiPath
+Path to the installation file.
+
+.PARAMETER LocalFeatures
+List of features that are delimited by commas, and are to be installed locally.
+
 .NOTES
 Msiexec supports HTTP links.
 #>
@@ -368,7 +521,7 @@ function Install-MsiPackage
         [string] $ServerHost,
         [Parameter(Mandatory = $true, ParameterSetName = 'Session')]
         [System.Management.Automation.Runspaces.PSSession] $Session,
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [string] $ProductName,
         [Parameter(Mandatory = $true)]
         [string] $ProductId,
@@ -382,6 +535,11 @@ function Install-MsiPackage
     if ($ServerHost)
     {
         $Session = Start-RemoteSession $ServerHost
+    }
+
+    if (-not $ProductName)
+    {
+        $ProductName = "Product #$ProductId"
     }
     
     Invoke-Command -Session $Session -ScriptBlock `
@@ -410,6 +568,19 @@ function Install-MsiPackage
     }
 }
 
+<#
+.SYNOPSIS
+Import provided PFX certificate to target machine.
+
+.PARAMETER ServerHost
+Hostname of the machine where the certificate should be installed.
+
+.PARAMETER CertificatePath
+Path to certificate file on local machine which should be installed.
+
+.PARAMETER CertificatePassword
+Password for the specified PFX certificate.
+#>
 function Import-SslCertificate
 {
     [CmdletBinding()]
