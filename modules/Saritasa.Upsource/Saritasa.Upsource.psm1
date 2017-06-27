@@ -1,9 +1,7 @@
 
 
-[string]
-$UpsourceUrl = ''
-[pscredential]
-$UpsourceCredentials
+[string] $UpsourceUrl = ''
+[pscredential] $UpsourceCredentials
 
 
 <#
@@ -11,7 +9,8 @@ $UpsourceCredentials
 Returns collection of revisions which not exists in any review with revisionId, date, author and commit message.
 
 .PARAMETER UpsourceUrl
-Id of project, like 'crm'.
+Url of the upsource without trailing slash.
+
 .PARAMETER Credential
 Credentials which will be used for Basic authentication when sending requests to Upsource.
 #>
@@ -20,9 +19,9 @@ function Initialize-Upsource
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true, HelpMessage = "Id of project, like 'crm'.")]
+        [Parameter(Mandatory = $true)]
         [string] $UpsourceUrl,
-        [Parameter(Mandatory = $true, HelpMessage = "Credentials which will be used for Basic authentication when sending requests to Upsource.")]
+        [Parameter(Mandatory = $true)]
         [pscredential] $Credential
     )
 
@@ -59,7 +58,7 @@ function EncodeBase64
     param
     (
         [Parameter(Mandatory = $true)]
-        [string]$Value
+        [string] $Value
     )
 
     $textBytes = [System.Text.Encoding]::UTF8.GetBytes($value)
@@ -75,7 +74,6 @@ Encoding credentials for Basic authentication.
 #>
 function EncodeCredential
 {
-
     $value = $UpsourceCredentials.UserName + ":" + $UpsourceCredentials.GetNetworkCredential().Password
     EncodeBase64 -Value $value
 }
@@ -89,15 +87,14 @@ function InvokeWebRequest
     param
     (
         [Parameter(Mandatory = $true)]
-        [string]$Url,
-
+        [string] $Url,
         [Parameter(Mandatory = $true)]
-        [string]$Body
+        [string] $Body
     )
 
     $credentialsEncoded = EncodeCredential
 
-    Invoke-RestMethod  -ContentType 'application/json' -Headers @{'Authorization' = "Basic $credentialsEncoded"} `
+    Invoke-RestMethod -ContentType 'application/json' -Headers @{'Authorization' = "Basic $credentialsEncoded"} `
         -Body $Body `
         -Method Post `
         -Uri $Url `
@@ -112,10 +109,9 @@ function GetRevisionInfo
     param
     (
         [Parameter(Mandatory = $true)]
-        [string]$ProjectId,
-
+        [string] $ProjectId,
         [Parameter(Mandatory = $true)]
-        [string]$RevisionId
+        [string] $RevisionId
     )
 
     $url = "$UpsourceUrl/~rpc/getRevisionInfo"
@@ -140,11 +136,9 @@ function GetRevision
     param
     (
         [Parameter(Mandatory = $true)]
-        [string]$ProjectId,
-
-        [int]$Limit = 30,
-
-        [string]$Query
+        [string] $ProjectId,
+        [int] $Limit = 30,
+        [string] $Query
     )
 
     $requestDto = @{
@@ -156,12 +150,9 @@ function GetRevision
 
     $url = "$UpsourceUrl/~rpc/getRevisionsListFiltered"
 
-    $revisionIds = @()
-
     $result = InvokeWebRequest -Url $url -Body $requestDto
 
-    $result.result.revision | ForEach-Object { $revisionIds += $_.revisionId }
-
+    $revisionIds = $result.result.revision.revisionId
     $revisionIds
 }
 
@@ -178,7 +169,6 @@ function GetRevisionInReview
     (
         [Parameter(Mandatory = $true)]
         [string]$ProjectId,
-
         [Parameter(Mandatory = $true)]
         [string]$ReviewId
     )
@@ -190,15 +180,9 @@ function GetRevisionInReview
 
     $url = "$UpsourceUrl/~rpc/getRevisionsInReview"
 
-    $revisionIds = @()
-
     $result = InvokeWebRequest -Url $url -Body $params
 
-    $result.result.allRevisions.revision | ForEach-Object `
-    {
-        $revisionIds += $_.revisionId
-    }
-
+    $revisionIds = $result.result.allRevisions.revision.revisionId
     $revisionIds
 }
 
@@ -214,14 +198,9 @@ function GetReviewList
     param
     (
         [Parameter(Mandatory = $true)]
-        [int]
-        $Limit,
-
-        [string]
-        $Query,
-
-        [string]
-        $ProjectId
+        [int] $Limit,
+        [string] $Query,
+        [string] $ProjectId
     )
 
     $url = "$UpsourceUrl/~rpc/getReviews"
@@ -234,10 +213,7 @@ function GetReviewList
 
     $result = InvokeWebRequest -Url $url -Body $reviewsRequestDto
 
-    $reviewIds = @()
-
-    $result.result.reviews.reviewId.reviewId | ForEach-Object { $reviewIds += $_ }
-
+    $reviewIds = $result.result.reviews.reviewId.reviewId
     $reviewIds
 }
 
@@ -250,7 +226,7 @@ function GetUserInfo
     param
     (
         [Parameter(Mandatory = $true)]
-        [string[]]$UserIds
+        [string[]] $UserIds
     )
 
     $url = "$UpsourceUrl/~rpc/getUserInfo"
@@ -268,10 +244,13 @@ Returns collection of revisions which not exists in any review with revisionId, 
 
 .PARAMETER ProjectId
 Id of project, like 'crm'.
+
 .PARAMETER Branch
 Branch of project, by default it's a 'develop'.
+
 .PARAMETER DaysLimit
 Limit of days from 'now'.
+
 .PARAMETER Stopwords
 Words which will be searched in commit message and if it's include this words, that revision will be skipped.
 #>
@@ -285,14 +264,11 @@ function Get-RevisionWithoutReview
     [OutputType('System.Object[]')]
     param
     (
-        [Parameter(Mandatory = $true, HelpMessage = "Id of project, like 'crm'.")]
-        [string]$ProjectId,
-        [Parameter(HelpMessage = "Branch of project, by default it's a 'develop'.")]
-        [string]$Branch = 'develop',
-        [Parameter(HelpMessage = "Limit of days from 'now'.")]
-        [int]$DaysLimit = 30,
-        [Parameter(HelpMessage = "Words which will be searched in commit message and if it's include this words, that revision will be skipped.")]
-        [string[]]$Stopwords
+        [Parameter(Mandatory = $true)]
+        [string] $ProjectId,
+        [string] $Branch = 'develop',
+        [int] $DaysLimit = 30,
+        [string[]] $Stopwords
     )
 
     [datetime]$now = [datetime]::Now
@@ -345,7 +321,7 @@ function Get-RevisionWithoutReview
                 }
             }
 
-            if ($containsStopwords -eq $false)
+            if (!$containsStopwords)
             {
                 $revisionsWithoutReview += @{
                     Revision      = $revisionInfo.result.revisionId
@@ -367,6 +343,7 @@ function Get-RevisionWithoutReview
         }
     }
 
+    # replace user IDs with their name
     if ($userIds.Length -gt 0)
     {
         $userInfos = GetUserInfo -UserIds $userIds
