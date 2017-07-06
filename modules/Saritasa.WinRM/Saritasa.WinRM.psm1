@@ -2,6 +2,19 @@
 $winrmPort = 5986
 $authentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
 
+<#
+.SYNOPSIS
+Initialize remote management settings.
+
+.PARAMETER Credential
+Credentials to be used for requests.
+
+.PARAMETER Port
+Specify to override default WinRM port.
+
+.PARAMETER Authentication
+Specify to override preferred authentication mehanism.
+#>
 function Initialize-RemoteManagement
 {
     [CmdletBinding()]
@@ -33,6 +46,16 @@ function Initialize-RemoteManagement
     }
 }
 
+<#
+.SYNOPSIS
+Start a new powershell session.
+
+.DESCRIPTION
+Start a new powershell session with specified host using configured WinRM options.
+
+.PARAMETER ServerHost
+Hostname of the computer.
+#>
 function Start-RemoteSession
 {
     [CmdletBinding()]
@@ -52,6 +75,18 @@ function Start-RemoteSession
 .SYNOPSIS
 Executes a script on a remote server.
 
+.PARAMETER Path
+Path to script to be executed.
+
+.PARAMETER Parameters
+Parameters to be passed to specified script.
+
+.PARAMETER ServerHost
+Hostname of the machine on which the script should be executed.
+
+.PARAMETER Session
+Session against which the script will be executed.
+
 .NOTES
 Based on code by mjolinor.
 http://stackoverflow.com/a/27799658/991267
@@ -61,6 +96,7 @@ function Invoke-RemoteScript
     [CmdletBinding(DefaultParameterSetName = 'Server')]
     param
     (
+        [Parameter(Mandatory = $true)]
         [string] $Path,
         [hashtable] $Parameters,
         [Parameter(Mandatory = $true, ParameterSetName = 'Server')]
@@ -484,6 +520,13 @@ function New-SelfSignedCertificateEx
     }
 } # function New-SelfSignedCertificateEx
 
+<#
+.SYNOPSIS
+Find a certificate associated with provided hostname.
+
+.PARAMETER Hostname
+Hostname to be searched in certificate subject. 
+#>
 function FindCertificate
 {
     param
@@ -497,6 +540,17 @@ function FindCertificate
         Select-Object -First 1
 }
 
+<#
+.SYNOPSIS
+Generate a new self-signed certificate.
+
+.DESCRIPTION
+Long description
+
+.PARAMETER DnsNames
+One or more DNS names to put into the subject alternative name extension of the certificate.
+The first DNS name is also saved as the Subject Name.
+#>
 function GenerateCertificate
 {
     param
@@ -550,6 +604,16 @@ Configures server to accept WinRM connections over HTTPS.
 .DESCRIPTION
 Generates self-signed certificate or uses existing. Configures HTTPS listener for WinRM service. Opens 5986 port in firewall.
 
+.PARAMETER CertificateThumbprint
+Certificate thumbprint to be used for securing the connection.
+
+.PARAMETER Force
+If specified, all required properties will be re-installed instead of reusing existing.
+
+.PARAMETER AlternativeDnsNames
+Alternative DNS names to be registered with new certificate (if certificate thumbprint was not provided).
+
+.NOTES
 For Windows Server 2008 and 2008 R2 you should execute following statement to disable remote UAC:
 Set-ItemProperty –Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System –Name LocalAccountTokenFilterPolicy –Value 1 –Type DWord
 Restart-Computer
@@ -667,7 +731,14 @@ function Install-WinrmHttps
 
 <#
 .SYNOPSIS
-Creates a new directory in remote server's %TEMP% and returns it.
+Creates a new directory in remote server's %TEMP%.
+
+.DESCRIPTION
+Creates a new directory in remote server's %TEMP%.
+The result of current cmdlet will be resulting folder's location.
+
+.PARAMETER Session
+Session to be used to access the computer's temp folder.
 #>
 function Get-RemoteTempPath
 {
@@ -683,7 +754,7 @@ function Get-RemoteTempPath
     Invoke-Command -Session $Session -ScriptBlock `
         {
             $tempPath = "$env:TEMP\" + [guid]::NewGuid()
-            New-Item $tempPath -ItemType directory -ErrorAction Stop | Out-Null
+            New-Item $tempPath -ItemType Directory -ErrorAction Stop | Out-Null
             $tempPath
         }
 }
