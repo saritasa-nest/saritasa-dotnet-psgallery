@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.2.0
+.VERSION 1.2.1
 
 .GUID a8bc41d0-c2bd-459a-9e39-544b6f70724f
 
@@ -68,12 +68,21 @@ Task delete-merged-branches -description 'Delete merged remote-tracking branches
 
     $condition = { $_.Merged -eq $true -and $_.LastCommitDate -lt $startDate }
 
-    Get-GitFlowStatus -BranchType Feature | Where-Object $condition | ForEach-Object { DeleteRemoteBranch($_.Name) }
-    Get-GitFlowStatus -BranchType Release | Where-Object $condition | ForEach-Object { DeleteRemoteBranch($_.Name) }
-    Get-GitFlowStatus -BranchType Hotfix | Where-Object $condition | ForEach-Object { DeleteRemoteBranch($_.Name) }
+    DeleteRemoteBranches (Get-GitFlowStatus -BranchType Feature) $condition
+    DeleteRemoteBranches (Get-GitFlowStatus -BranchType Release) $condition
+    DeleteRemoteBranches (Get-GitFlowStatus -BranchType Hotfix) $condition
 }
 
-function DeleteRemoteBranch([string] $BranchName)
+function DeleteRemoteBranches($Branches, [scriptblock] $Condition)
 {
-    Exec { git.exe branch -r -d $BranchName }
+    $Branches | Where-Object $Condition | ForEach-Object `
+        {
+            Exec { git.exe branch -r -d $_.Name }
+
+            $slashIndex = $_.Name.IndexOf('/')
+            $remoteName = $_.Name.Substring(0, $slashIndex)
+            $branchName = $_.Name.Substring($slashIndex + 1)
+
+            Exec { git.exe push --delete $remoteName $branchName }
+        }
 }

@@ -11,6 +11,14 @@
         # Run script to configure WinRM.
         Install-WinrmHttps
 
+    You may install NuGet package provider in advance.
+
+        Install-PackageProvider NuGet -Force
+
+    One-line command:
+
+        Install-PackageProvider NuGet -Force; Install-Module Saritasa.WinRM -Force; Install-WinrmHttps
+
 ## Install PowerShell 5
 
 [Installing Windows PowerShell](https://msdn.microsoft.com/en-us/powershell/scripting/setup/installing-windows-powershell)

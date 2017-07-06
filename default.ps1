@@ -48,6 +48,35 @@ function GenerateMarkdown([string] $moduleName)
     .\tools\psDoc\psDoc.ps1 -moduleName $moduleName -template .\tools\psDoc\out-markdown-template.ps1 -outputDir .\docs -fileName "$moduleName.md"
 }
 
+function ParsePsd1
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [Microsoft.PowerShell.DesiredStateConfiguration.ArgumentToConfigurationDataTransformation()]
+        [hashtable] $Data
+    )
+    return $Data
+}
+
+function IsModuleVersionAvailableInGallery
+{
+    [OutputType('System.Boolean')]
+    param
+    (
+        $ModulePath
+    )
+
+    $psd1 = Get-ChildItem -Path $ModulePath -Filter "*.psd1"
+    $fullPath = "$ModulePath\$psd1"
+    $moduleData = ParsePsd1 -Data $fullPath
+    $moduleVersion = $moduleData.ModuleVersion
+
+    $module = Find-Module -Name $moduleData.RootModule -RequiredVersion $moduleVersion -ErrorAction SilentlyContinue
+    return $module -ne $null -and $module.Version -eq $moduleVersion -or $module.Version -gt $moduleVersion
+}
+
 # Before run, make sure that required modules are installed.
 # Install-Module psake, VSSetup -Scope CurrentUser -Force
 Task publish-modules -depends build -requiredVariables @('NugetApiKey') `
@@ -59,7 +88,14 @@ Task publish-modules -depends build -requiredVariables @('NugetApiKey') `
             Write-Information "Publishing $_ module..."
             try
             {
-                Publish-Module -Path $_.FullName -NuGetApiKey $NugetApiKey
+                if ((IsModuleVersionAvailableInGallery -ModulePath $_.FullName) -eq $false)
+                {
+                    Publish-Module -Path $_.FullName -NuGetApiKey $NugetApiKey
+                }
+                else
+                {
+                    Write-Information "Skipped"
+                }
             }
             catch [System.Exception]
             {
