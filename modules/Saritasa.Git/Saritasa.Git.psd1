@@ -27,7 +27,7 @@ Author = 'Sergey Kondratov'
 CompanyName = 'Saritasa'
 
 # Copyright statement for this module
-Copyright = '(c) 2015-2016 Saritasa. All rights reserved.'
+Copyright = '(c) 2015-2017 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Contains functions which help to maintain gitflow branches in target git repository.'
