@@ -8,8 +8,8 @@
     <ProjectGuid>{7B71AEDE-60C8-4C88-B2E6-AA13F777C1AC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Saritasa.Git.GitFlowStatus</RootNamespace>
-    <AssemblyName>Saritasa.Git.GitFlowStatus</AssemblyName>
+    <RootNamespace>Saritasa.Git</RootNamespace>
+    <AssemblyName>Saritasa.Git</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
