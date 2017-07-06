@@ -63,10 +63,10 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\packages\LibGit2Sharp.NativeBinaries.1.0.185\runtimes\win7-x64\native\git2-15e1193.dll">
-      <Link>costura64\git2-a5cf255.dll</Link>
+      <Link>costura64\git2-15e1193.dll</Link>
     </EmbeddedResource>
     <EmbeddedResource Include="..\packages\LibGit2Sharp.NativeBinaries.1.0.185\runtimes\win7-x86\native\git2-15e1193.dll">
-      <Link>costura32\git2-a5cf255.dll</Link>
+      <Link>costura32\git2-15e1193.dll</Link>
     </EmbeddedResource>
     <None Include="FodyWeavers.xml" />
   </ItemGroup>
