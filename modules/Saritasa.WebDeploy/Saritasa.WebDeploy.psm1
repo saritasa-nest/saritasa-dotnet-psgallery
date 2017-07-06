@@ -4,9 +4,19 @@ $credential = ''
 
 <#
 .SYNOPSIS
+Configure Web Deploy default settings.
 
-.DESCRIPTION
-Leave -Username and -Password empty for NTLM.
+.PARAMETER Credential
+Credentials to be used for authorization.
+
+.PARAMETER MsdeployPath
+Provide to override folder location of Microsoft Web Deploy utility.
+
+.PARAMETER MsdeployPort
+Provide to override default MS Deploy port.
+
+.NOTES
+Leave -Credential empty for NTLM.
 For NTLM support execute on server:
 Set-ItemProperty HKLM:Software\Microsoft\WebManagement\Server WindowsAuthenticationEnabled 1
 Restart-Service WMSVC
@@ -49,6 +59,10 @@ function Initialize-WebDeploy
     }
 }
 
+<#
+.SYNOPSIS
+Checks if Web Deploy credentials are set.
+#>
 function Assert-WebDeployCredential()
 {
     if (!$credential)
@@ -58,6 +72,27 @@ function Assert-WebDeployCredential()
 }
 
 <#
+.SYNOPSIS
+Package a project.
+
+.PARAMETER ProjectPath
+Path to project file.
+
+.PARAMETER PackagePath
+Path to where the resulting package should be saved.
+
+.PARAMETER Configuration
+Target build configuration.
+
+.PARAMETER Platform
+Target build platform.
+
+.PARAMETER Precompile
+Whether or not project should be precompiled before packaging.
+
+.PARAMETER BuildParams
+Any additional parameters to be passed to msbuild utility.
+
 .EXAMPLE
 Invoke-PackageBuild src/WebApp.csproj WebApp.zip -BuildParams ('/p:AspnetMergePath="C:\Program Files (x86)\Microsoft SDKs\Windows\v8.1A\bin\NETFX 4.5.1 Tools"')
 #>
@@ -90,8 +125,18 @@ function Invoke-PackageBuild
 
 <#
 .SYNOPSIS
+Starts the application pool for specified application on a remote machine.
 
-.DESCRIPTION
+.PARAMETER ServerHost
+Hostname of target machine.
+
+.PARAMETER SiteName
+Website name.
+
+.PARAMETER Application
+Application name.
+
+.NOTES
 The recycleApp provider should be delegated to WDeployAdmin.
 #>
 function Start-AppPool
@@ -112,8 +157,9 @@ function Start-AppPool
     Assert-WebDeployCredential
     Write-Information 'Starting app pool...'
 
+    $computerName = GetComputerName $ServerHost $SiteName
     $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StartAppPool'," +
-        "computername=https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName," + $credential
+        "computername=$computerName,$credential"
     $args = @('-verb:sync', '-source:recycleApp', $destArg)
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
@@ -125,8 +171,18 @@ function Start-AppPool
 
 <#
 .SYNOPSIS
+Stops the application pool for specified application on a remote machine.
 
-.DESCRIPTION
+.PARAMETER ServerHost
+Hostname of target machine.
+
+.PARAMETER SiteName
+Website name.
+
+.PARAMETER Application
+Application name.
+
+.NOTES
 The recycleApp provider should be delegated to WDeployAdmin.
 #>
 function Stop-AppPool
@@ -147,8 +203,9 @@ function Stop-AppPool
     Assert-WebDeployCredential
     Write-Information 'Stopping app pool...'
 
+    $computerName = GetComputerName $ServerHost $SiteName
     $destArg = "-dest:recycleApp='$SiteName/$Application',recycleMode='StopAppPool'," +
-        "computername=https://${ServerHost}:$msdeployPort/msdeploy.axd?site=$SiteName," + $credential
+        "computername=$computerName,$credential" 
     $args = @('-verb:sync', '-source:recycleApp', $destArg)
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
@@ -172,9 +229,26 @@ function GetComputerName([string] $ServerHost, [string] $SiteName)
 
 <#
 .SYNOPSIS
+Invokes a web deployment process.
 
-.DESCRIPTION
-The recycleApp provider should be delegated to WDeployConfigWriter.
+.PARAMETER PackagePath
+Path to package to be deployed.
+To generate the package the Invoke-PackageBuild command can be used.
+
+.PARAMETER ServerHost
+Hostname of target machine.
+
+.PARAMETER SiteName
+Website name.
+
+.PARAMETER Application
+Application name.
+
+.PARAMETER AllowUntrusted
+When specified, untrusted SSL connections are allowed. otherwise, untrusted SSL connections are not allowed.
+
+.PARAMETER MSDeployParams
+Any additional parameters to be passed to msdeploy utility.
 #>
 function Invoke-WebDeployment
 {
@@ -201,7 +275,7 @@ function Invoke-WebDeployment
 
     $computerName = GetComputerName $ServerHost $SiteName
     $args = @("-source:package='$PackagePath'",
-              ("-dest:auto,computerName='$computerName',includeAcls='False'," + $credential),
+              "-dest:auto,computerName='$computerName',includeAcls='False',$credential",
               '-verb:sync', '-disableLink:AppPoolExtension', '-disableLink:ContentExtension', '-disableLink:CertificateExtension',
               "-setParam:name='IIS Web Application Name',value='$SiteName/$Application'")
 
@@ -225,6 +299,15 @@ function Invoke-WebDeployment
 <#
 .SYNOPSIS
 Copies IIS app content from local server to remote server.
+
+.PARAMETER SiteName
+Website name.
+
+.PARAMETER Application
+Application name.
+
+.PARAMETER ServerHost
+Hostname of target machine.
 #>
 function Sync-IisApp
 {
@@ -237,14 +320,16 @@ function Sync-IisApp
         [AllowEmptyString()]
         [string] $Application,
         [Parameter(Mandatory = $true)]
-        [string] $DestinationServer
+        [Alias("DestinationServer")]
+        [string] $ServerHost
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Assert-WebDeployCredential
+    $computerName = GetComputerName $ServerHost $SiteName
     $args = @('-verb:sync', "-source:iisApp='$SiteName/$Application'",
-              ("-dest:auto,computerName='https://${DestinationServer}:$msdeployPort/msdeploy.axd?site=$SiteName'," + $credential))
+              ("-dest:auto,computerName='$computerName',$credential"))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
     if ($result.ExitCode)
@@ -252,12 +337,27 @@ function Sync-IisApp
         throw 'Msdeploy failed.'
     }
 
-    Write-Information "Updated '$SiteName/$Application' app on $DestinationServer server."
+    Write-Information "Updated '$SiteName/$Application' app on $ServerHost server."
 }
 
 <#
 .SYNOPSIS
 Synchronizes web site file structure between local and remote servers.
+
+.DESCRIPTION
+Long description
+
+.PARAMETER ContentPath
+Folder path on local machine to be synchronized.
+
+.PARAMETER ServerHost
+Hostname of target machine.
+
+.PARAMETER SiteName
+Website name.
+
+.PARAMETER Application
+Application name.
 #>
 function Sync-WebContent
 {
@@ -267,7 +367,8 @@ function Sync-WebContent
         [Parameter(Mandatory = $true)]
         [string] $ContentPath,
         [Parameter(Mandatory = $true)]
-        [string] $DestinationServer,
+        [Alias("DestinationServer")]
+        [string] $ServerHost,
         [Parameter(Mandatory = $true)]
         [string] $SiteName,
         [Parameter(Mandatory = $true)]
@@ -278,8 +379,9 @@ function Sync-WebContent
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Assert-WebDeployCredential
+    $computerName = GetComputerName $ServerHost $SiteName
     $args = @('-verb:sync', "-source:contentPath='$ContentPath'",
-              ("-dest:'$SiteName/$Application',computerName='https://${DestinationServer}:$msdeployPort/msdeploy.axd?site=$SiteName'," + $credential))
+              ("-dest:'$SiteName/$Application',computerName='$computerName',$credential"))
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
     if ($result.ExitCode)
@@ -287,12 +389,30 @@ function Sync-WebContent
         throw 'Msdeploy failed.'
     }
 
-    Write-Information "Updated '$ContentPath' directory on $DestinationServer server."
+    Write-Information "Updated '$ContentPath' directory on $ServerHost server."
 }
 
 <#
 .SYNOPSIS
 Deploys ASP.NET web site (app without project) to remote server.
+
+.PARAMETER Path
+Folder path to be deployed.
+
+.PARAMETER ServerHost
+Hostname of target machine.
+
+.PARAMETER SiteName
+Website name.
+
+.PARAMETER Application
+Application name.
+
+.PARAMETER AllowUntrusted
+When specified, untrusted SSL connections are allowed. otherwise, untrusted SSL connections are not allowed.
+
+.PARAMETER MSDeployParams
+Any additional parameters to be passed to msdeploy utility.
 #>
 function Invoke-WebSiteDeployment
 {
@@ -319,7 +439,7 @@ function Invoke-WebSiteDeployment
 
     $computerName = GetComputerName $ServerHost $SiteName
     $args = @('-verb:sync', "-source:iisApp='$Path'",
-              ("-dest:iisApp='$SiteName/$Application',computerName='$computerName'," + $credential))
+              ("-dest:iisApp='$SiteName/$Application',computerName='$computerName',$credential"))
 
     if ($AllowUntrusted)
     {
