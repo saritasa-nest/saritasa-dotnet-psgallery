@@ -216,6 +216,15 @@ function Stop-AppPool
 }
 
 <#
+.SYNOPSIS
+Get a msdeploy URL by host name.
+
+.PARAMETER ServerHost
+Hostname of target machine.
+
+.PARAMETER SiteName
+Website name.
+
 .OUTPUTS
 computerName, useTempAgent
 #>
@@ -383,6 +392,9 @@ Hostname of target machine.
 
 .PARAMETER SiteName
 Website name.
+
+.PARAMETER AutoDestination
+If specified, the destination will be specified automatically.
 
 .PARAMETER Application
 Application name.
