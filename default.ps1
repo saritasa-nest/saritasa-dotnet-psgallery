@@ -48,18 +48,6 @@ function GenerateMarkdown([string] $moduleName)
     .\tools\psDoc\psDoc.ps1 -moduleName $moduleName -template .\tools\psDoc\out-markdown-template.ps1 -outputDir .\docs -fileName "$moduleName.md"
 }
 
-function ParsePsd1
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [Microsoft.PowerShell.DesiredStateConfiguration.ArgumentToConfigurationDataTransformation()]
-        [hashtable] $Data
-    )
-    return $Data
-}
-
 function IsModuleVersionAvailableInGallery
 {
     [OutputType('System.Boolean')]
@@ -70,11 +58,51 @@ function IsModuleVersionAvailableInGallery
 
     $psd1 = Get-ChildItem -Path $ModulePath -Filter "*.psd1"
     $fullPath = "$ModulePath\$psd1"
-    $moduleData = ParsePsd1 -Data $fullPath
-    $moduleVersion = $moduleData.ModuleVersion
 
-    $module = Find-Module -Name $moduleData.RootModule -RequiredVersion $moduleVersion -ErrorAction SilentlyContinue
-    return $module -ne $null -and $module.Version -eq $moduleVersion -or $module.Version -gt $moduleVersion
+    $moduleName = [System.IO.Path]::GetFileNameWithoutExtension($psd1)
+
+    $rawModule = Get-Content $fullPath
+
+    $regex = [regex]"(?m)ModuleVersion(\ )?=(\ )?\'(?<version>[0-9.]+)\'"
+
+    $matches = $regex.Match($rawModule)
+
+    $moduleVersion = $null
+
+    if ($matches.Groups.Count -gt 0 -and $matches.Groups["version"] -ne $null)
+    {
+        $captured = $matches.Groups["version"];
+
+        $moduleVersion = New-Object -TypeName "System.Version" -ArgumentList $captured.Value
+    }
+
+    if ($moduleVersion -eq $null)
+    {
+        throw "Can't parse version of module $ModulePath"
+    }
+
+    if($moduleVersion.Build -eq -1)
+    {
+        $moduleVersion = New-Object -TypeName "System.Version" -ArgumentList @($moduleVersion.Major, $moduleVersion.Minor, 0)
+    }
+
+    $moduleVersionRaw = $moduleVersion.ToString(3)
+
+    $module = Find-Module -Name $moduleName -RequiredVersion $moduleVersionRaw -ErrorAction SilentlyContinue
+
+    $remoteModuleVersion = $null
+
+    if ($module -ne $null)
+    {
+        $remoteModuleVersion = New-Object -TypeName "System.Version" -ArgumentList $module.Version
+    }
+
+    if ($remoteModuleVersion.Build -eq -1)
+    {
+        $remoteModuleVersion = New-Object -TypeName "System.Version" -ArgumentList @($remoteModuleVersion.Major, $remoteModuleVersion.Minor, 0)
+    }
+
+    return $remoteModuleVersion -ne $null -and $remoteModuleVersion -eq $moduleVersion -or $remoteModuleVersion -gt $moduleVersion
 }
 
 # Before run, make sure that required modules are installed.
