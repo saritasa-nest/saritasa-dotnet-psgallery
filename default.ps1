@@ -65,13 +65,13 @@ function IsModuleVersionAvailableInGallery
 
     $regex = [regex]"(?m)ModuleVersion(\ )?=(\ )?\'(?<version>[0-9.]+)\'"
 
-    $matches = $regex.Match($rawModule)
+    $match = $regex.Match($rawModule)
 
     $moduleVersion = $null
 
-    if ($matches.Groups.Count -gt 0 -and $matches.Groups["version"] -ne $null)
+    if ($match.Groups.Count -gt 0 -and $match.Groups["version"] -ne $null)
     {
-        $captured = $matches.Groups["version"];
+        $captured = $match.Groups["version"];
 
         $moduleVersion = New-Object -TypeName "System.Version" -ArgumentList $captured.Value
     }
@@ -81,7 +81,7 @@ function IsModuleVersionAvailableInGallery
         throw "Can't parse version of module $ModulePath"
     }
 
-    if($moduleVersion.Build -eq -1)
+    if ($moduleVersion.Build -eq -1)
     {
         $moduleVersion = New-Object -TypeName "System.Version" -ArgumentList @($moduleVersion.Major, $moduleVersion.Minor, 0)
     }
