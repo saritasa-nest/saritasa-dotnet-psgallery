@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.2.1
+.VERSION 1.3.0
 
 .GUID a8bc41d0-c2bd-459a-9e39-544b6f70724f
 
@@ -84,5 +84,12 @@ function DeleteRemoteBranches($Branches, [scriptblock] $Condition)
             $branchName = $_.Name.Substring($slashIndex + 1)
 
             Exec { git.exe push --delete $remoteName $branchName }
+
+            git.exe rev-parse --verify $branchName
+            if (!$LASTEXITCODE)
+            {
+                Exec { git.exe branch --delete $branchName }
+            }
         }
 }
+
