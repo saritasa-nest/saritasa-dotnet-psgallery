@@ -32,30 +32,34 @@ module.exports = generators.Base.extend({
         this.adminTasksEnabled = false;
     },
     prompting: function () {
-        return this.prompt([{
+        let askingQuestions = [{
             type: 'checkbox',
             name: 'projectTypes',
             message: 'Select all used project types:',
             choices: [WEB, DESKTOP, CLICK_ONCE, WINDOWS_SERVICE]
         }, {
-            type: 'input',
-            name: 'srcPath',
-            message: 'Where are project source files located (relative to default.ps1)?',
-            default: '..\\src'
-        }, {
             type: 'confirm',
             name: 'gitTasksEnabled',
             message: 'Do you need GitFlow helper tasks?',
             default: true
-        },
-        {
+        }, {
             type: 'confirm',
             name: 'nunitEnabled',
             message: 'Do you need to run NUnit tests?',
             default: false
-        }]).then(function (answers) {
+        }];
+        let predefinedSrcPath = this.options && this.options.srcPath;
+        if (!predefinedSrcPath) {
+            askingQuestions.unshift({
+                type: 'input',
+                name: 'srcPath',
+                message: 'Where are project source files located (relative to default.ps1)?',
+                default: '..\\src'
+            });
+        }
+        return this.prompt(askingQuestions).then(function (answers) {
             this.projectTypes = answers.projectTypes;
-            this.srcPath = answers.srcPath;
+            this.srcPath = predefinedSrcPath || answers.srcPath;
             this.gitTasksEnabled = answers.gitTasksEnabled;
             this.nunitEnabled = answers.nunitEnabled;
 
