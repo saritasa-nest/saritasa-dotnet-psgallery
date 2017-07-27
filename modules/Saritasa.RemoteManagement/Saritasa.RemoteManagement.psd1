@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.RemoteManagement'
 
 # Version number of this module.
-ModuleVersion = '1.19.0'
+ModuleVersion = '1.20.0'
 
 # ID used to uniquely identify this module
 GUID = '6e18f454-853c-413b-b614-39c8128c1399'
@@ -24,7 +24,7 @@ Author = 'Anton Zimin'
 CompanyName = 'Saritasa'
 
 # Copyright statement for this module
-Copyright = '(c) 2016 Saritasa. All rights reserved.'
+Copyright = '(c) 2016-2017 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Contains functions to execute actions on a remote server. Allows to set up IIS, import sites and app pools, install MSI packages.'
