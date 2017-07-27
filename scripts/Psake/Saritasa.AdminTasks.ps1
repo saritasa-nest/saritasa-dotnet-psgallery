@@ -41,6 +41,7 @@ Properties `
     $Environment = $null
     $ServerHost = $null
     $SiteName = $null
+    $Slot = $null # Deployment slot (Green, Blue).
     $WwwrootPath = $null
     $WinrmPort = 5986
     $WinrmAuthentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
@@ -79,7 +80,7 @@ Task import-sites -depends init-winrm -description 'Import app pools and sites t
 
     $sitesPath = "$root\IIS\Sites.${Environment}.xml"
 
-    $params = @{ SiteName = $SiteName; WwwrootPath = $WwwrootPath }
+    $params = @{ SiteName = $SiteName; WwwrootPath = $WwwrootPath; Slot = $Slot }
     Update-VariablesInFile -Path $sitesPath -Variables $params
 
     Import-Site $ServerHost $sitesPath
