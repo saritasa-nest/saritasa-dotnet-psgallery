@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.4.0
+.VERSION 1.5.0
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -38,7 +38,7 @@ Properties `
     $AdminCredential = $null # If it's not set, new credential will be assigned there.
     $AdminUsername = $null
     $AdminPassword = $null
-    $Configuration = $null
+    $Environment = $null
     $ServerHost = $null
     $SiteName = $null
     $WwwrootPath = $null
@@ -71,13 +71,13 @@ Task init-winrm -description 'Initializes WinRM configuration.' `
 }
 
 # Use following params to import sites on localhost:
-# psake import-sites -properties @{ServerHost='.';Configuration='Debug'}
+# psake import-sites -properties @{ServerHost='.';Environment='Development'}
 Task import-sites -depends init-winrm -description 'Import app pools and sites to IIS.' `
-    -requiredVariables @('Configuration', 'ServerHost', 'SiteName', 'WwwrootPath') `
-{  
-    Import-AppPool $ServerHost "$root\IIS\AppPools.${Configuration}.xml"
+    -requiredVariables @('Environment', 'ServerHost', 'SiteName', 'WwwrootPath') `
+{
+    Import-AppPool $ServerHost "$root\IIS\AppPools.${Environment}.xml"
 
-    $sitesPath = "$root\IIS\Sites.${Configuration}.xml"
+    $sitesPath = "$root\IIS\Sites.${Environment}.xml"
 
     $params = @{ SiteName = $SiteName; WwwrootPath = $WwwrootPath }
     Update-VariablesInFile -Path $sitesPath -Variables $params
@@ -86,23 +86,23 @@ Task import-sites -depends init-winrm -description 'Import app pools and sites t
 }
 
 # Use following params to export sites from localhost:
-# psake export-sites -properties @{ServerHost='.';Configuration='Debug'}
+# psake export-sites -properties @{ServerHost='.';Environment='Development'}
 Task export-sites -depends init-winrm -description 'Export app pools and sites from IIS.' `
-    -requiredVariables @('Configuration', 'ServerHost') `
+    -requiredVariables @('Environment', 'ServerHost') `
 {
-    Export-AppPool $ServerHost "$root\IIS\AppPools.${Configuration}.xml"
-    Export-Site $ServerHost "$root\IIS\Sites.${Configuration}.xml"
+    Export-AppPool $ServerHost "$root\IIS\AppPools.${Environment}.xml"
+    Export-Site $ServerHost "$root\IIS\Sites.${Environment}.xml"
 }
 
 Task trust-host -description 'Add server''s certificate to trusted root CA store.' `
     -requiredVariables @('ServerHost', 'WinrmPort') `
 {
     $fqdn = [System.Net.Dns]::GetHostByName($ServerHost).Hostname
-    
+
     Import-Module Saritasa.Web
     Import-SslCertificate $fqdn $WinrmPort
     Write-Information 'SSL certificate is imported.'
-       
+
     # Allow remote connections to the host.
     if ((Get-Item WSMan:\localhost\Client\TrustedHosts).Value -ne '*')
     {
