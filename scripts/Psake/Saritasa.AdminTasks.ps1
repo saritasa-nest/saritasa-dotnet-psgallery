@@ -41,7 +41,7 @@ Properties `
     $Environment = $null
     $ServerHost = $null
     $SiteName = $null
-    $Slot = $null # Deployment slot (Green, Blue).
+    $Slot = $null # Deployment slot (001, 002, Green, Blue).
     $WwwrootPath = $null
     $WinrmPort = 5986
     $WinrmAuthentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
