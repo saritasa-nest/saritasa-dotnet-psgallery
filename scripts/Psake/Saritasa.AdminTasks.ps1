@@ -77,9 +77,11 @@ Task import-sites -depends init-winrm -description 'Import app pools and sites t
     -requiredVariables @('Environment', 'ServerHost', 'SiteName', 'WwwrootPath') `
 {
     $params = @{ Slot = $Slot }
-    $appPoolsPath = "$root\IIS\AppPools.${Environment}.xml"
+    $appPoolsPath = [System.IO.Path]::GetTempFileName()
+    Copy-Item "$root\IIS\AppPools.${Environment}.xml" $appPoolsPath
     Update-VariablesInFile -Path $appPoolsPath -Variables $params
     Import-AppPool $ServerHost $appPoolsPath
+    Remove-Item $appPoolsPath
 
     if ($Slot)
     {
@@ -91,9 +93,11 @@ Task import-sites -depends init-winrm -description 'Import app pools and sites t
     }
 
     $params = @{ SiteName = $siteNameWithSlot; WwwrootPath = $WwwrootPath; Slot = $Slot }
-    $sitesPath = "$root\IIS\Sites.${Environment}.xml"
+    $sitesPath = [System.IO.Path]::GetTempFileName()
+    Copy-Item "$root\IIS\Sites.${Environment}.xml" $sitesPath
     Update-VariablesInFile -Path $sitesPath -Variables $params
     Import-Site $ServerHost $sitesPath
+    Remove-Item $sitesPath
 }
 
 # Use following params to export sites from localhost:
