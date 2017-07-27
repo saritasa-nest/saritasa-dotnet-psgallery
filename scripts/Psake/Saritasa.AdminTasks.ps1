@@ -76,13 +76,23 @@ Task init-winrm -description 'Initializes WinRM configuration.' `
 Task import-sites -depends init-winrm -description 'Import app pools and sites to IIS.' `
     -requiredVariables @('Environment', 'ServerHost', 'SiteName', 'WwwrootPath') `
 {
-    Import-AppPool $ServerHost "$root\IIS\AppPools.${Environment}.xml"
+    $params = @{ Slot = $Slot }
+    $appPoolsPath = "$root\IIS\AppPools.${Environment}.xml"
+    Update-VariablesInFile -Path $appPoolsPath -Variables $params
+    Import-AppPool $ServerHost $appPoolsPath
 
+    if ($Slot)
+    {
+        $siteNameWithSlot = "$SiteName-$Slot".ToLowerInvariant()
+    }
+    else
+    {
+        $siteNameWithSlot = $SiteName
+    }
+
+    $params = @{ SiteName = $siteNameWithSlot; WwwrootPath = $WwwrootPath; Slot = $Slot }
     $sitesPath = "$root\IIS\Sites.${Environment}.xml"
-
-    $params = @{ SiteName = $SiteName; WwwrootPath = $WwwrootPath; Slot = $Slot }
     Update-VariablesInFile -Path $sitesPath -Variables $params
-
     Import-Site $ServerHost $sitesPath
 }
 
