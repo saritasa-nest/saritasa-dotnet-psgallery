@@ -39,19 +39,19 @@ namespace Saritasa.Git.GitFlowStatus
         [ValidateNotNullOrEmpty]
         public BranchType BranchType { get; set; }
 
-        [Parameter (
+        [Parameter(
             Mandatory = false,
             HelpMessage = "Show branches with last commit made later than N days",
             ValueFromPipelineByPropertyName = true)]
         [ValidateNotNullOrEmpty]
-        public int OlderThanDays{ get; set; }
+        public int OlderThanDays { get; set; }
 
         private Repository repo;
 
         private Branch developHead;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected override void ProcessRecord()
         {
@@ -117,7 +117,7 @@ namespace Saritasa.Git.GitFlowStatus
                        IncludeReachableFrom = branch.Tip,
                        ExcludeReachableFrom = mergeBase
                    });
-                ret.Author = GetMostFrequentContributor(branchCommits).ToString();
+                ret.Author = GetMostFrequentContributor(branchCommits)?.ToString();
                 ret.ExclusiveCommits = branchCommits.Count();
             }
             else
@@ -141,7 +141,7 @@ namespace Saritasa.Git.GitFlowStatus
                             IncludeReachableFrom = branch.Tip,
                             ExcludeReachableFrom = oneCommitBeforeMerge
                         });
-                    ret.Author = GetMostFrequentContributor(branchCommits).ToString();
+                    ret.Author = GetMostFrequentContributor(branchCommits)?.ToString();
                     ret.ExclusiveCommits = branchCommits.Count();
                 }
             }
@@ -156,9 +156,9 @@ namespace Saritasa.Git.GitFlowStatus
         private static LibGit2Sharp.Signature GetMostFrequentContributor(ICommitLog commits)
         {
             return commits.GroupBy(x => x.Author)
-                .Select(x => new {Author = x.Key, CommitsCount = x.Count()})
+                .Select(x => new { Author = x.Key, CommitsCount = x.Count() })
                 .OrderBy(x => x.CommitsCount)
-                .First().Author;
+                .FirstOrDefault()?.Author;
         }
 
         /// <summary>

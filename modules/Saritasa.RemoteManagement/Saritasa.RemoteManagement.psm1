@@ -9,10 +9,29 @@ function ExecuteAppCmd
 
     $config = Get-Content $ConfigFilename
     $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
-    
+
+    # Site elements contain paths to applications.
+    $appPaths = ([xml]$config).SelectNodes('/appcmd/SITE/site/application/virtualDirectory').physicalPath
+    $createDirectoriesSB = `
+        {
+            if ($appPaths)
+            {
+                Write-Information 'Creating directories...'
+                foreach ($path in $appPaths)
+                {
+                    New-Item -ItemType Directory $path -ErrorAction SilentlyContinue | Out-Null
+                    Write-Information "`t$path"
+                }
+                Write-Information 'Done.'
+            }
+        }
+
     if (!(Test-IsLocalhost $ServerHost)) # Remote server.
     {
         $session = Start-RemoteSession $ServerHost
+
+        Invoke-Command -Session $session -ScriptBlock { $appPaths = $using:appPaths }
+        Invoke-Command -Session $session -ScriptBlock $createDirectoriesSB
 
         Invoke-Command -Session $session -ScriptBlock { $using:config | &$using:appCmd $using:Arguments }
 
@@ -20,9 +39,11 @@ function ExecuteAppCmd
     }
     else # Local server.
     {
+        &$createDirectoriesSB
+
         Invoke-Command { $config | &$appCmd $Arguments }
     }
-    
+
     if ($LASTEXITCODE)
     {
         throw 'AppCmd failed.'
@@ -38,7 +59,7 @@ function GetAppCmdOutput
     )
 
     $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
-    
+
     if ($ServerHost) # Remote server.
     {
         $session = Start-RemoteSession $ServerHost
@@ -51,12 +72,12 @@ function GetAppCmdOutput
     {
         $output = Invoke-Command { &$appCmd $Arguments }
     }
-    
+
     if ($LASTEXITCODE)
     {
         throw 'AppCmd failed.'
     }
-    
+
     $output | Where-Object { $_.Length -ne 0 }
 }
 
@@ -112,7 +133,7 @@ function Export-AppPool
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     CreateOutputDirectory $OutputFilename
     $xml = GetAppCmdOutput $ServerHost @('list', 'apppool', '/config', '/xml')
     $xml | Set-Content $OutputFilename
@@ -152,9 +173,9 @@ function Install-Iis
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     $session = Start-RemoteSession $ServerHost
-    
+
     Invoke-Command -Session $session -ScriptBlock `
         {
             # Get available features, they can differ in Windows Server 2008 and 2012.
@@ -167,17 +188,17 @@ function Install-Iis
     {
         Install-WebManagementService -Session $session
     }
-    
+
     if ($WebDeploy)
     {
         Install-WebDeploy -Session $session
     }
-    
+
     if ($UrlRewrite)
     {
         Install-UrlRewrite -Session $session
     }
-    
+
     Invoke-Command -Session $session -ScriptBlock `
         {
             if (Get-WebSite -Name 'Default Web Site')
@@ -217,7 +238,7 @@ function Install-WebManagementService
             Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\WebManagement\Server -Name EnableRemoteManagement -Value 1
             # Change service startup type to automatic.
             Set-Service WMSVC -StartupType Automatic
-            
+
             # Replace WMSvc-HOST with HOST certificate. It should be generated already during WinRM configuration.
             Import-Module WebAdministration
             $hostname = [System.Net.Dns]::GetHostByName('localhost').Hostname
@@ -227,7 +248,7 @@ function Install-WebManagementService
             if (!$thumbprint)
             {
                 "SSL certificate for $hostname host is not found."
-            }            
+            }
             if (Test-Path IIS:\SslBindings\0.0.0.0!8172)
             {
                 Remove-Item -Path IIS:\SslBindings\0.0.0.0!8172
@@ -258,12 +279,12 @@ function Install-WebDeploy
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     if ($ServerHost)
     {
         $Session = Start-RemoteSession $ServerHost
     }
-    
+
     Invoke-Command -Session $Session -ScriptBlock `
         {
             # 1.1 = {0F37D969-1260-419E-B308-EF7D29ABDE20}
@@ -271,26 +292,26 @@ function Install-WebDeploy
             # 3.5 = {3674F088-9B90-473A-AAC3-20A00D8D810C}
             $webDeploy36Guid = '{ED4CC1E5-043E-4157-8452-B5E533FE2BA1}'
             $installedProduct = Get-CimInstance -Class Win32_Product -Filter "IdentifyingNumber = '$webDeploy36Guid'"
-            
+
             if ($installedProduct)
             {
                 'WebDeploy is installed already.'
             }
             else
-            {       
+            {
                 $webDeploy36Url = 'https://download.microsoft.com/download/0/1/D/01DC28EA-638C-4A22-A57B-4CEF97755C6C/WebDeploy_amd64_en-US.msi'
                 $tempPath = "$env:TEMP\" + [guid]::NewGuid()
-                
+
                 'Downloading WebDeploy installer...'
                 Invoke-WebRequest $webDeploy36Url -OutFile $tempPath -ErrorAction Stop
                 'OK'
-                
+
                 msiexec.exe /i $tempPath ADDLOCAL=MSDeployFeature,MSDeployUIFeature,DelegationUIFeature,MSDeployWMSVCHandlerFeature | Out-Null
                 if ($LASTEXITCODE)
                 {
                     throw 'MsiExec failed.'
                 }
-        
+
                 Remove-Item $tempPath -ErrorAction SilentlyContinue
                 'WebDeploy is installed.'
             }
@@ -314,7 +335,7 @@ function Install-UrlRewrite
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     if ($ServerHost)
     {
         $Session = Start-RemoteSession $ServerHost
@@ -324,26 +345,26 @@ function Install-UrlRewrite
         {
             $urlRewrite20Guid = '{08F0318A-D113-4CF0-993E-50F191D397AD}'
             $installedProduct = Get-CimInstance -Class Win32_Product -Filter "IdentifyingNumber = '$urlRewrite20Guid'"
-            
+
             if ($installedProduct)
             {
                 'URL Rewrite Module is installed already.'
             }
             else
-            {       
+            {
                 $urlRewrite20Url = 'http://download.microsoft.com/download/C/9/E/C9E8180D-4E51-40A6-A9BF-776990D8BCA9/rewrite_amd64.msi'
                 $tempPath = "$env:TEMP\" + [guid]::NewGuid()
-                
+
                 'Downloading URL Rewrite Module installer...'
                 Invoke-WebRequest $urlRewrite20Url -OutFile $tempPath -ErrorAction Stop
                 'OK'
-                
+
                 msiexec.exe /i $tempPath ADDLOCAL=ALL | Out-Null
                 if ($LASTEXITCODE)
                 {
                     throw 'MsiExec failed.'
                 }
-        
+
                 Remove-Item $tempPath
                 'URL Rewrite Module is installed.'
             }
@@ -374,32 +395,32 @@ function Install-MsiPackage
         [string] $ProductId,
         [Parameter(Mandatory = $true)]
         [string] $MsiPath,
-        [string] $LocalFeatures = 'ALL'     
+        [string] $LocalFeatures = 'ALL'
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     if ($ServerHost)
     {
         $Session = Start-RemoteSession $ServerHost
     }
-    
+
     Invoke-Command -Session $Session -ScriptBlock `
         {
             $installedProduct = Get-CimInstance -Class Win32_Product -Filter "IdentifyingNumber = '$using:ProductId'"
-            
+
             if ($installedProduct)
             {
                 Write-Information "$using:ProductName is installed already."
             }
             else
-            {       
+            {
                 msiexec.exe /i $using:MsiPath ADDLOCAL=$using:LocalFeatures | Out-Null
                 if ($LASTEXITCODE)
                 {
                     throw 'MsiExec failed.'
                 }
-                
+
                 Write-Information "$using:ProductName is installed."
             }
         }
@@ -424,19 +445,19 @@ function Import-SslCertificate
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     $Session = Start-RemoteSession $ServerHost
-    
+
     $name = (Get-Item $CertificatePath).Name
     $tempPath = Get-RemoteTempPath $Session
     Copy-Item -Path $CertificatePath -Destination $tempPath -ToSession $Session
-    
+
     Invoke-Command -Session $Session -ScriptBlock `
         {
             Import-PfxCertificate "$using:tempPath\$using:name" -CertStoreLocation 'Cert:\LocalMachine\My' -Password $using:CertificatePassword
-            
+
             Remove-Item $using:tempPath -Recurse -Force
         }
-        
+
     Remove-PSSession $Session
 }
