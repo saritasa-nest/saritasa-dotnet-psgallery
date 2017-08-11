@@ -169,7 +169,8 @@ function Install-Iis
         [string] $ServerHost,
         [switch] $ManagementService,
         [switch] $WebDeploy,
-        [switch] $UrlRewrite
+        [switch] $UrlRewrite,
+        [switch] $Arr
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
@@ -197,6 +198,11 @@ function Install-Iis
     if ($UrlRewrite)
     {
         Install-UrlRewrite -Session $session
+    }
+
+    if ($Arr)
+    {
+        Install-Arr -Session $session
     }
 
     Invoke-Command -Session $session -ScriptBlock `
@@ -460,4 +466,42 @@ function Import-SslCertificate
         }
 
     Remove-PSSession $Session
+}
+
+<#
+.SYNOPSIS
+Installs Application Request Routing 3.0.
+
+.PARAMETER ServerHost
+Server hostname.
+
+.PARAMETER Session
+Open WinRM session.
+#>
+function Install-Arr
+{
+    [CmdletBinding(DefaultParameterSetName = 'Server')]
+    param
+    (
+        [Parameter(Mandatory = $true, ParameterSetName = 'Server')]
+        [string] $ServerHost,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Session')]
+        [System.Management.Automation.Runspaces.PSSession] $Session
+    )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    if ($ServerHost)
+    {
+        $Session = Start-RemoteSession $ServerHost
+    }
+
+    Install-MsiPackage -Session $Session -ProductName 'Application Request Routing 3.0' `
+        -ProductId '{279B4CB0-A213-4F94-B224-19D6F5C59942}' `
+        -MsiPath 'http://download.microsoft.com/download/E/9/8/E9849D6A-020E-47E4-9FD0-A023E99B54EB/requestRouter_amd64.msi'
+
+    if ($ServerHost)
+    {
+        Remove-PSSession $Session
+    }
 }
