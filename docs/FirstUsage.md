@@ -33,12 +33,8 @@ $env:PSModulePath += ";$PSScriptRoot\scripts\modules"
 # Global properties.
 Properties `
 {
-
-
     $Configuration = 'Debug'
     $Environment = 'Development'
-
-
 }
 ```
 
@@ -49,7 +45,7 @@ Task test `
     -description 'Test task.' `
     -requiredVariables @('Param') `
 {
-    Write-Information("You are using configuration $Configuration with param value $Param.");
+    Write-Information "You are using configuration $Configuration with param value $Param."
 }
 ```
 
@@ -62,7 +58,7 @@ Properties `
 }
 ```
 
-With this `Param` variable will not be defined even if you provide it within command line. Now you can call it:
+Without this `Param` variable will not be defined even if you provide it within command line. Now you can call it:
 
 ```shell
 psake test -properties @{Param=123}
@@ -74,7 +70,7 @@ The output should be:
 You are using configuration Debug with param value 123.
 ```
 
-We have setup simple task with one required parameter `param`. In tasks global properties are available for you as parameters. For example `$Configuration` is reserved for solution build configuration and `$Environment` is for current used environment. By setting different values to script we can change task behavior. In current example we need to provide value for `Param` and have to pass `-properties` with Psake call that would override default value:
+We have set up simple task with one required parameter `param`. In tasks global properties are available for you as parameters. For example `$Configuration` is reserved for solution build configuration and `$Environment` is for current used environment. By setting different values to script we can change task behavior. In current example we need to provide value for `Param` and have to pass `-properties` with Psake call that would override default value:
 
 ```shell
 psake test -properties @{Configuration='Release';Param=123}
@@ -104,17 +100,23 @@ You can run `psake build` to build project now. Some things to note:
 
 1. `-depends` keyword means that there are depended tasks need to be performed before.
 2. `$src` is already presented as global variable and means root directory for our source code.
-3. Even configuration variable is required there is a property `Configuration` and it will be used instead if no property passed.
+3. Even if configuration variable is required there is a property `Configuration` and it will be used instead if no property passed.
 
 After build we try to deploy project to IIS server, for that use `Invoke-WebDeployment` function:
 
 ```powershell
+Task pre-build `
+{
+    Initialize-MSBuild
+    Invoke-NugetRestore -SolutionPath "$src\WebApplication1.sln"
+}
+
 Task deploy `
-    -depends build `
+    -depends pre-build `
     -description '* Deploy project.' `
     -requiredVariables @('Configuration','DeployUsername','DeployPassword','ServerHost','SiteName') `
 {
-    Invoke-PackageBuild "$src\WebApplication1\WebApplication1.csproj" "$src\WebApplication1.zip" $Configuration -Precompile $false
+    Invoke-PackageBuild "$src\WebApplication1\WebApplication1.csproj" "$src\WebApplication1.zip" $Configuration -Precompile $true
     $credential = New-Object System.Management.Automation.PSCredential($DeployUsername, (ConvertTo-SecureString $DeployPassword -AsPlainText -Force))
     Initialize-WebDeploy -Credential $credential
     Invoke-WebDeployment "$src\WebApplication1.zip" $ServerHost $SiteName -Application ''

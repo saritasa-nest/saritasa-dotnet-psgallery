@@ -172,7 +172,7 @@ function Invoke-FullPublish
 
 <#
 .SYNOPSIS
-Invoke build of database project and run migratoins for database.
+Invoke build of database project and run migrations for database.
 
 .EXAMPLE
 Update-VariablesInFile -Path $profilePath -Variables @{ DatabasePassword = $DatabasePassword }
