@@ -21,7 +21,7 @@ Framework 4.6
 $InformationPreference = 'Continue'
 $env:PSModulePath += ";$PSScriptRoot\scripts\modules"
 
-# Include modules, we have them locally.
+# Include scripts, we have them locally.
 . .\scripts\Saritasa.GitTasks.ps1
 . .\scripts\Saritasa.PsakeExtensions.ps1
 . .\scripts\Saritasa.PsakeTasks.ps1
@@ -90,8 +90,6 @@ Task build `
     -description '* Build project.' `
     -requiredVariables @('Configuration') `
 {
-    Initialize-MSBuild
-    Invoke-NugetRestore -SolutionPath "$src\WebApplication1.sln"
     Invoke-SolutionBuild -SolutionPath "$src\WebApplication1.sln" -Configuration $Configuration
 }
 ```

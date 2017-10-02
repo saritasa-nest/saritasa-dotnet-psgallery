@@ -12,13 +12,15 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 
 [Getting Started](docs/GettingStarted.md)
 
+[First Usage](docs/FirstUsage.md)
+
 [Psake Guidelines](docs/PsakeGuidelines.md)
 
 [WinRM Configuration](docs/WinRMConfiguration.md)
 
 # Links
 
-## Cmdlet Collections 
+## Cmdlet Collections
 
 * [PowerShell Gallery](https://www.powershellgallery.com/items)
 * [Carbon](http://get-carbon.org/)
