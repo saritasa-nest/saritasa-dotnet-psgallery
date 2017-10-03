@@ -45,14 +45,11 @@ function Invoke-NugetRestore
     [CmdletBinding()]
     param
     (
-        # Path to solution. All NuGet packages from included projects will be restored.
-        [Parameter(Mandatory = $true, ParameterSetName = 'Solution')]
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to solution. All NuGet packages from included projects will be restored.', ParameterSetName = 'Solution')]
         [string] $SolutionPath,
-        # Path to project or packages.config.
-        [Parameter(Mandatory = $true, ParameterSetName = 'Project')]
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to project or packages.config.', ParameterSetName = 'Project')]
         [string] $ProjectPath,
-        # Path to the solution directory. Not valid when restoring packages for a solution.
-        [Parameter(Mandatory = $true, ParameterSetName = 'Project')]
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to the solution directory. Not valid when restoring packages for a solution.', ParameterSetName = 'Project')]
         [string] $SolutionDirectory
     )
 
@@ -99,10 +96,9 @@ function Invoke-SolutionBuild
     [CmdletBinding()]
     param
     (
-        # Path to solution.
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to solution.')]
         [string] $SolutionPath,
-        # Build configuration (Release, Debug, etc.)
+        [Parameter(HelpMessage = 'Build configuration (Release, Debug, etc.)')]
         [string] $Configuration
     )
 
@@ -130,13 +126,13 @@ function Invoke-ProjectBuild
     [CmdletBinding()]
     param
     (
-        # Path to project.
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to project.')]
         [string] $ProjectPath,
-        # Build configuration (Release, Debug, etc.)
+        [Parameter(HelpMessage = 'Build configuration (Release, Debug, etc.)')]
         [string] $Configuration,
+        [Parameter(HelpMessage = 'MSBuild target.')]
         [string] $Target = 'Build',
-        # Additional build parameters
+        [Parameter(HelpMessage = 'Additional build parameters.')]
         [string[]] $BuildParams
     )
 
@@ -169,8 +165,7 @@ function Update-AssemblyInfoFile
     [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
-        # Version string in major.minor.build.revision format.
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, HelpMessage = 'Version string in major.minor.build.revision format.')]
         [string] $Version
     )
 
@@ -220,8 +215,7 @@ function Copy-DotnetConfig
     [CmdletBinding()]
     param
     (
-        # Path to App.config.template or Web.config.template file.
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to App.config.template or Web.config.template file.')]
         [string] $TemplateFilename
     )
 
@@ -252,10 +246,9 @@ function Invoke-EFMigrate
     [CmdletBinding()]
     param
     (
-        # Path to assembly file with migrations.
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to assembly file with migrations.')]
         [string] $MigrationAssembly,
-        # Path to assembly .config file. If not specified default or parent Web.config will be used.
+        [Parameter(HelpMessage = 'Path to assembly .config file. If not specified default or parent Web.config will be used.')]
         [string] $ConfigFilename
     )
 
