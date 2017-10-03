@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '1.0.0'
+ModuleVersion = '1.2.3'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@ Author = 'Sergey Kondratov'
 CompanyName = 'Saritasa'
 
 # Copyright statement for this module
-Copyright = '(c) 2015-2016 Saritasa. All rights reserved.'
+Copyright = '(c) 2015-2017 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Contains functions which help to maintain gitflow branches in target git repository.'
@@ -66,7 +66,7 @@ DotNetFrameworkVersion = '4.6'
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @('.\Saritasa.Git.GitFlowStatus.dll')
+NestedModules = @('.\Saritasa.Git.dll')
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 # FunctionsToExport = @()

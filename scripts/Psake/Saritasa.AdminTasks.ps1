@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.4.0
+.VERSION 1.6.0
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -38,9 +38,10 @@ Properties `
     $AdminCredential = $null # If it's not set, new credential will be assigned there.
     $AdminUsername = $null
     $AdminPassword = $null
-    $Configuration = $null
+    $Environment = $null
     $ServerHost = $null
-    $SiteName = $null
+    $SiteName = $null # Unique site name, it may include slot suffix (example.org, example.org-blue, example.org-green, example.com-001, example.com-002).
+    $Slot = $null # Deployment slot (Blue, Green, 001, 002).
     $WwwrootPath = $null
     $WinrmPort = 5986
     $WinrmAuthentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
@@ -71,42 +72,66 @@ Task init-winrm -description 'Initializes WinRM configuration.' `
 }
 
 # Use following params to import sites on localhost:
-# psake import-sites -properties @{ServerHost='.';Configuration='Debug'}
+# psake import-sites -properties @{ServerHost='.';Environment='Development'}
 Task import-sites -depends init-winrm -description 'Import app pools and sites to IIS.' `
-    -requiredVariables @('Configuration', 'ServerHost', 'SiteName', 'WwwrootPath') `
-{  
-    Import-AppPool $ServerHost "$root\IIS\AppPools.${Configuration}.xml"
+    -requiredVariables @('Environment', 'ServerHost', 'SiteName', 'WwwrootPath') `
+{
+    $params = @{ Slot = $Slot }
+    $appPoolsPath = [System.IO.Path]::GetTempFileName()
+    Copy-Item "$root\IIS\AppPools.${Environment}.xml" $appPoolsPath
+    Update-VariablesInFile -Path $appPoolsPath -Variables $params
+    Import-AppPool $ServerHost $appPoolsPath
+    Remove-Item $appPoolsPath
 
-    $sitesPath = "$root\IIS\Sites.${Configuration}.xml"
-
-    $params = @{ SiteName = $SiteName; WwwrootPath = $WwwrootPath }
+    $params = @{ SiteName = $SiteName; WwwrootPath = $WwwrootPath; Slot = $Slot; SiteNameHash = (GetShortHash $siteNameWithSlot); SlotHash = (GetShortHash $Slot) }
+    $sitesPath = [System.IO.Path]::GetTempFileName()
+    Copy-Item "$root\IIS\Sites.${Environment}.xml" $sitesPath
     Update-VariablesInFile -Path $sitesPath -Variables $params
-
     Import-Site $ServerHost $sitesPath
+    Remove-Item $sitesPath
 }
 
 # Use following params to export sites from localhost:
-# psake export-sites -properties @{ServerHost='.';Configuration='Debug'}
+# psake export-sites -properties @{ServerHost='.';Environment='Development'}
 Task export-sites -depends init-winrm -description 'Export app pools and sites from IIS.' `
-    -requiredVariables @('Configuration', 'ServerHost') `
+    -requiredVariables @('Environment', 'ServerHost') `
 {
-    Export-AppPool $ServerHost "$root\IIS\AppPools.${Configuration}.xml"
-    Export-Site $ServerHost "$root\IIS\Sites.${Configuration}.xml"
+    Export-AppPool $ServerHost "$root\IIS\AppPools.${Environment}.xml"
+    Export-Site $ServerHost "$root\IIS\Sites.${Environment}.xml"
 }
 
 Task trust-host -description 'Add server''s certificate to trusted root CA store.' `
     -requiredVariables @('ServerHost', 'WinrmPort') `
 {
     $fqdn = [System.Net.Dns]::GetHostByName($ServerHost).Hostname
-    
+
     Import-Module Saritasa.Web
     Import-SslCertificate $fqdn $WinrmPort
     Write-Information 'SSL certificate is imported.'
-       
+
     # Allow remote connections to the host.
     if ((Get-Item WSMan:\localhost\Client\TrustedHosts).Value -ne '*')
     {
         Set-Item WSMan:\localhost\Client\TrustedHosts $fqdn -Concatenate -Force
         Write-Information 'Host is added to trusted list.'
     }
+}
+
+<#
+.SYNOPSIS
+Returns number in 0-999 which is derived from input string hash.
+#>
+function GetShortHash([string] $String)
+{
+    $md5 = [System.Security.Cryptography.MD5CryptoServiceProvider]::new()
+    $utf8 = [System.Text.Encoding]::UTF8
+    $bytes = $md5.ComputeHash($utf8.GetBytes($String))
+
+    $hash = 17
+    foreach ($byte in $bytes)
+    {
+        $hash = $hash * 23 + $byte
+    }
+
+    $hash % 1000
 }

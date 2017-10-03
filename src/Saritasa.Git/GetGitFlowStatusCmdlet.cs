@@ -39,19 +39,19 @@ namespace Saritasa.Git.GitFlowStatus
         [ValidateNotNullOrEmpty]
         public BranchType BranchType { get; set; }
 
-        [Parameter (
+        [Parameter(
             Mandatory = false,
             HelpMessage = "Show branches with last commit made later than N days",
             ValueFromPipelineByPropertyName = true)]
         [ValidateNotNullOrEmpty]
-        public int OlderThanDays{ get; set; }
+        public int OlderThanDays { get; set; }
 
         private Repository repo;
 
         private Branch developHead;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected override void ProcessRecord()
         {
@@ -117,23 +117,25 @@ namespace Saritasa.Git.GitFlowStatus
                        IncludeReachableFrom = branch.Tip,
                        ExcludeReachableFrom = mergeBase
                    });
-                ret.Author = GetMostFrequentContributor(branchCommits).ToString();
+                ret.Author = GetMostFrequentContributor(branchCommits)?.ToString();
                 ret.ExclusiveCommits = branchCommits.Count();
             }
             else
             {
-                // Merge commit has two parents
-                var mergeCommit = developHead.Commits.First(x => x.Parents.Contains(branch.Tip));
-                if (mergeCommit.Parents.Count() == 1)
+                // Merged feature branch could have one or none ancestors
+                var branchAncestors = developHead.Commits.Where(x => x.Parents.Contains(branch.Tip)).ToList();
+
+                if (branchAncestors.Count == 0 || // git merge feature --ff-only, result: develop == feature
+                    branchAncestors.First().Parents.Count() == 1) // git merge feature --ff-only, commit to develop, result:develop != feature
                 {
-                    // There is no merge commit, this branch possible was rebased or fastforwarded.
-                    // i.e. branch pointer points to usual commit in develop.
+                    // There is no merge commit in such scenarios, branch pointer points to usual commit in develop.
                     ret.Author = branch.Tip.Committer.ToString();
                     ret.ExclusiveCommits = 0;
                 }
                 else
                 {
                     // Find commit before merge commit. current branch must be inaccessible from this commit. Use it in filtering
+                    var mergeCommit = branchAncestors.First();
                     var oneCommitBeforeMerge = mergeCommit.Parents.First(x => x != branch.Tip);
                     var branchCommits = repo.Commits.QueryBy(
                         new CommitFilter
@@ -141,7 +143,7 @@ namespace Saritasa.Git.GitFlowStatus
                             IncludeReachableFrom = branch.Tip,
                             ExcludeReachableFrom = oneCommitBeforeMerge
                         });
-                    ret.Author = GetMostFrequentContributor(branchCommits).ToString();
+                    ret.Author = GetMostFrequentContributor(branchCommits)?.ToString();
                     ret.ExclusiveCommits = branchCommits.Count();
                 }
             }
@@ -156,9 +158,9 @@ namespace Saritasa.Git.GitFlowStatus
         private static LibGit2Sharp.Signature GetMostFrequentContributor(ICommitLog commits)
         {
             return commits.GroupBy(x => x.Author)
-                .Select(x => new {Author = x.Key, CommitsCount = x.Count()})
+                .Select(x => new { Author = x.Key, CommitsCount = x.Count() })
                 .OrderBy(x => x.CommitsCount)
-                .First().Author;
+                .FirstOrDefault()?.Author;
         }
 
         /// <summary>

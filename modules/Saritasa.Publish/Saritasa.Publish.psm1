@@ -40,7 +40,7 @@ function Set-ApplicationVersion
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     $regex = [regex] '(\s*<ApplicationVersion>)[^<]+(</ApplicationVersion>\s*)'
 
     $lines = Get-Content $Filename
@@ -148,11 +148,11 @@ function Invoke-ProjectBuildAndPublish
     {
         $params += "/p:InstallUrl=$InstallUrl"
     }
-    
+
     Invoke-ProjectBuild -ProjectPath $ProjectFilename -Configuration 'Release' -Target 'Publish' -BuildParams $params
 
     $projectDir = Split-Path $ProjectFilename
-    
+
     Copy-Item "$projectDir\publish.htm.template" "$PublishDir\publish.htm"
     Remove-Item "$PublishDir\*.exe" -Exclude "setup.exe"
 }
@@ -186,7 +186,7 @@ function Update-PublishVersion
 
 <#
 .SYNOPSIS
-Publishes the ClickOnce application.
+Publishes the ClickOnce application. Runs full publish: invoke project build and publish, set and update project's version.
 
 .PARAMETER InstallUrl
 Location where users will install the application from
@@ -232,9 +232,9 @@ function Invoke-FullPublish
         $template = Get-VersionTemplate $ProjectFilename
         $newVersion = "$template.$revision"
     }
-    
+
     $projectName = (Get-Item $ProjectFilename).BaseName
-    
+
     Invoke-ProjectBuildAndPublish $ProjectFilename $PublishDir $InstallUrl -BuildParams $BuildParams
     Update-PublishVersion $PublishDir $newVersion
     Write-Information "Published $projectName $newVersion to `"$PublishDir`" directory."
@@ -242,7 +242,12 @@ function Invoke-FullPublish
 
 <#
 .SYNOPSIS
-Publishes the database project.
+Invoke build of database project and run migrations for database.
+
+.EXAMPLE
+Update-VariablesInFile -Path $profilePath -Variables @{ DatabasePassword = $DatabasePassword }
+Invoke-DatabaseProjectPublish "$src\Saritasa.Crm.Database\Saritasa.Crm.Database.sqlproj" $Configuration -ProfilePath $profilePath -Target 'Build;Publish'
+Update password in build profile and run publish.
 
 .EXAMPLE
 Invoke-DatabaseProjectPublish ..\src\MyApp.Database\MyApp.Database.sqlproj -ProfilePath ..\src\MyApp.Database\PublishProfiles\Production.publish.xml

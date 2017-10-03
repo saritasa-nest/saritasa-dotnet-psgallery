@@ -68,8 +68,8 @@ RequiredModules = @(@{ModuleName = 'Saritasa.General'; GUID = '7c7dc05c-033b-483
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 # NestedModules = @()
 
-# Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'Invoke-Nunit3Runner'
+# Functions to export from this module
+FunctionsToExport = @('Invoke-Nunit3Runner', 'Invoke-XunitRunner')
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()

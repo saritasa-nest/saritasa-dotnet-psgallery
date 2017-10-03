@@ -48,18 +48,6 @@ function GenerateMarkdown([string] $moduleName)
     .\tools\psDoc\psDoc.ps1 -moduleName $moduleName -template .\tools\psDoc\out-markdown-template.ps1 -outputDir .\docs -fileName "$moduleName.md"
 }
 
-function ParsePsd1
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [Microsoft.PowerShell.DesiredStateConfiguration.ArgumentToConfigurationDataTransformation()]
-        [hashtable] $Data
-    )
-    return $Data
-}
-
 function IsModuleVersionAvailableInGallery
 {
     [OutputType('System.Boolean')]
@@ -70,11 +58,51 @@ function IsModuleVersionAvailableInGallery
 
     $psd1 = Get-ChildItem -Path $ModulePath -Filter "*.psd1"
     $fullPath = "$ModulePath\$psd1"
-    $moduleData = ParsePsd1 -Data $fullPath
-    $moduleVersion = $moduleData.ModuleVersion
 
-    $module = Find-Module -Name $moduleData.RootModule -RequiredVersion $moduleVersion -ErrorAction SilentlyContinue
-    return $module -ne $null -and $module.Version -eq $moduleVersion -or $module.Version -gt $moduleVersion
+    $moduleName = [System.IO.Path]::GetFileNameWithoutExtension($psd1)
+
+    $rawModule = Get-Content $fullPath
+
+    $regex = [regex]"(?m)ModuleVersion(\ )?=(\ )?\'(?<version>[0-9.]+)\'"
+
+    $match = $regex.Match($rawModule)
+
+    $moduleVersion = $null
+
+    if ($match.Groups.Count -gt 0 -and $match.Groups["version"] -ne $null)
+    {
+        $captured = $match.Groups["version"];
+
+        $moduleVersion = New-Object -TypeName "System.Version" -ArgumentList $captured.Value
+    }
+
+    if ($moduleVersion -eq $null)
+    {
+        throw "Can't parse version of module $ModulePath"
+    }
+
+    if ($moduleVersion.Build -eq -1)
+    {
+        $moduleVersion = New-Object -TypeName "System.Version" -ArgumentList @($moduleVersion.Major, $moduleVersion.Minor, 0)
+    }
+
+    $moduleVersionRaw = $moduleVersion.ToString(3)
+
+    $module = Find-Module -Name $moduleName -RequiredVersion $moduleVersionRaw -ErrorAction SilentlyContinue
+
+    $remoteModuleVersion = $null
+
+    if ($module -ne $null)
+    {
+        $remoteModuleVersion = New-Object -TypeName "System.Version" -ArgumentList $module.Version
+    }
+
+    if ($remoteModuleVersion.Build -eq -1)
+    {
+        $remoteModuleVersion = New-Object -TypeName "System.Version" -ArgumentList @($remoteModuleVersion.Major, $remoteModuleVersion.Minor, 0)
+    }
+
+    return $remoteModuleVersion -ne $null -and $remoteModuleVersion -eq $moduleVersion -or $remoteModuleVersion -gt $moduleVersion
 }
 
 # Before run, make sure that required modules are installed.
@@ -136,7 +164,7 @@ Task build `
     Initialize-MSBuild
     Invoke-NugetRestore -SolutionPath "$src\Saritasa.PSGallery.sln"
     Invoke-SolutionBuild -SolutionPath "$src\Saritasa.PSGallery.sln" -Configuration 'Release'
-    Copy-Item "$src\Saritasa.Git.GitFlowStatus\bin\Release\Saritasa.Git.GitFlowStatus.dll" $gitRoot
+    Copy-Item "$src\Saritasa.Git\bin\Release\Saritasa.Git.dll" $gitRoot
 
     $yeomanScriptsPath = "$src\YeomanGenerator\generator-psgallery\app\templates\Scripts"
     Copy-Item "$scripts\Psake\Saritasa.AdminTasks.ps1" $yeomanScriptsPath

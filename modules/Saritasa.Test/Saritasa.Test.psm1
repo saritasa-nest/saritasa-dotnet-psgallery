@@ -21,7 +21,7 @@ function Invoke-Nunit3Runner
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    # Format and validate params
+    # Format and validate params.
     if (!(Test-Path $TestAssembly))
     {
         throw "$TestAssembly does not exist."
@@ -53,10 +53,64 @@ function Invoke-Nunit3Runner
         Write-Information "Found $($nunitExeDirectory.FullName)"
     }
 
-    # Run nunit
+    # Run nunit.
     $args = @($TestAssembly, '--noresult', '--stoponerror', '--noheader')
     $args += $Params
     &"$NUnitPath" $args
+    if ($LASTEXITCODE)
+    {
+        throw "Unit tests failed."
+    }
+}
+
+<#
+.SYNOPSIS
+Run xUnit tests.
+
+.NOTES
+xunit.runner.console package should be installed.
+#>
+function Invoke-XunitRunner
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true, HelpMessage = 'Path to assembly file with tests.')]
+        [string] $TestAssembly,
+        [string[]] $Params
+    )
+
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    # Format and validate params.
+    if (!(Test-Path $TestAssembly))
+    {
+        throw "$TestAssembly does not exist."
+    }
+
+    # Find xunit.console.exe .
+    $packagesDirectory = Get-ChildItem -Filter 'packages' -Recurse -Depth 3 |
+        Where-Object { $_.PSIsContainer -and (Get-ChildItem $_.FullName 'xunit.runner.console.*') } |
+        Select-Object -First 1
+
+    if (!$packagesDirectory)
+    {
+        throw 'Cannot find packages directory.'
+    }
+    Write-Information "Found $packagesDirectory."
+    $xunitExeDirectory = Get-ChildItem $packagesDirectory.FullName 'xunit.runner.console.*' |
+        Sort-Object { $_.Name } | Select-Object -Last 1
+    if (!$xunitExeDirectory)
+    {
+        throw 'Cannot find xunit console runner package.'
+    }
+    $xunitExe = Join-Path $xunitExeDirectory.FullName '.\tools\xunit.console.exe'
+    Write-Information "Found $($xunitExeDirectory.FullName)"
+
+    # Run xunit
+    $args = @($TestAssembly, '-nologo', '-nocolor')
+    $args += $Params
+    &"$xunitExe" $args
     if ($LASTEXITCODE)
     {
         throw "Unit tests failed."

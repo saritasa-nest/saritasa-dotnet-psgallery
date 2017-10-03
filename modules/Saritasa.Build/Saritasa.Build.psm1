@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-Downloads nuget.exe to specified location.
+Downloads latest nuget.exe to specified location.
 
 .EXAMPLE
 Install-NugetCli .

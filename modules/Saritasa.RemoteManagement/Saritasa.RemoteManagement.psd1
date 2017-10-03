@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.RemoteManagement'
 
 # Version number of this module.
-ModuleVersion = '1.20.0'
+ModuleVersion = '1.21.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@ Author = 'Anton Zimin'
 CompanyName = 'Saritasa'
 
 # Copyright statement for this module
-Copyright = '(c) 2016 Saritasa. All rights reserved.'
+Copyright = '(c) 2016-2017 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Contains functions to execute actions on a remote server. Allows to set up IIS, import sites and app pools, install MSI packages.'
@@ -69,10 +69,11 @@ RequiredModules = @(@{ModuleName = 'Saritasa.General'; GUID = '7c7dc05c-033b-483
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 # NestedModules = @()
 
-# Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'Import-AppPool', 'Import-Site', 'Export-AppPool', 'Export-Site', 
-               'Install-Iis', 'Install-WebManagementService', 'Install-WebDeploy', 
-               'Install-UrlRewrite', 'Install-MsiPackage', 'Import-SslCertificate'
+# Functions to export from this module
+FunctionsToExport = @('Import-AppPool', 'Import-Site',
+    'Export-AppPool', 'Export-Site', 'Install-Arr', 'Install-Iis',
+    'Install-WebManagementService', 'Install-WebDeploy',
+    'Install-UrlRewrite', 'Install-MsiPackage', 'Import-SslCertificate')
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
