@@ -260,7 +260,7 @@ function Invoke-EFMigrate
         $ConfigFilename = $MigrationAssembly + '.config'
         if (!(Test-Path $ConfigFilename))
         {
-            $ConfigFilename = Join-Path (Split-Path $MigrationAssembly) 'Web.config'
+            $ConfigFilename = Join-Path (Split-Path $MigrationAssembly) '..\Web.config'
         }
     }
     if (!(Test-Path $ConfigFilename))
