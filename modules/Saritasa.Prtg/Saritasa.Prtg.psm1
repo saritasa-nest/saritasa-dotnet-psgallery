@@ -32,6 +32,17 @@ function Initialize-Prtg
     $script:sensors = $Sensors
 }
 
+<#
+.SYNOPSIS
+Retrieves the sensor information by server key.
+
+.PARAMETER Server
+The server key.
+
+.EXAMPLE
+Initialize-Prtg prtg.local admin Qwerty123 @{ Server1 = 10123; Server2 = 10124; }
+Get-PrtgSensorId Server1
+#>
 function Get-PrtgSensorId
 {
     [CmdletBinding()]
@@ -52,6 +63,17 @@ function Get-PrtgSensorId
     $sensorId
 }
 
+<#
+.SYNOPSIS
+Starts the PRTG sesor.
+
+.PARAMETER Server
+The server key associated with a sensor.
+
+.EXAMPLE
+Initialize-Prtg prtg.local admin Qwerty123 @{ Server1 = 10123; Server2 = 10124; }
+Start-PrtgSensor Server1
+#>
 function Start-PrtgSensor
 {
     [CmdletBinding()]
@@ -70,6 +92,17 @@ function Start-PrtgSensor
     Write-Information "$status`n`n"
 }
 
+<#
+.SYNOPSIS
+Stops the PRTG sensor.
+
+.PARAMETER Server
+The server key associated with a sensor.
+
+.EXAMPLE
+Initialize-Prtg prtg.local admin Qwerty123 @{ Server1 = 10123; Server2 = 10124; }
+Stop-PrtgSensor Server1
+#>
 function Stop-PrtgSensor
 {
     [CmdletBinding()]

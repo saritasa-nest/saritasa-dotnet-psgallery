@@ -122,18 +122,20 @@ namespace Saritasa.Git.GitFlowStatus
             }
             else
             {
-                // Merge commit has two parents
-                var mergeCommit = developHead.Commits.First(x => x.Parents.Contains(branch.Tip));
-                if (mergeCommit.Parents.Count() == 1)
+                // Merged feature branch could have one or none ancestors
+                var branchAncestors = developHead.Commits.Where(x => x.Parents.Contains(branch.Tip)).ToList();
+
+                if (branchAncestors.Count == 0 || // git merge feature --ff-only, result: develop == feature
+                    branchAncestors.First().Parents.Count() == 1) // git merge feature --ff-only, commit to develop, result:develop != feature
                 {
-                    // There is no merge commit, this branch possible was rebased or fastforwarded.
-                    // i.e. branch pointer points to usual commit in develop.
+                    // There is no merge commit in such scenarios, branch pointer points to usual commit in develop.
                     ret.Author = branch.Tip.Committer.ToString();
                     ret.ExclusiveCommits = 0;
                 }
                 else
                 {
                     // Find commit before merge commit. current branch must be inaccessible from this commit. Use it in filtering
+                    var mergeCommit = branchAncestors.First();
                     var oneCommitBeforeMerge = mergeCommit.Parents.First(x => x != branch.Tip);
                     var branchCommits = repo.Commits.QueryBy(
                         new CommitFilter

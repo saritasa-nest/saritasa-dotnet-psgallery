@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.RemoteManagement'
 
 # Version number of this module.
-ModuleVersion = '1.20.0'
+ModuleVersion = '1.22.0'
 
 # ID used to uniquely identify this module
 GUID = '6e18f454-853c-413b-b614-39c8128c1399'
@@ -70,7 +70,7 @@ RequiredModules = @(
 
 # Functions to export from this module
 FunctionsToExport = @('Import-AppPool', 'Import-Site',
-    'Export-AppPool', 'Export-Site', 'Install-Iis',
+    'Export-AppPool', 'Export-Site', 'Install-Arr', 'Install-Iis',
     'Install-WebManagementService', 'Install-WebDeploy',
     'Install-UrlRewrite', 'Install-MsiPackage', 'Import-SslCertificate')
 

@@ -23,8 +23,8 @@ function Update-SslCheckProcedure()
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    Write-Information 'SSL certificates validation is turned off.'
     [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+    Write-Information 'SSL certificates validation is turned off.'
 }
 
 <#

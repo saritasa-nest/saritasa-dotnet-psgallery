@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.5.0
+.VERSION 1.6.0
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -40,8 +40,8 @@ Properties `
     $AdminPassword = $null
     $Environment = $null
     $ServerHost = $null
-    $SiteName = $null
-    $Slot = $null # Deployment slot (001, 002, Green, Blue).
+    $SiteName = $null # Unique site name, it may include slot suffix (example.org, example.org-blue, example.org-green, example.com-001, example.com-002).
+    $Slot = $null # Deployment slot (Blue, Green, 001, 002).
     $WwwrootPath = $null
     $WinrmPort = 5986
     $WinrmAuthentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
@@ -83,16 +83,7 @@ Task import-sites -depends init-winrm -description 'Import app pools and sites t
     Import-AppPool $ServerHost $appPoolsPath
     Remove-Item $appPoolsPath
 
-    if ($Slot)
-    {
-        $siteNameWithSlot = "$SiteName-$Slot".ToLowerInvariant()
-    }
-    else
-    {
-        $siteNameWithSlot = $SiteName
-    }
-
-    $params = @{ SiteName = $siteNameWithSlot; WwwrootPath = $WwwrootPath; Slot = $Slot }
+    $params = @{ SiteName = $SiteName; WwwrootPath = $WwwrootPath; Slot = $Slot; SiteNameHash = (GetShortHash $siteNameWithSlot); SlotHash = (GetShortHash $Slot) }
     $sitesPath = [System.IO.Path]::GetTempFileName()
     Copy-Item "$root\IIS\Sites.${Environment}.xml" $sitesPath
     Update-VariablesInFile -Path $sitesPath -Variables $params
@@ -124,4 +115,23 @@ Task trust-host -description 'Add server''s certificate to trusted root CA store
         Set-Item WSMan:\localhost\Client\TrustedHosts $fqdn -Concatenate -Force
         Write-Information 'Host is added to trusted list.'
     }
+}
+
+<#
+.SYNOPSIS
+Returns number in 0-999 which is derived from input string hash.
+#>
+function GetShortHash([string] $String)
+{
+    $md5 = [System.Security.Cryptography.MD5CryptoServiceProvider]::new()
+    $utf8 = [System.Text.Encoding]::UTF8
+    $bytes = $md5.ComputeHash($utf8.GetBytes($String))
+
+    $hash = 17
+    foreach ($byte in $bytes)
+    {
+        $hash = $hash * 23 + $byte
+    }
+
+    $hash % 1000
 }
