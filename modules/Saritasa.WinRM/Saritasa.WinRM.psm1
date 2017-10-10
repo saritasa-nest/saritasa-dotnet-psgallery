@@ -13,7 +13,7 @@ Credentials to be used for requests.
 Specify to override default WinRM port.
 
 .PARAMETER Authentication
-Specify to override preferred authentication mehanism.
+Specify to override preferred authentication mechanism.
 #>
 function Initialize-RemoteManagement
 {
@@ -48,10 +48,10 @@ function Initialize-RemoteManagement
 
 <#
 .SYNOPSIS
-Start a new powershell session.
+Start a new PowerShell session.
 
 .DESCRIPTION
-Start a new powershell session with specified host using configured WinRM options.
+Start a new PowerShell session with specified host using configured WinRM options.
 
 .PARAMETER ServerHost
 Hostname of the computer.
@@ -66,7 +66,7 @@ function Start-RemoteSession
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     New-PSSession -UseSSL -Credential $credential -ComputerName ([System.Net.Dns]::GetHostByName($ServerHost).Hostname) `
         -Authentication $authentication -Port $winrmPort
 }
@@ -106,12 +106,12 @@ function Invoke-RemoteScript
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     if ($ServerHost)
     {
         $Session = Start-RemoteSession $ServerHost
     }
-    
+
     $scriptContent = Get-Content $Path -Raw
     $scriptParams = `
         &{
@@ -165,7 +165,7 @@ function Invoke-RemoteScript
     ECDH_P256
     ECDH_P384
     ECDH_P521
-    
+
     In addition, KeyLength parameter must be specified explicitly when non-RSA algorithm is used.
 .Parameter KeyLength
     Specifies the key length to generate. By default 2048-bit key is generated.
@@ -188,12 +188,12 @@ function Invoke-RemoteScript
     NonRepudiation
     DigitalSignature
     DecipherOnly
-    
+
     you can combine key usages values by using bitwise OR operation. when combining multiple
     flags, they must be enclosed in quotes and separated by a comma character. For example,
     to combine KeyEncipherment and DigitalSignature flags you should type:
     "KeyEncipherment, DigitalSignature".
-    
+
     If the certificate is CA certificate (see IsCA parameter), key usages extension is generated
     automatically with the following key usages: Certificate Signing, Off-line CRL Signing, CRL Signing.
 .Parameter SubjectAlternativeName
@@ -248,19 +248,19 @@ function Invoke-RemoteScript
     exportable keys.
 .Example
     New-SelfsignedCertificateEx -Subject "CN=Test Code Signing" -EKU "Code Signing" -KeySpec "Signature" -KeyUsage "DigitalSignature" -FriendlyName "Test code signing" -NotAfter [datetime]::now.AddYears(5)
-    
+
     Creates a self-signed certificate intended for code signing and which is valid for 5 years. Certificate
     is saved in the Personal store of the current user account.
 .Example
     New-SelfsignedCertificateEx -Subject "CN=www.domain.com" -EKU "Server Authentication", "Client authentication" -KeyUsage "KeyEcipherment, DigitalSignature" -SAN "sub.domain.com","www.domain.com","192.168.1.1" -AllowSMIME -Path C:\test\ssl.pfx -Password (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force) -Exportable -StoreLocation "LocalMachine"
-    
+
     Creates a self-signed SSL certificate with multiple subject names and saves it to a file. Additionally, the
     certificate is saved in the Personal store of the Local Machine store. Private key is marked as exportable,
     so you can export the certificate with a associated private key to a file at any time. The certificate
     includes SMIME capabilities.
 .Example
     New-SelfsignedCertificateEx -Subject "CN=www.domain.com" -EKU "Server Authentication", "Client authentication" -KeyUsage "KeyEcipherment, DigitalSignature" -SAN "sub.domain.com","www.domain.com","192.168.1.1" -StoreLocation "LocalMachine" -ProviderName "Microsoft Software Key Storage Provider" -AlgorithmName ecdh_256 -KeyLength 256 -SignatureAlgorithm sha256
-    
+
     Creates a self-signed SSL certificate with multiple subject names and saves it to a file. Additionally, the
     certificate is saved in the Personal store of the Local Machine store. Private key is marked as exportable,
     so you can export the certificate with a associated private key to a file at any time. Certificate uses
@@ -268,7 +268,7 @@ function Invoke-RemoteScript
     SHA256 algorithm.
 .Example
     New-SelfsignedCertificateEx -Subject "CN=Test Root CA, OU=Sandbox" -IsCA $true -ProviderName "Microsoft Software Key Storage Provider" -Exportable
-    
+
     Creates self-signed root CA certificate.
 .NOTES
     New-SelfSignedCertificateEx.ps1
@@ -357,7 +357,7 @@ function New-SelfSignedCertificateEx
     New-Variable -Name PFXExportChainNoRoot -Value 0x1 -Option Constant
     New-Variable -Name PFXExportChainWithRoot -Value 0x2 -Option Constant
 #endregion
-    
+
 #region Subject processing
     # http://msdn.microsoft.com/en-us/library/aa377051(VS.85).aspx
     $SubjectDN = New-Object -ComObject X509Enrollment.CX500DistinguishedName
@@ -501,7 +501,7 @@ function New-SelfSignedCertificateEx
     $Cert.SignatureInformation.HashAlgorithm = $SigOID
     # completing certificate request template building
     $Cert.Encode()
-    
+
     # interface: http://msdn.microsoft.com/en-us/library/aa377809(VS.85).aspx
     $Request = New-Object -ComObject X509Enrollment.CX509enrollment
     $Request.InitializeFromRequest($Cert)
@@ -525,7 +525,7 @@ function New-SelfSignedCertificateEx
 Find a certificate associated with provided hostname.
 
 .PARAMETER Hostname
-Hostname to be searched in certificate subject. 
+Hostname to be searched in certificate subject.
 #>
 function FindCertificate
 {
@@ -533,7 +533,7 @@ function FindCertificate
     (
         [string] $Hostname
     )
-    
+
     Get-ChildItem -Path Cert:\LocalMachine\My |
         Where-Object { $_.Subject -EQ "CN=$Hostname" } |
         Sort-Object -Descending NotBefore |
@@ -543,9 +543,6 @@ function FindCertificate
 <#
 .SYNOPSIS
 Generate a new self-signed certificate.
-
-.DESCRIPTION
-Long description
 
 .PARAMETER DnsNames
 One or more DNS names to put into the subject alternative name extension of the certificate.
@@ -641,7 +638,7 @@ function Install-WinrmHttps
 
     $fqdn = [System.Net.Dns]::GetHostByName('localhost').Hostname
     $computerName = $env:COMPUTERNAME
-    
+
     $dnsNames = @($fqdn)
     if ($fqdn -ne $computerName)
     {

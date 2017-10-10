@@ -129,9 +129,9 @@ function Invoke-ProjectBuildAndPublish
         [string] $ProjectFilename,
         [Parameter(Mandatory = $true)]
         [string] $PublishDir,
-        # InstallUrl property to be passed to msbuild task.
+        # InstallUrl property to be passed to MSBuild task.
         [string] $InstallUrl,
-        # Additional build params to be passed for msbuild.
+        # Additional build params to be passed for MSBuild.
         [string[]] $BuildParams
     )
 
@@ -254,14 +254,14 @@ function Invoke-DatabaseProjectPublish
     [CmdletBinding()]
     param
     (
-        # Path to sql server database project.
+        # Path to SQL Server database project.
         [Parameter(Mandatory = $true)]
         [string] $ProjectPath,
         # Build configuration (Release, Debug, etc.)
         [string] $Configuration = 'Release',
         # Build target (Deploy, Publish, etc.)
         [string] $Target = 'Publish',
-        # Path to xml profile file.
+        # Path to XML profile file.
         [Parameter(Mandatory = $true)]
         [string] $ProfilePath
     )

@@ -186,7 +186,7 @@ This cmdlet is designed to use the same way the "using" keyword in C# is used.
 Object to be disposed.
 
 .PARAMETER ScriptBlock
-Parameter description.
+Script to be executed.
 
 .EXAMPLE
 C:\PS> $text = ""

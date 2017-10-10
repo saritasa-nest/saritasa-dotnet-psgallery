@@ -138,13 +138,13 @@ function Import-AppPool
 
 <#
 .SYNOPSIS
-Update website information.
+Update web site information.
 
 .PARAMETER ServerHost
-Hostname of the machine with the website.
+Hostname of the machine with the web site.
 
 .PARAMETER ConfigFilename
-Path to config file containing website config information.
+Path to config file containing web site config information.
 #>
 function Import-Site
 {
@@ -212,13 +212,13 @@ function Export-AppPool
 
 <#
 .SYNOPSIS
-Export information about all websites to a file.
+Export information about all web sites to a file.
 
 .PARAMETER ServerHost
-Hostname of the machine with the websites.
+Hostname of the machine with the web sites.
 
 .PARAMETER OutputFilename
-Path where to save the websites configuration.
+Path where to save the web sites configuration.
 #>
 function Export-Site
 {
@@ -371,7 +371,7 @@ function Install-WebManagementService
             # Start web management service.
             Start-Service WMSVC
         }
-    
+
     Write-Information 'Web management service is installed and configured.'
     if ($ServerHost)
     {
@@ -510,7 +510,7 @@ function Install-UrlRewrite
 
 <#
 .SYNOPSIS
-Install a product using the msi installer.
+Install a product using the MSI installer.
 
 .PARAMETER ServerHost
 Hostname of the machine where the package should be installed.
@@ -519,7 +519,7 @@ Hostname of the machine where the package should be installed.
 Session which should be used to install the module.
 
 .PARAMETER ProductName
-Name of the installing product (will be outputted in the information log).
+Name of the installing product (will be written to the information log).
 
 .PARAMETER ProductId
 Identifying number of the product.
@@ -562,7 +562,7 @@ function Install-MsiPackage
     {
         $ProductName = "Product #$ProductId"
     }
-    
+
     Invoke-Command -Session $Session -ScriptBlock `
         {
             $installedProduct = Get-CimInstance -Class Win32_Product -Filter "IdentifyingNumber = '$using:ProductId'"

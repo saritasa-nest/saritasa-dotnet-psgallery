@@ -9,7 +9,7 @@
 Returns collection of revisions which not exists in any review with revisionId, date, author and commit message.
 
 .PARAMETER UpsourceUrl
-Url of the upsource without trailing slash.
+Url of the Upsource without trailing slash.
 
 .PARAMETER Credential
 Credentials which will be used for Basic authentication when sending requests to Upsource.
@@ -19,8 +19,10 @@ function Initialize-Upsource
     [CmdletBinding()]
     param
     (
+        # Id of project, like 'crm'.
         [Parameter(Mandatory = $true)]
         [string] $UpsourceUrl,
+        # Credentials which will be used for Basic authentication when sending requests to Upsource.
         [Parameter(Mandatory = $true)]
         [pscredential] $Credential
     )
@@ -264,10 +266,14 @@ function Get-RevisionWithoutReview
     [OutputType('System.Object[]')]
     param
     (
+        # Id of project, like 'crm'.
         [Parameter(Mandatory = $true)]
         [string] $ProjectId,
+        # Branch of project, by default it's a 'develop'.
         [string] $Branch = 'develop',
+        # Limit of days from 'now'.
         [int] $DaysLimit = 30,
+        # Words which will be searched in commit message and if it's include this words, that revision will be skipped.
         [string[]] $Stopwords
     )
 
@@ -343,7 +349,7 @@ function Get-RevisionWithoutReview
         }
     }
 
-    # replace user IDs with their name
+    # Replace user IDs with their names.
     if ($userIds.Length -gt 0)
     {
         $userInfos = GetUserInfo -UserIds $userIds

@@ -42,11 +42,11 @@ function Update-NewRelicDeployment
     [CmdletBinding()]
     param
     (
-        # Application Id in New Relic to update
+        # Application Id in New Relic to update.
         [Parameter(Mandatory = $true)]
         [string] $ApplicationId,
-        # Unique ID of current deployment
-        # Can be any string, but usually is a version number or Git commit checksum
+        # Unique ID of current deployment.
+        # Can be any string, but usually is a version number or Git commit checksum.
         [Parameter(Mandatory = $true)]
         [ValidateLength(1, 127)]
         [string] $Revision

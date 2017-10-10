@@ -91,7 +91,7 @@ Target build platform.
 Whether or not project should be precompiled before packaging.
 
 .PARAMETER BuildParams
-Any additional parameters to be passed to msbuild utility.
+Any additional parameters to be passed to MSBuild utility.
 
 .EXAMPLE
 Invoke-PackageBuild src/WebApp.csproj WebApp.zip -BuildParams ('/p:AspnetMergePath="C:\Program Files (x86)\Microsoft SDKs\Windows\v8.1A\bin\NETFX 4.5.1 Tools"')
@@ -131,7 +131,7 @@ Starts the application pool for specified application on a remote machine.
 Hostname of target machine.
 
 .PARAMETER SiteName
-Website name.
+Web site name.
 
 .PARAMETER Application
 Application name.
@@ -177,7 +177,7 @@ Stops the application pool for specified application on a remote machine.
 Hostname of target machine.
 
 .PARAMETER SiteName
-Website name.
+Web site name.
 
 .PARAMETER Application
 Application name.
@@ -217,13 +217,13 @@ function Stop-AppPool
 
 <#
 .SYNOPSIS
-Get a msdeploy URL by host name.
+Get a MSDeploy URL by host name.
 
 .PARAMETER ServerHost
 Hostname of target machine.
 
 .PARAMETER SiteName
-Website name.
+Web site name.
 
 .OUTPUTS
 computerName, useTempAgent
@@ -275,16 +275,16 @@ To generate the package the Invoke-PackageBuild command can be used.
 Hostname of target machine.
 
 .PARAMETER SiteName
-Website name.
+Web site name.
 
 .PARAMETER Application
 Application name.
 
 .PARAMETER AllowUntrusted
-When specified, untrusted SSL connections are allowed. otherwise, untrusted SSL connections are not allowed.
+When specified, untrusted SSL connections are allowed. Otherwise, untrusted SSL connections are not allowed.
 
 .PARAMETER MSDeployParams
-Any additional parameters to be passed to msdeploy utility.
+Any additional parameters to be passed to MSDeploy utility.
 #>
 function Invoke-WebDeployment
 {
@@ -337,7 +337,7 @@ function Invoke-WebDeployment
 Copies IIS app content from local server to remote server.
 
 .PARAMETER SiteName
-Website name.
+Web site name.
 
 .PARAMETER Application
 Application name.
@@ -364,7 +364,7 @@ function Sync-IisApp
 
     Assert-WebDeployCredential
 
-    $computerName, $useTempAgent = GetComputerName $DestinationServer $SiteName
+    $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $args = @('-verb:sync', "-source:iisApp='$SiteName/$Application'",
               "-dest:auto,computerName='$computerName',tempAgent='$useTempAgent',$credential")
 
@@ -381,9 +381,6 @@ function Sync-IisApp
 .SYNOPSIS
 Synchronizes web site file structure between local and remote servers.
 
-.DESCRIPTION
-Long description
-
 .PARAMETER ContentPath
 Folder path on local machine to be synchronized.
 
@@ -391,10 +388,10 @@ Folder path on local machine to be synchronized.
 Hostname of target machine.
 
 .PARAMETER SiteName
-Website name.
+Web site name.
 
 .PARAMETER AutoDestination
-If specified, the destination will be specified automatically.
+If set, the destination will be specified automatically.
 
 .PARAMETER Application
 Application name.
@@ -456,7 +453,7 @@ Folder path to be deployed.
 Hostname of target machine.
 
 .PARAMETER SiteName
-Website name.
+Web site name.
 
 .PARAMETER Application
 Application name.
@@ -465,7 +462,7 @@ Application name.
 When specified, untrusted SSL connections are allowed. otherwise, untrusted SSL connections are not allowed.
 
 .PARAMETER MSDeployParams
-Any additional parameters to be passed to msdeploy utility.
+Any additional parameters to be passed to MSDeploy utility.
 #>
 function Invoke-WebSiteDeployment
 {

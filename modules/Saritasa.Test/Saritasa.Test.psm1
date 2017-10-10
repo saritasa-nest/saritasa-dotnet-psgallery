@@ -13,9 +13,9 @@ function Invoke-Nunit3Runner
         # Path to the testing assembly.
         [Parameter(Mandatory = $true, HelpMessage = 'Path to assembly file with tests.')]
         [string] $TestAssembly,
-        # Additional parameters to be passed nunit console runner.
+        # Additional parameters to be passed to NUnit console runner.
         [string[]] $Params,
-        # Path to the nunit console runner. If not specified, the cmdlet will try to find it automatically from current script folder's subfolders.
+        # Path to the NUnit console runner. If not specified, the cmdlet will try to find it automatically from current script folder's subfolders.
         [string] $NUnitPath
     )
 
@@ -28,7 +28,7 @@ function Invoke-Nunit3Runner
     }
     if ($NUnitPath -and !(Test-Path $NUnitPath))
     {
-        throw "$NUnitPath does not exist."        
+        throw "$NUnitPath does not exist."
     }
 
     if (!($NUnitPath))

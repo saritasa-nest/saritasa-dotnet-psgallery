@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Configure some base Redis parameters.
+Configure some basic Redis parameters.
 
 .EXAMPLE
 $password = "123" | ConvertTo-SecureString -asPlainText -Force
@@ -24,12 +24,12 @@ function Initialize-Redis
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
         $Credential,
-        # Whether or not use secure connection.
+        # Whether or not to use secure connection.
         [bool] $UseSsl = $true
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     $script:redisHost = $Host
     $script:redisPort = $Port
     $script:credential = $Credential
@@ -39,7 +39,7 @@ function Initialize-Redis
     Write-Information "Loading StackExchange.Redis.dll..."
     [void][System.Reflection.Assembly]::LoadFrom($assemblyPath)
     Write-Information 'OK'
-    
+
     $script:credentialInitialized = $true
 }
 
@@ -47,8 +47,8 @@ function Initialize-Redis
 .SYNOPSIS
 Get a connection multiplexer from configured Redis parameters
 #>
-function Get-Multiplexer 
-{ 
+function Get-Multiplexer
+{
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
     [CmdletBinding()]
     param()
@@ -66,9 +66,9 @@ function Get-Multiplexer
 
 <#
 .SYNOPSIS
-Pings the redis instance.
+Pings the Redis instance.
 #>
-function Ping-Redis 
+function Ping-Redis
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
     [CmdletBinding()]
@@ -98,12 +98,12 @@ function Ping-Redis
 
 <#
 .SYNOPSIS
-Delete all the keys of the redis database.
+Delete all the keys of the Redis database.
 
 .NOTES
 For more info, see http://redis.io/commands/flushdb
 #>
-function Invoke-FlushRedis 
+function Invoke-FlushRedis
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope="Function", Target="*")]
     [CmdletBinding()]
