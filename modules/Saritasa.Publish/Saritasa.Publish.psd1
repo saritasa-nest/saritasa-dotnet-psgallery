@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Publish'
 
 # Version number of this module.
-ModuleVersion = '1.8.1'
+ModuleVersion = '1.9.0'
 
 # ID used to uniquely identify this module
 GUID = '9295bc21-bc74-45bb-9d13-62acd728e4cc'
@@ -24,7 +24,7 @@ Author = 'Anton Zimin'
 CompanyName = 'Saritasa'
 
 # Copyright statement for this module
-Copyright = '(c) 2016 Saritasa. All rights reserved.'
+Copyright = '(c) 2016-2017 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Contains methods to generate ClickOnce packages.'

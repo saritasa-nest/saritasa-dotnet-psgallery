@@ -5,3 +5,4 @@ tmp/
 *.exe
 **/node_modules/
 src/YeomanGenerator/generator-psgallery/app/templates/Scripts/*.ps1
+*.orig

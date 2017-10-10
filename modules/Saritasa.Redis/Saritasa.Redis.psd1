@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Redis'
 
 # Version number of this module.
-ModuleVersion = '1.1.2'
+ModuleVersion = '1.2.0'
 
 # ID used to uniquely identify this module
 GUID = '6a5b77a8-5144-4c3f-b724-202c2e4166d1'
@@ -24,7 +24,7 @@ Author = 'Artur'
 CompanyName = 'Saritasa'
 
 # Copyright statement for this module
-Copyright = '(c) 2016 Saritasa. All rights reserved.'
+Copyright = '(c) 2016-2017 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Contains Redis management cmdlets.'
@@ -49,7 +49,7 @@ Description = 'Contains Redis management cmdlets.'
 
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
-    @{ ModuleName='Saritasa.General'; ModuleVersion='1.1.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' }
+    @{ ModuleName='Saritasa.General'; ModuleVersion='1.3.0'; GUID='7c7dc05c-033b-4838-8619-b84792571317' }
 )
 
 # Assemblies that must be loaded prior to importing this module

@@ -10,9 +10,13 @@ function Invoke-Nunit3Runner
     [CmdletBinding()]
     param
     (
+        # Path to the testing assembly.
         [Parameter(Mandatory = $true, HelpMessage = 'Path to assembly file with tests.')]
         [string] $TestAssembly,
-        [string[]] $Params
+        # Additional parameters to be passed to NUnit console runner.
+        [string[]] $Params,
+        # Path to the NUnit console runner. If not specified, the cmdlet will try to find it automatically from current script folder's subfolders.
+        [string] $NUnitPath
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
@@ -22,30 +26,37 @@ function Invoke-Nunit3Runner
     {
         throw "$TestAssembly does not exist."
     }
-
-    # Find nunit3-console.exe .
-    $packagesDirectory = Get-ChildItem -Filter 'packages' -Recurse -Depth 3 |
-        Where-Object { $_.PSIsContainer -and (Get-ChildItem $_.FullName 'NUnit.ConsoleRunner.*') } |
-        Select-Object -First 1
-
-    if (!$packagesDirectory)
+    if ($NUnitPath -and !(Test-Path $NUnitPath))
     {
-        throw 'Cannot find packages directory.'
+        throw "$NUnitPath does not exist."
     }
-    Write-Information "Found $packagesDirectory."
-    $nunitExeDirectory = Get-ChildItem $packagesDirectory.FullName 'NUnit.ConsoleRunner.*' |
-        Sort-Object { $_.Name } | Select-Object -Last 1
-    if (!$nunitExeDirectory)
+
+    if (!($NUnitPath))
     {
-        throw 'Cannot find nunit console runner package.'
+        # Find nunit3-console.exe
+        $packagesDirectory = Get-ChildItem -Filter 'packages' -Recurse -Depth 3 |
+            Where-Object { $_.PSIsContainer -and (Get-ChildItem $_.FullName 'NUnit.ConsoleRunner.*') } |
+            Select-Object -First 1
+
+        if (!$packagesDirectory)
+        {
+            throw 'Cannot find packages directory.'
+        }
+        Write-Information "Found $packagesDirectory."
+        $nunitExeDirectory = Get-ChildItem $packagesDirectory.FullName 'NUnit.ConsoleRunner.*' |
+            Sort-Object { $_.Name } | Select-Object -Last 1
+        if (!$nunitExeDirectory)
+        {
+            throw 'Cannot find nunit console runner package.'
+        }
+        $NUnitPath = Join-Path $nunitExeDirectory.FullName '.\tools\nunit3-console.exe'
+        Write-Information "Found $($nunitExeDirectory.FullName)"
     }
-    $nunitExe = Join-Path $nunitExeDirectory.FullName '.\tools\nunit3-console.exe'
-    Write-Information "Found $($nunitExeDirectory.FullName)"
 
     # Run nunit.
     $args = @($TestAssembly, '--noresult', '--stoponerror', '--noheader')
     $args += $Params
-    &"$nunitExe" $args
+    &"$NUnitPath" $args
     if ($LASTEXITCODE)
     {
         throw "Unit tests failed."
