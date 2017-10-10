@@ -13,7 +13,7 @@ Remove-EmptyDirectories -Path "C:\SomePath\Temp" -DeletePathIfEmpty
 Delete all empty directories in the Temp folder, as well as the Temp folder itself if it is empty.
 
 .EXAMPLE
--Remove-EmptyDirectories -Path "C:\SomePath\WithEmpty\Directories" -OnlyDeleteDirectoriesCreatedBeforeDate ([DateTime]::Parse("Jan 1, 2014 15:00:00"))
+Remove-EmptyDirectories -Path "C:\SomePath\WithEmpty\Directories" -OnlyDeleteDirectoriesCreatedBeforeDate ([DateTime]::Parse("Jan 1, 2014 15:00:00"))
 Delete all empty directories created after Jan 1, 2014 3PM.
 
 .EXAMPLE

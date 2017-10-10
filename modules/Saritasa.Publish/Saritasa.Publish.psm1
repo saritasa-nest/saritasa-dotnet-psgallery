@@ -45,7 +45,7 @@ function Set-ApplicationVersion
 
     $lines = Get-Content $Filename
 
-    # If file contains only one line, the result will be a string, not string array
+    # If file contains only one line, the result will be a string, not string array.
     if ($lines -is [string])
     {
         $lines = @($lines)
@@ -198,9 +198,6 @@ If omitted, it will be automatically calculated by incrementing the revision num
 
 .EXAMPLE
 Invoke-FullPublish ..\src\myapp\myapp.csproj C:\publish\myapp -Version 4.4.2
-
-.NOTES
-General notes
 #>
 function Invoke-FullPublish
 {
@@ -230,7 +227,7 @@ function Invoke-FullPublish
     {
         $revision = Update-ApplicationRevision $ProjectFilename
         $template = Get-VersionTemplate $ProjectFilename
-        $newVersion = "$template.$revision"
+        $newVersion = $template + $revision
     }
 
     $projectName = (Get-Item $ProjectFilename).BaseName
