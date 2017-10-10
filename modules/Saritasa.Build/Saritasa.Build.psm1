@@ -45,11 +45,14 @@ function Invoke-NugetRestore
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true, HelpMessage = 'Path to solution. All NuGet packages from included projects will be restored.', ParameterSetName = 'Solution')]
+        # Path to solution. All NuGet packages from included projects will be restored.
+        [Parameter(Mandatory = $true, ParameterSetName = 'Solution')]
         [string] $SolutionPath,
-        [Parameter(Mandatory = $true, HelpMessage = 'Path to project or packages.config.', ParameterSetName = 'Project')]
+        # Path to project or packages.config.
+        [Parameter(Mandatory = $true, ParameterSetName = 'Project')]
         [string] $ProjectPath,
-        [Parameter(Mandatory = $true, HelpMessage = 'Path to the solution directory. Not valid when restoring packages for a solution.', ParameterSetName = 'Project')]
+        # Path to the solution directory. Not valid when restoring packages for a solution.
+        [Parameter(Mandatory = $true, ParameterSetName = 'Project')]
         [string] $SolutionDirectory
     )
 
@@ -96,9 +99,10 @@ function Invoke-SolutionBuild
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true, HelpMessage = 'Path to solution.')]
+        # Path to solution.
+        [Parameter(Mandatory = $true)]
         [string] $SolutionPath,
-        [Parameter(HelpMessage = 'Build configuration (Release, Debug, etc.)')]
+        # Build configuration (Release, Debug, etc.)
         [string] $Configuration
     )
 
@@ -126,13 +130,13 @@ function Invoke-ProjectBuild
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true, HelpMessage = 'Path to project.')]
+        # Path to project.
+        [Parameter(Mandatory = $true)]
         [string] $ProjectPath,
-        [Parameter(HelpMessage = 'Build configuration (Release, Debug, etc.)')]
+        # Build configuration (Release, Debug, etc.)
         [string] $Configuration,
-        [Parameter(HelpMessage = 'MSBuild target.')]
         [string] $Target = 'Build',
-        [Parameter(HelpMessage = 'Additional build parameters.')]
+        # Additional build parameters.
         [string[]] $BuildParams
     )
 
@@ -165,7 +169,8 @@ function Update-AssemblyInfoFile
     [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
-        [Parameter(Mandatory = $true, HelpMessage = 'Version string in major.minor.build.revision format.')]
+        # Version string in major.minor.build.revision format.
+        [Parameter(Mandatory = $true)]
         [string] $Version
     )
 
@@ -215,7 +220,8 @@ function Copy-DotnetConfig
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true, HelpMessage = 'Path to App.config.template or Web.config.template file.')]
+        # Path to App.config.template or Web.config.template file.
+        [Parameter(Mandatory = $true)]
         [string] $TemplateFilename
     )
 
@@ -246,9 +252,10 @@ function Invoke-EFMigrate
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true, HelpMessage = 'Path to assembly file with migrations.')]
+        # Path to assembly file with migrations.
+        [Parameter(Mandatory = $true)]
         [string] $MigrationAssembly,
-        [Parameter(HelpMessage = 'Path to assembly .config file. If not specified default or parent Web.config will be used.')]
+        # Path to assembly .config file. If not specified default or parent Web.config will be used.
         [string] $ConfigFilename
     )
 
@@ -382,13 +389,13 @@ function Merge-PackageConfigs
     [CmdletBinding()]
     param
     (
-        # Directory in which to look for packages.config files
+        # Directory in which to look for packages.config files.
         [Parameter(Mandatory = $true)]
         [string] $SolutionDirectory,
-        # Path to file in which results should be saved. If file exists, it will be overridden
+        # Path to file in which results should be saved. If file exists, it will be overridden.
         [Parameter(Mandatory = $true)]
         [string] $OutputPath,
-        # If specified, only packages with this framework will be included in the results
+        # If specified, only packages with this framework will be included in the results.
         [string] $Framework
     )
 
