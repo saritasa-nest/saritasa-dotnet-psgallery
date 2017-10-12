@@ -1,6 +1,4 @@
-﻿# 1.2.0
-
-# Web Deploy: Powershell script to set up delegated deployments with Web Deploy
+﻿# Web Deploy: Powershell script to set up delegated deployments with Web Deploy
 # Copyright (C) Microsoft Corp. 2010
 #
 # Requirements: IIS 7, Windows Server 2008 (or higher)
@@ -82,7 +80,7 @@ FailedToWritePublishSettingsFile=Failed to create publish settings file at {0}.
 
 AppPoolCreated=Created application pool {0}.
 
-AppPoolExists=Application Pool {0} already exists. The application pool may be in use by other applications. It is recommended to have one application pool per site or to disable any appPoolPipeline, appPoolNetFx or recycleApp delegation rules. 
+AppPoolExists=Application Pool {0} already exists. The application pool may be in use by other applications. It is recommended to have one application pool per site or to disable any appPoolPipeline, appPoolNetFx or recycleApp delegation rules.
 
 SiteCreated=Created site {0}.
 
@@ -286,21 +284,31 @@ function write-log([int]$type, [string]$info){
     }
  }
 
+ # [AZ] 10/12/2017 Add support of Windows Server 2016.
  function CheckIfUserIsAdmin($adminGroupName, $username)
  {
     $computer = [ADSI]("WinNT://$env:computername,computer")
     $group = $computer.psbase.children.find($adminGroupName)
 
-    $colMembers = $group.psbase.invoke("Members") | %{$_.GetType().InvokeMember("Name",'GetProperty',$null,$_,$null)}
+    $cmd = Get-Command Get-LocalGroupMember -EA SilentlyContinue
 
-    $bIsMember = $colMembers -contains $username
-    if($bIsMember)
+    if ($cmd) # Windows Server 2016
     {
-        return $true
+        return (Get-LocalGroupMember $group.Name.Value).Name -contains "$($computer.Name)\$username"
     }
     else
     {
-        return $false
+        $colMembers = $group.psbase.invoke("Members") | %{$_.GetType().InvokeMember("Name",'GetProperty',$null,$_,$null)}
+
+        $bIsMember = $colMembers -contains $username
+        if($bIsMember)
+        {
+            return $true
+        }
+        else
+        {
+            return $false
+        }
     }
  }
 
@@ -326,7 +334,7 @@ function write-log([int]$type, [string]$info){
  {
     return (${env:windir} + "\system32\inetsrv\config\applicationHost.config")
  }
- 
+
 function GetValidWebDeployInstallPath()
 {
     foreach($number in 3..1)
@@ -554,7 +562,7 @@ function CheckSharedConfigNotInUse()
                     {
                         $applicationHostConfigPath = GetApplicationHostConfigPath
                         GrantPermissionsOnDisk $elevatedUsername $applicationHostConfigPath "ReadAndExecute,Write" "None"
-                        
+
                         CreateDelegationRule "contentPath, iisApp" "{userScope}" "PathPrefix" "CurrentUser" "" "" "true"
                         CreateDelegationRule "dbFullSql" "Data Source=" "ConnectionString" "CurrentUser" "" "" "true"
                         CreateDelegationRule "dbDacFx" "Data Source=" "ConnectionString" "CurrentUser" "" "" "true"
