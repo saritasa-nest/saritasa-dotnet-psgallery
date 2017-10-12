@@ -2,7 +2,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.3.2
+.VERSION 1.3.3
 
 .GUID 966fce03-6946-447c-8e16-29b673f2918b
 
@@ -115,9 +115,13 @@ function UpdateScript([string] $Name, [string] $Path, [string] $Uri)
 Task add-scripts-to-git -description 'Add PowerShell scripts and modules to Git.' `
 {
     $root = $PSScriptRoot
+    $badExtensions = @('.bak', '.orig')
 
     Get-ChildItem -Path $root -File -Recurse -Exclude '*.exe' -Force | ForEach-Object `
         {
-            Exec { git add -f $_.FullName }
+            if ($badExtensions -notcontains $_.Extension)
+            {
+                Exec { git add -f $_.FullName }
+            }
         }
 }
