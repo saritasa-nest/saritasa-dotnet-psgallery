@@ -45,7 +45,24 @@ function ExecuteAppCmd
         Invoke-Command -Session $session -ScriptBlock { $appPaths = $using:appPaths }
         Invoke-Command -Session $session -ScriptBlock $createDirectoriesSB
 
-        Invoke-Command -Session $session -ScriptBlock { $using:config | &$using:appCmd $using:Arguments }
+        $remoteLastExitCode = Invoke-Command -Session $session -ScriptBlock `
+            {
+                $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
+                $output = $using:config | &$appCmd $using:Arguments
+
+                $exitCode = $LASTEXITCODE
+
+                if ($exitCode)
+                {
+                    Write-Error $output
+                }
+                else
+                {
+                    Write-Information $output
+                }
+
+                $exitCode
+            }
 
         Remove-PSSession $session
     }
@@ -53,7 +70,8 @@ function ExecuteAppCmd
     {
         &$createDirectoriesSB
 
-        Invoke-Command { $config | &$appCmd $Arguments }
+        $appCmd = "$env:SystemRoot\System32\inetsrv\appcmd"
+        $config | &$appCmd $Arguments
         $remoteLastExitCode = $LASTEXITCODE
     }
 
@@ -132,7 +150,7 @@ function Import-AppPool
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    ExecuteAppCmd $ServerHost $ConfigFilename @('add', 'apppool', '/in') $false
+    ExecuteAppCmd $ServerHost $ConfigFilename @('add', 'apppool', '/in')
     Write-Information 'App pools are updated.'
 }
 
@@ -158,7 +176,7 @@ function Import-Site
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    ExecuteAppCmd $ServerHost $ConfigFilename @('add', 'site', '/in') $false
+    ExecuteAppCmd $ServerHost $ConfigFilename @('add', 'site', '/in')
     Write-Information 'Web sites are updated.'
 }
 
