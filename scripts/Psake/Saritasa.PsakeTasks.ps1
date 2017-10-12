@@ -2,7 +2,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.3.3
+.VERSION 1.3.4
 
 .GUID 966fce03-6946-447c-8e16-29b673f2918b
 
@@ -37,7 +37,6 @@ Contains common Psake tasks.
 
 Properties `
 {
-    [string]
     $ScriptsPath = $null
 }
 
