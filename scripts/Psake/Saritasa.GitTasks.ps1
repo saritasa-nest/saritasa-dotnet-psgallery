@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.3.0
+.VERSION 1.4.0
 
 .GUID a8bc41d0-c2bd-459a-9e39-544b6f70724f
 
@@ -57,7 +57,7 @@ Task gitflow-features -description 'Display list of all remote feature/* branche
 
 Task gitflow-status -depends gitflow-features, gitflow-old-features, gitflow-hotfixes-releases -description '* Display information about GitFlow issues.'
 
-Task delete-merged-branches -description 'Delete merged remote-tracking branches modified before last commit date.' `
+Task delete-merged-branches -description 'Delete merged remote-tracking branches modified before last commit date, delete merged local branches.' `
 {
     $defaultStartDate = (Get-Date).AddDays(-3)
     $startDate = Read-Host -Prompt ([string]::Format('Last commit date (default {0:d})', $defaultStartDate))
@@ -71,6 +71,7 @@ Task delete-merged-branches -description 'Delete merged remote-tracking branches
     DeleteRemoteBranches (Get-GitFlowStatus -BranchType Feature) $condition
     DeleteRemoteBranches (Get-GitFlowStatus -BranchType Release) $condition
     DeleteRemoteBranches (Get-GitFlowStatus -BranchType Hotfix) $condition
+    DeleteLocalBranches
 }
 
 function DeleteRemoteBranches($Branches, [scriptblock] $Condition)
@@ -93,3 +94,12 @@ function DeleteRemoteBranches($Branches, [scriptblock] $Condition)
         }
 }
 
+function DeleteLocalBranches()
+{
+    $mergedBranches = git branch --merged origin/develop | where { $_ -ne '* develop' } | ForEach-Object { $_.Trim() }
+
+    foreach ($branch in $mergedBranches)
+    {
+        Exec { git.exe branch -d $branch }
+    }
+}
