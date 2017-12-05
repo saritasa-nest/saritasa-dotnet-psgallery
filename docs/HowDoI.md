@@ -54,7 +54,7 @@
 [Export-Site](Saritasa.RemoteManagement.md#export-site)
 [Import-AppPool](Saritasa.RemoteManagement.md#import-apppool)
 [Import-Site](Saritasa.RemoteManagement.md#import-site)
-[Import-SslCertificate](Saritasa.RemoteManagement.md#import-sslcertificate)
+[Import-PersonalSslCertificate](Saritasa.RemoteManagement.md#import-personalsslcertificate)
 
 ## Install software remotely
 
@@ -82,7 +82,7 @@
 
 ## Misc
 
-[Import-SslCertificate](Saritasa.Web.md#import-sslcertificate)
+[Import-TrustedSslCertificate](Saritasa.Web.md#import-trustedsslcertificate)
 [Install-NugetCli](Saritasa.Build.md#install-nugetcli)
 
 ## Internal

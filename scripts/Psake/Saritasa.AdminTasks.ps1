@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.6.0
+.VERSION 1.6.1
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -106,7 +106,7 @@ Task trust-host -description 'Add server''s certificate to trusted root CA store
     $fqdn = [System.Net.Dns]::GetHostByName($ServerHost).Hostname
 
     Import-Module Saritasa.Web
-    Import-SslCertificate $fqdn $WinrmPort
+    Import-TrustedSslCertificate $fqdn $WinrmPort
     Write-Information 'SSL certificate is imported.'
 
     # Allow remote connections to the host.

@@ -620,7 +620,7 @@ Path to certificate file on local machine which should be installed.
 .PARAMETER CertificatePassword
 Password for the specified PFX certificate.
 #>
-function Import-SslCertificate
+function Import-PersonalSslCertificate
 {
     [CmdletBinding()]
     param

@@ -80,3 +80,33 @@ Run as administrator in PowerShell:
         cinst powershell -y
         # Restart server to apply PowerShell updates.
         Restart-Computer
+
+## Generate New Certificate
+
+1. Run as administrator in PowerShell:
+
+        Install-WinrmHttps -Force
+
+2. Run if you need to update Web Management service certificate:
+
+        Import-Module WebAdministration
+        $fqdn = [System.Net.Dns]::GetHostByName('localhost').Hostname
+        Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object { $_.Subject -EQ "CN=$fqdn" } | Sort-Object -Descending NotBefore | Select-Object -First 1 | Set-Item IIS:\SslBindings\0.0.0.0!8172
+
+3. Run as administrator on a build server:
+
+        psake trust-host -properties "@{ServerHost='example.com'}"
+
+## Use Existing Certificate
+
+1. Listen certificates:
+
+        ls Cert:\LocalMachine\My
+
+2. Use desired thumbprint in a command:
+
+        Install-WinrmHttps -CertificateThumbprint XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -Force
+
+3. Update Web Management service certificate:
+
+        Get-Item Cert:\LocalMachine\My\XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX | Set-Item IIS:\SslBindings\0.0.0.0!8172

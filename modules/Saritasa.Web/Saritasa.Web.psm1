@@ -35,7 +35,7 @@ Installs SSL certificate of remote server to trusted certificate root authoritie
 Based on code by Robert Westerlund and Michael J. Lyons.
 http://stackoverflow.com/questions/22233702/how-to-download-the-ssl-certificate-from-a-website-using-powershell
 #>
-function Import-SslCertificate
+function Import-TrustedSslCertificate
 {
     [CmdletBinding()]
     param
@@ -51,9 +51,9 @@ function Import-SslCertificate
     {
         throw 'Administrator permissions are required.'
     }
-    
+
     $tempFilename = "$env:TEMP\" + [guid]::NewGuid()
-    
+
     $webRequest = [Net.WebRequest]::Create("https://${ServerHost}:$Port")
     try
     {
@@ -76,13 +76,13 @@ function Import-SslCertificate
             throw
         }
     }
-    
+
     $cert = $webRequest.ServicePoint.Certificate
     $bytes = $cert.Export([Security.Cryptography.X509Certificates.X509ContentType]::Cert)
     Set-Content -Value $bytes -Encoding Byte -Path $tempFilename
 
     $cmd = Get-Command Import-Certificate -EA SilentlyContinue
-    
+
     if ($cmd) # Windows 8+
     {
         Import-Certificate -CertStoreLocation Cert:\LocalMachine\Root $tempFilename
@@ -95,6 +95,6 @@ function Import-SslCertificate
             throw 'Certutil failed.'
         }
     }
-    
+
     Remove-Item $tempFilename
 }
