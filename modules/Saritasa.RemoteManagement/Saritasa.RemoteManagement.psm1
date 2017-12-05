@@ -430,8 +430,9 @@ function Install-WebDeploy
             # 1.1 = {0F37D969-1260-419E-B308-EF7D29ABDE20}
             # 2.0 = {5134B35A-B559-4762-94A4-FD4918977953}
             # 3.5 = {3674F088-9B90-473A-AAC3-20A00D8D810C}
-            $webDeploy36Guid = '{ED4CC1E5-043E-4157-8452-B5E533FE2BA1}'
-            $installedProduct = Get-CimInstance -Class Win32_Product -Filter "IdentifyingNumber = '$webDeploy36Guid'"
+            # 3.6 = {ED4CC1E5-043E-4157-8452-B5E533FE2BA1} or {6773A61D-755B-4F74-95CC-97920E45E696}
+            $webDeploy36Name = 'Microsoft Web Deploy 3.6'
+            $installedProduct = Get-CimInstance -Class Win32_Product -Filter "Name = '$webDeploy36Name'"
 
             if ($installedProduct)
             {
