@@ -429,7 +429,7 @@ function Sync-WebContent
         $destinationParam = "-dest:iisApp='$SiteName/$Application'"
     }
 
-    $computerName, $useTempAgent = GetComputerName $DestinationServer $SiteName
+    $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $args = @('-verb:sync', "-source:contentPath='$ContentPath'",
               "$destinationParam,computerName='$computerName',tempAgent='$useTempAgent',$credential")
 
