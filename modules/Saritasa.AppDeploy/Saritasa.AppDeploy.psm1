@@ -178,7 +178,7 @@ function Invoke-ServiceProjectDeployment
     Invoke-DesktopProjectDeployment -Session $Session -DestinationPath $DestinationPath -BinPath $BinPath  `
         -BeforeDeploy `
         {
-            $service = Get-Service -Name $using:ServiceName
+            $service = Get-Service -Name $using:ServiceName -ErrorAction SilentlyContinue
             if ($service)
             {
                 Stop-Service $service
@@ -191,7 +191,7 @@ function Invoke-ServiceProjectDeployment
         } `
         -AfterDeploy `
         {
-            $service = Get-Service -Name $using:ServiceName
+            $service = Get-Service -Name $using:ServiceName -ErrorAction SilentlyContinue
             if ($service)
             {
                 Start-Service $service -ErrorAction Stop
