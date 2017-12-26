@@ -118,7 +118,7 @@ namespace Saritasa.Git.GitFlowStatus
                        ExcludeReachableFrom = mergeBase
                    });
                 ret.Author = GetMostFrequentContributor(branchCommits)?.ToString();
-                ret.ExclusiveCommits = branchCommits.Count();
+                ret.ExclusiveCommits = branchCommits?.Count() ?? 0;
             }
             else
             {
@@ -157,10 +157,11 @@ namespace Saritasa.Git.GitFlowStatus
         /// <returns></returns>
         private static LibGit2Sharp.Signature GetMostFrequentContributor(ICommitLog commits)
         {
-            return commits.GroupBy(x => x.Author)
+            return commits?.GroupBy(x => x.Author)
                 .Select(x => new { Author = x.Key, CommitsCount = x.Count() })
                 .OrderBy(x => x.CommitsCount)
-                .FirstOrDefault()?.Author;
+                .FirstOrDefault()
+                ?.Author;
         }
 
         /// <summary>
