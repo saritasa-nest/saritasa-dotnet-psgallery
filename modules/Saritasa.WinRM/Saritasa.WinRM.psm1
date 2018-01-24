@@ -556,7 +556,7 @@ function GenerateCertificate
     )
 
     $cmd = Get-Command New-SelfSignedCertificate -ErrorAction Ignore
-    if ($cmd)
+    if ($cmd -and $cmd.Parameters.KeyUsage) # Windows Server 2012 has the command, but it does not have necessary parameters.
     {
         # Server Authentication (1.3.6.1.5.5.7.3.1)
         # Client Authentication (1.3.6.1.5.5.7.3.2)
@@ -568,7 +568,7 @@ function GenerateCertificate
 
         $certificateThumbprint = $certificate.Thumbprint
     }
-    else # Windows Server 2008, 2008 R2
+    else # Windows Server 2008, 2008 R2, 2012, 2012 R2
     {
         $commonName = $DnsNames[0]
         $pfxFile = "$commonName.pfx"
