@@ -1,7 +1,7 @@
 DCOM
 ====
 
-Many legacy management tools are powered by DCOM. The Microsoft DCOM uses MSRPC which is based on DCE/RPC.
+Many legacy management tools are powered by DCOM (Distributed Component Object Model). The Microsoft DCOM uses MSRPC which is based on DCE/RPC.
 
 RPC uses TCP ports 135 and 445 (SMB for named pipes). It may use other ports also. See the article: [Service overview and network port requirements for Windows](https://support.microsoft.com/en-us/help/832017/service-overview-and-network-port-requirements-for-windows#method38)
 
@@ -117,6 +117,8 @@ The `Remote Event Log Management` group controls access to following services:
 - Local Users and Groups
 - Performance Monitor
 - Services
+
+Actually, there are different rules, but they use the same RPC ports. Read the article for details: [How to Enable Remote Administration of Server Core via MMC using NETSH](https://blogs.technet.microsoft.com/askds/2008/06/05/how-to-enable-remote-administration-of-server-core-via-mmc-using-netsh/)
 
 Firewall management is also protected. Let's find rules to enable:
 
