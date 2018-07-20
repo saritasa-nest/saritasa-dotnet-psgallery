@@ -18,6 +18,8 @@ The repository contains useful PowerShell modules and scripts to be reused in di
 
 [WinRM Configuration](docs/WinRMConfiguration.md)
 
+[Windows Remote Administration](docs/WindowsRemoteAdministration.md)
+
 # Links
 
 ## Cmdlet Collections
