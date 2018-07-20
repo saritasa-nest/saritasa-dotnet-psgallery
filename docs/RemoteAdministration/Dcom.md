@@ -1,7 +1,7 @@
 DCOM
 ====
 
-Many legacy management tools are powered by DCOM. The Microsoft DCOM uses MSRPC which is based on DCE/RPC.
+Many legacy management tools are powered by DCOM (Distributed Component Object Model). The Microsoft DCOM uses MSRPC which is based on DCE/RPC.
 
 RPC uses TCP ports 135 and 445 (SMB for named pipes). It may use other ports also. See the article: [Service overview and network port requirements for Windows](https://support.microsoft.com/en-us/help/832017/service-overview-and-network-port-requirements-for-windows#method38)
 
