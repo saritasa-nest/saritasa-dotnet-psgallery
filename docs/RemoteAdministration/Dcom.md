@@ -67,6 +67,12 @@ compmgmt.msc /computer:server2019.saritasa.local
 
 ![](images/Mmc05.png)
 
+See [the list of the most common MMC commands](https://social.technet.microsoft.com/Forums/windowsserver/en-US/61b864f4-2b04-44a1-88dc-86fae0a8d592/the-most-usefull-active-directory-mmc-run-commands). You may also find MMC commands in file system:
+
+```powershell
+gci C:\windows\System32\*.msc | select name
+```
+
 You may save MMC console to file to quickly open necessary snap-ins later.
 
 ![](images/Mmc06.png)
@@ -96,6 +102,14 @@ Remote Event Log Management (RPC-EPMAP)
 Remote Event Log Management (NP-In)
 ```
 
+Rule                                    | Port                | Description
+--------------------------------------- | ------------------- | ---------------------------------------
+Remote Event Log Management (NP-In)     | TCP: 445            | Inbound rule for the local Event Log service to be remotely managed over Named Pipes.
+Remote Event Log Management (RPC)       | RPC Dynamic Ports   | Inbound rule for the local Event Log service to be remotely managed via RPC/TCP.
+Remote Event Log Management (RPC-EPMAP) | RPC Endpoint Mapper | Inbound rule for the RPCSS service to allow RPC/TCP traffic for the local Event Log Service.
+
+![](images/Firewall01.png)
+
 The `Remote Event Log Management` group controls access to following services:
 
 - Event Viewer
@@ -104,3 +118,12 @@ The `Remote Event Log Management` group controls access to following services:
 - Performance Monitor
 - Services
 
+Firewall management is also protected. Let's find rules to enable:
+
+```powershell
+Get-NetFirewallRule | ? { $_.DisplayName -like '*firewall*' }
+```
+
+```powershell
+Set-NetFirewallRule -DisplayGroup 'Windows Defender Firewall Remote Management' -Enabled True -PassThru | select DisplayName
+```
