@@ -127,3 +127,12 @@ Get-NetFirewallRule | ? { $_.DisplayName -like '*firewall*' }
 ```powershell
 Set-NetFirewallRule -DisplayGroup 'Windows Defender Firewall Remote Management' -Enabled True -PassThru | select DisplayName
 ```
+
+![](images/Firewall02.png)
+
+Performance Monitor
+-------------------
+
+Run perfmon directly in domain or use `runas /netonly` in workgroup. Need to set computer explicily in `Add Counters` window.
+
+![](images/PerfMon01.png)
