@@ -118,6 +118,8 @@ The `Remote Event Log Management` group controls access to following services:
 - Performance Monitor
 - Services
 
+Actually, there are different rules, but they use the same RPC ports. Read the article for details: [How to Enable Remote Administration of Server Core via MMC using NETSH](https://blogs.technet.microsoft.com/askds/2008/06/05/how-to-enable-remote-administration-of-server-core-via-mmc-using-netsh/)
+
 Firewall management is also protected. Let's find rules to enable:
 
 ```powershell
