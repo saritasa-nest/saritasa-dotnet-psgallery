@@ -3,9 +3,9 @@ Windows Remote Administration
 
 - [DCOM](RemoteAdministration/Dcom.md)
 - [Server Manager](RemoteAdministration/ServerManager.md)
-- [IIS Manager *]()
+- [IIS Manager *](RemoteAdministration/IisManager.md)
 - [WMI / CIM](RemoteAdministration/Wmi.md)
-- [Server Configuration Tool *]()
+- [Server Configuration Tool *](RemoteAdministration/Sconfig.md)
 - [WinRM *](RemoteAdministration/WinRM.md)
 - [Windows Admin Center *](RemoteAdministration/WindowsAdminCenter.md)
 - [IIS Administration]()

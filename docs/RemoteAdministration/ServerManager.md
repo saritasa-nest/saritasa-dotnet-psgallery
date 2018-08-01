@@ -19,7 +19,19 @@ Search server in Active Directory, add it.
 Use in Workgroup
 ----------------
 
-Install RSAT (Remote Server Administration Tools).
+You need to have PowerShell remoting enabled.
+
+```powershell
+Enable-PSRemoting
+```
+
+Every server needs to be added to trusted list. Make sure you network connection is secure (VPN or LAN).
+
+```powershell
+Set-Item WSMan:\localhost\Client\TrustedHosts web.saritasa.local -Concatenate -Force
+```
+
+Install [Remote Server Administration Tools (RSAT) for Windows 10](https://www.microsoft.com/en-us/download/details.aspx?id=45520).
 
 Add server by hostname or IP address.
 
