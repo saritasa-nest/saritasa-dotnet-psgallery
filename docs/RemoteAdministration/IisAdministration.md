@@ -60,6 +60,8 @@ Connect to server.
 
 ![](./images/IisAdministration04.png)
 
+You'll be asked to enter administrator credentials. Windows authentication is enabled by default, you can [disable](https://github.com/Microsoft/IIS.Administration/issues/86#issuecomment-302260245) it.
+
 Overview
 --------
 
