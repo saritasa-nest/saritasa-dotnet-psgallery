@@ -8,7 +8,7 @@ Windows Remote Administration
 - [Server Configuration Tool *](RemoteAdministration/Sconfig.md)
 - [WinRM *](RemoteAdministration/WinRM.md)
 - [Windows Admin Center *](RemoteAdministration/WindowsAdminCenter.md)
-- [IIS Administration](IisAdministration.md)
+- [IIS Administration](RemoteAdministration/IisAdministration.md)
 - [SSH](RemoteAdministration/Ssh.md)
 
-* Preferred articles are marked.
+\* Preferred articles are marked.
