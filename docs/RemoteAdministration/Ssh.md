@@ -64,3 +64,10 @@ Connect to server:
 ```powershell
 PS C:\Program Files\PowerShell\6.0.2> Enter-PSSession -HostName server2019.saritasa.local -UserName administrator
 ```
+
+Interactive Terminal
+--------------------
+
+Current version of OpenSSH for Windows (7.7.1) has serious issues with interactivity. Applications like Far Manager, Midnight Commander, Nano do not work correctly.
+
+See [the issue](https://github.com/PowerShell/Win32-OpenSSH/issues/440).
