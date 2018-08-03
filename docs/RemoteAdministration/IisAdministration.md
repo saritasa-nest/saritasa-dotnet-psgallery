@@ -6,7 +6,27 @@ IIS Administration
 Installation
 ------------
 
-[Install](https://docs.microsoft.com/en-us/iis-administration/getting-started) it to server and get access token:
+[Install](https://docs.microsoft.com/en-us/iis-administration/getting-started) it to server.
+
+Create firewall rule:
+
+```powershell
+New-NetFirewallRule -DisplayName 'IIS Administration' -Action Allow -Direction Inbound -LocalPort 55539 -Protocol TCP
+```
+
+Generate Token in Portal
+------------------------
+
+Open <https://manage.iis.net/> web site. Try to add a new server. Enter URL and click `Get access token`.
+
+![](./images/IisAdministration09.png)
+
+You'll be redirected to your server (for example <https://web.saritasa.local:55539/security/tokens>). Enter administrator credentials. Create a new token.
+
+![](./images/IisAdministration08.png)
+
+Generate Token using PowerShell
+-------------------------------
 
 ```powershell
 iwr -OutFile utils.ps1 'https://raw.githubusercontent.com/Microsoft/IIS.Administration/dev/scripts/utils/utils.ps1'
@@ -25,12 +45,6 @@ Make sure you generate user under the same account that was used during installa
 
 ```powershell
 cat 'C:\Program Files\IIS Administration\2.2.0\Microsoft.IIS.Administration\config\appsettings.config'
-```
-
-Create firewall rule:
-
-```powershell
-New-NetFirewallRule -DisplayName 'IIS Administration' -Action Allow -Direction Inbound -LocalPort 55539 -Protocol TCP
 ```
 
 Usage
