@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.3.0
+.VERSION 1.3.1
 
 .GUID 5bf3b9dd-b754-4e71-bb03-cb5c5a8101c7
 
@@ -8,7 +8,7 @@
 
 .COMPANYNAME Saritasa
 
-.COPYRIGHT (c) 2017 Saritasa. All rights reserved.
+.COPYRIGHT (c) 2017-2018 Saritasa. All rights reserved.
 
 .TAGS Jenkins Git
 
@@ -133,7 +133,7 @@ Task setup-workspace -depends init-winrm -description 'Install Git, generate SSH
                 throw 'Chocolatey failed.'
             }
 
-            if (!(Test-Path "$env:HOMEDRIVE$env:HOMEPATH\.ssh\id_rsa"))
+            if (!(Test-Path "$env:USERPROFILE\.ssh\id_rsa"))
             {
                 Write-Information 'SSH private key is not configured. Creating...'
                 $passPhrase = '""'
@@ -141,7 +141,7 @@ Task setup-workspace -depends init-winrm -description 'Install Git, generate SSH
                 Write-Information 'Done.'
             }
 
-            $knownHostsFile = "$env:HOMEDRIVE$env:HOMEPATH\.ssh\known_hosts"
+            $knownHostsFile = "$env:USERPROFILE\.ssh\known_hosts"
             if (!(Test-Path $knownHostsFile))
             {
                 Write-Information 'Adding host signature to SSH known hosts...'
@@ -151,13 +151,13 @@ Task setup-workspace -depends init-winrm -description 'Install Git, generate SSH
                     {
                         Start-Process -Wait 'C:\Program Files\Git\usr\bin\ssh-keyscan.exe' -ArgumentList "$hostname,$($_.IP4Address)" `
                             -RedirectStandardOutput $tempFile -ErrorAction SilentlyContinue
-                        Get-Content $tempFile | Add-Content "$env:HOMEDRIVE$env:HOMEPATH\.ssh\known_hosts"
+                        Get-Content $tempFile | Add-Content "$env:USERPROFILE\.ssh\known_hosts"
                     }
                 Remove-Item $tempFile
                 Write-Information 'Done.'
             }
 
-            $sshConfigFile = "$env:HOMEDRIVE$env:HOMEPATH\.ssh\config"
+            $sshConfigFile = "$env:USERPROFILE\.ssh\config"
             if (!(Test-Path $sshConfigFile))
             {
                 Write-Information 'Creating SSH config...'
@@ -246,7 +246,7 @@ Task write-ssh-key -description 'Display public SSH key for Git.' `
     Invoke-Command -Session $session -ScriptBlock `
         {
             Write-Information "`n`n`nSSH public key:"
-            Write-Information (Get-Content "$env:HOMEDRIVE$env:HOMEPATH\.ssh\id_rsa.pub")
+            Write-Information (Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub")
         }
 
     Remove-PSSession $session

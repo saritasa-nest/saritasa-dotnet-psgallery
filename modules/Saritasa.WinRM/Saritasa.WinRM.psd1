@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.WinRM'
 
 # Version number of this module.
-ModuleVersion = '1.4.0'
+ModuleVersion = '1.5.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@ Author = 'Anton Zimin'
 CompanyName = 'Saritasa'
 
 # Copyright statement for this module
-Copyright = '(c) 2016 Saritasa. All rights reserved.'
+Copyright = '(c) 2016-2018 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Contains functions to set up WinRM and execute remote commands.'

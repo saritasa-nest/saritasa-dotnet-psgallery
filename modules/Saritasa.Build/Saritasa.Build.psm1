@@ -420,3 +420,34 @@ function Merge-PackageConfigs
     [xml] $finalXml = '<?xml version="1.0" encoding="utf-8"?><packages>' + $packagesSet + '</packages>'
     $finalXml.Save($OutputPath)
 }
+
+<#
+.SYNOPSIS
+Removes Roslyn analyzer references from Visual Studio project.
+#>
+function Remove-RoslynAnalyzer
+{
+    [CmdletBinding()]
+    param
+    (
+        # Path to Visual Studio project.
+        [Parameter(Mandatory = $true)]
+        [string] $ProjectPath
+    )
+
+    $xml = [xml](Get-Content $ProjectPath)
+    $project = $xml.DocumentElement
+
+    $nodesToRemove = @()
+    $xml.GetElementsByTagName("ItemGroup") | ForEach-Object `
+        {
+            if ($_.GetElementsByTagName('Analyzer').Count)
+            {
+                $nodesToRemove += $_
+            }
+        }
+
+    $nodesToRemove | ForEach-Object { $project.RemoveChild($_) } | Out-Null
+
+    $xml.Save($ProjectPath)
+}

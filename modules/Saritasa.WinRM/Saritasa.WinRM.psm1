@@ -556,11 +556,19 @@ function GenerateCertificate
     )
 
     $cmd = Get-Command New-SelfSignedCertificate -ErrorAction Ignore
-    if ($cmd)
+    if ($cmd -and $cmd.Parameters.KeyUsage) # Windows Server 2012 has the command, but it does not have necessary parameters.
     {
-        $certificateThumbprint = (New-SelfSignedCertificate -DnsName $DnsNames -CertStoreLocation Cert:\LocalMachine\My).Thumbprint
+        # Server Authentication (1.3.6.1.5.5.7.3.1)
+        # Client Authentication (1.3.6.1.5.5.7.3.2)
+        # Document Encryption (1.3.6.1.4.1.311.80.1)
+
+        $certificate = New-SelfSignedCertificate -DnsName $DnsNames -CertStoreLocation Cert:\LocalMachine\My `
+            -KeyUsage 'DataEncipherment', 'KeyEncipherment', 'DigitalSignature' `
+            -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1,1.3.6.1.4.1.311.80.1")
+
+        $certificateThumbprint = $certificate.Thumbprint
     }
-    else # Windows Server 2008, 2008 R2
+    else # Windows Server 2008, 2008 R2, 2012, 2012 R2
     {
         $commonName = $DnsNames[0]
         $pfxFile = "$commonName.pfx"
@@ -569,7 +577,7 @@ function GenerateCertificate
 
         New-SelfSignedCertificateEx -Subject "CN=$commonName" -SubjectAlternativeName $DnsNames `
             -Exportable -Password $password -Path $pfxFile `
-            -KeyUsage 'DataEncipherment', 'KeyEncipherment', 'DigitalSignature' -EnhancedKeyUsage 'Server Authentication' | Out-Null
+            -KeyUsage 'DataEncipherment', 'KeyEncipherment', 'DigitalSignature' -EnhancedKeyUsage 'Server Authentication', 'Document Encryption' | Out-Null
 
         $result = certutil -p '_' -importpfx $pfxFile | Out-String
         if ($LASTEXITCODE)
