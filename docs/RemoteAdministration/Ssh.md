@@ -57,12 +57,34 @@ cinst powershell-core -y
 
 Alternatively follow the article: [Installing PowerShell Core on Windows](https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-windows?view=powershell-6)
 
-Run PowerShell 6.0.2 from Start menu or by full path: `C:\Program Files\PowerShell\6.0.2\posh.exe`
+Run PowerShell 6.0.2 from Start menu or by full path: `C:\Program Files\PowerShell\6.0.2\pwsh.exe`
 
 Connect to server:
 
 ```powershell
 PS C:\Program Files\PowerShell\6.0.2> Enter-PSSession -HostName server2019.saritasa.local -UserName administrator
+```
+
+Linux Support
+-------------
+
+You may install PowerShell Core to Linux and connect to Windows servers over SSH. Read [the article](https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux?view=powershell-6) for details.
+
+```
+anton@ANTON-PC:~$ pwsh
+PowerShell v6.1.0-preview.2
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+https://aka.ms/pscore6-docs
+Type 'help' to get help.
+
+PS /home/anton> Enter-PSSession -HostName server2019.saritasa.local -UserName anton
+The authenticity of host 'server2019.saritasa.local (192.168.11.137)' can't be established.
+ECDSA key fingerprint is SHA256:LjsYblKkKkaidWJBpSuL+PivLoMU0CBD9Nv0lIqznwU.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'server2019.saritasa.local' (ECDSA) to the list of known hosts.
+anton@server2019.saritasa.local's password:
+[server2019.saritasa.local]: PS C:\Users\anton\Documents>
 ```
 
 Interactive Terminal
