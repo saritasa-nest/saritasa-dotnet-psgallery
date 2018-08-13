@@ -103,10 +103,14 @@ module.exports = generators.Base.extend({
             gitTasksEnabled: this.gitTasksEnabled
         };
 
-        this.fs.copyTpl(this.templatePath('psakefile.ps1'), this.destinationPath('psakefile.ps1'), templateParams);
-        this.fs.copyTpl(this.templatePath('Config.Development.ps1.template'), this.destinationPath('Config.Development.ps1.template'));
-        this.fs.copyTpl(this.templatePath('Config.Production.ps1'), this.destinationPath('Config.Production.ps1'));
-        this.fs.copyTpl(this.templatePath('SecretConfig.Production.ps1.template'), this.destinationPath('SecretConfig.Production.ps1.template'));
+        this.fs.copyTpl(this.templatePath('psakefile.ps1'),
+            this.destinationPath('psakefile.ps1'), templateParams);
+        this.fs.copyTpl(this.templatePath('Config.Development.ps1.template'),
+            this.destinationPath('Config.Development.ps1.template'), templateParams);
+        this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
+            this.destinationPath('Config.Production.ps1'), templateParams);
+        this.fs.copyTpl(this.templatePath('SecretConfig.Production.ps1.template'),
+            this.destinationPath('SecretConfig.Production.ps1.template'), templateParams);
 
         this.fs.copyTpl(this.templatePath('scripts/BuildTasks.ps1'), this.destinationPath('scripts/BuildTasks.ps1'), templateParams);
         this.fs.copyTpl(this.templatePath('scripts/PublishTasks.ps1'), this.destinationPath('scripts/PublishTasks.ps1'), templateParams);

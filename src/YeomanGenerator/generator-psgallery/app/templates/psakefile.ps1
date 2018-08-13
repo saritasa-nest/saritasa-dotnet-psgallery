@@ -10,12 +10,8 @@ $env:PSModulePath += ";$PSScriptRoot\scripts\modules"
 
 Properties `
 {
-<% if (adminTasksEnabled || desktopEnabled || windowsServiceEnabled) { %>    $AdminUsername = $env:AdminUsername<%= '\n' %>    $AdminPassword = $env:AdminPassword<% } %>
-<% if (webEnabled) { %>    $DeployUsername = $env:DeployUsername<%= '\n' %>    $DeployPassword = $env:DeployPassword<%= '\n' %><% } %>
     $Environment = $env:Environment
     $SecretConfigPath = $env:SecretConfigPath
-<% if (webEnabled) { %>    $SiteName = 'example.com'<%= '\n' %>    $WwwrootPath = 'C:\inetpub\wwwroot'<% } %>
-<% if (desktopEnabled || windowsServiceEnabled) { %>    $ApprootPath = 'C:\approot'<% } %>
 }
 
 TaskSetup `
