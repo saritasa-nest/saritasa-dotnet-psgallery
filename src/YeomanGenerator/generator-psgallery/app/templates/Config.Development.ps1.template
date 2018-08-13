@@ -1,0 +1,17 @@
+Expand-PsakeConfiguration `
+@{
+    Configuration = 'Debug'
+    <% if (webEnabled) { %>
+    WebServer = 'localhost'
+    SiteName = 'example.com'
+    DeployUsername = 'undefined'
+    DeployPassword = 'undefined'
+    <% } %>
+    <% if (desktopEnabled || windowsServiceEnabled) { %>
+    AppServer = 'localhost'
+    <% } %>
+    <% if (adminTasksEnabled || desktopEnabled || windowsServiceEnabled) { %>
+    AdminUsername = 'Administrator'
+    AdminPassword = 'secret'
+    <% } %>
+}

@@ -1,7 +1,8 @@
 Properties `
 {
     $Configuration = $null
-<% if (webEnabled || desktopEnabled || windowsServiceEnabled) { %>    $ServerHost = $null<%= '\n' %>    $SiteName = $null<% } %>
+<% if (webEnabled) { %>    $WebServer = $null<%= '\n' %>    $SiteName = $null<% } %>
+<% if (desktopEnabled || windowsServiceEnabled) { %>    $AppServer = $null<% } %>
 <% if (adminTasksEnabled || desktopEnabled || windowsServiceEnabled) { %>    $AdminUsername = $null<%= '\n' %>    $AdminPassword = $null<% } %>
 <% if (webEnabled) { %>    $DeployUsername = $null<%= '\n' %>    $DeployPassword = $null<% } %>
 }
@@ -19,12 +20,12 @@ Task pre-publish -depends pre-build -description 'Set common publish settings fo
 }
 
 Task publish-web -depends pre-publish -description '* Publish all web apps to specified server.' `
-    -requiredVariables @('Configuration', 'ServerHost', 'SiteName') `
+    -requiredVariables @('Configuration', 'WebServer', 'SiteName') `
 {
     # $packagePath = "$workspace\Example.zip"
     # Invoke-PackageBuild -ProjectPath "$src\Example\Example.csproj" `
     # -PackagePath $packagePath -Configuration $Configuration
-    # Invoke-WebDeployment -PackagePath $packagePath -ServerHost $ServerHost `
+    # Invoke-WebDeployment -PackagePath $packagePath -ServerHost $WebServer `
     # -SiteName $SiteName -Application ''
 }
 <% } %>
