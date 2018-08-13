@@ -45,7 +45,7 @@ Note: You may use VS Code Yeoman extension.
     ```
     iwr https://raw.githubusercontent.com/Saritasa/PSGallery/master/scripts/Psake/Saritasa.GitTasks.ps1 -OutFile .\scripts\Saritasa.GitTasks.ps1
     ```
-- Add a line to `default.ps1`:
+- Add a line to `psakefile.ps1`:
     ```
     . .\scripts\Saritasa.GitTasks.ps1
     ```
