@@ -53,7 +53,7 @@ module.exports = generators.Base.extend({
             askingQuestions.unshift({
                 type: 'input',
                 name: 'srcPath',
-                message: 'Where are project source files located (relative to default.ps1)?',
+                message: 'Where are project source files located (relative to BuildTasks.ps1)?',
                 default: '..\\src'
             });
         }
@@ -103,7 +103,7 @@ module.exports = generators.Base.extend({
             gitTasksEnabled: this.gitTasksEnabled
         };
 
-        this.fs.copyTpl(this.templatePath('default.ps1'), this.destinationPath('default.ps1'), templateParams);
+        this.fs.copyTpl(this.templatePath('psakefile.ps1'), this.destinationPath('psakefile.ps1'), templateParams);
         this.fs.copyTpl(this.templatePath('scripts/BuildTasks.ps1'), this.destinationPath('scripts/BuildTasks.ps1'), templateParams);
         this.fs.copyTpl(this.templatePath('scripts/PublishTasks.ps1'), this.destinationPath('scripts/PublishTasks.ps1'), templateParams);
         this.fs.copy(this.templatePath('scripts/Saritasa.PsakeExtensions.ps1'), this.destinationPath('scripts/Saritasa.PsakeExtensions.ps1'));
