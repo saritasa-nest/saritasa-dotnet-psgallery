@@ -45,7 +45,7 @@ module.exports = generators.Base.extend({
         }, {
             type: 'confirm',
             name: 'nunitEnabled',
-            message: 'Do you need to run NUnit tests?',
+            message: 'Do you need to run NUnit or xUnit tests?',
             default: false
         }];
         let predefinedSrcPath = this.options && this.options.srcPath;
@@ -109,8 +109,11 @@ module.exports = generators.Base.extend({
             this.destinationPath('Config.Development.ps1.template'), templateParams);
         this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
             this.destinationPath('Config.Production.ps1'), templateParams);
-        this.fs.copyTpl(this.templatePath('SecretConfig.Production.ps1.template'),
-            this.destinationPath('SecretConfig.Production.ps1.template'), templateParams);
+
+        if (webEnabled || desktopEnabled || windowsServiceEnabled) {
+            this.fs.copyTpl(this.templatePath('SecretConfig.Production.ps1.template'),
+                this.destinationPath('SecretConfig.Production.ps1.template'), templateParams);
+        }
 
         this.fs.copyTpl(this.templatePath('scripts/BuildTasks.ps1'), this.destinationPath('scripts/BuildTasks.ps1'), templateParams);
         this.fs.copyTpl(this.templatePath('scripts/PublishTasks.ps1'), this.destinationPath('scripts/PublishTasks.ps1'), templateParams);
@@ -157,6 +160,20 @@ module.exports = generators.Base.extend({
             this.installModule('Saritasa.Redis');
         }
 
-        this.log('Please ignore following file:\nConfig.Development.ps1');
+        this.log('\n\n');
+        this.log('Please ignore files:\nConfig.Development.ps1');
+
+        if (this.webEnabled) {
+            this.log('Web.config');
+            this.log('Web.Development.config');
+            this.log('appsettings.Development.json');
+        }
+
+        if (desktopEnabled || windowsServiceEnabled) {
+            this.log('App.config');
+        }
+
+        this.log('Please execute command:\npsake add-scripts-to-git');
+        this.log('\n\n');
     }
 });
