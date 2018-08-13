@@ -22,7 +22,9 @@ Task publish-web -depends pre-publish -description '* Publish all web apps to sp
     -requiredVariables @('Configuration', 'ServerHost', 'SiteName') `
 {
     # $packagePath = "$workspace\Example.zip"
-    # Invoke-PackageBuild "$src\Example\Example.csproj" $packagePath $Configuration
-    # Invoke-WebDeployment $packagePath $ServerHost $SiteName -Application ''
+    # Invoke-PackageBuild -ProjectPath "$src\Example\Example.csproj" `
+    # -PackagePath $packagePath -Configuration $Configuration
+    # Invoke-WebDeployment -PackagePath $packagePath -ServerHost $ServerHost `
+    # -SiteName $SiteName -Application ''
 }
 <% } %>

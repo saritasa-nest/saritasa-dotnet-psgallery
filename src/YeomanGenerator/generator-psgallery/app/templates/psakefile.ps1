@@ -12,8 +12,18 @@ Properties `
 {
 <% if (adminTasksEnabled || desktopEnabled || windowsServiceEnabled) { %>    $AdminUsername = $env:AdminUsername<%= '\n' %>    $AdminPassword = $env:AdminPassword<% } %>
 <% if (webEnabled) { %>    $DeployUsername = $env:DeployUsername<%= '\n' %>    $DeployPassword = $env:DeployPassword<%= '\n' %><% } %>
-    $Configuration = 'Debug'
-    $Environment = 'Development'
+    $Environment = $env:Environment
+    $SecretConfigPath = $env:SecretConfigPath
 <% if (webEnabled) { %>    $SiteName = 'example.com'<%= '\n' %>    $WwwrootPath = 'C:\inetpub\wwwroot'<% } %>
 <% if (desktopEnabled || windowsServiceEnabled) { %>    $ApprootPath = 'C:\approot'<% } %>
+}
+
+TaskSetup `
+{
+    if (!$Environment)
+    {
+        Expand-PsakeConfiguration @{ Environment = 'Development' }
+    }
+    Import-PsakeConfigurationFile ".\Config.$Environment.ps1"
+    Import-PsakeConfigurationFile $SecretConfigPath
 }
