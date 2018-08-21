@@ -2,13 +2,15 @@ Properties `
 {
     $Configuration = $null
     $MaxWarnings = 0
+    $InformationalVersion = $null
+    $MajorMinorPatch = $null
 }
 
 $root = $PSScriptRoot
 $src = Resolve-Path "$root\<%= srcPath %>"
 $workspace = Resolve-Path "$root\.."
 
-Task pre-build -description 'Restore NuGet packages, copy configs.' `
+Task pre-build -depends update-version -description 'Restore NuGet packages, update version.' `
 {
     $configFilename = "$workspace\Config.$Environment.ps1"
     $templateFilename = "$workspace\Config.$Environment.ps1.template"
@@ -37,6 +39,41 @@ Task build -depends pre-build -description '* Build all projects.' `
 Task clean -description '* Clean up workspace.' `
 {
     Exec { git clean -xdf -e packages/ -e node_modules/ }
+}
+
+Task update-version -description 'Replace package version in web project.' `
+    -requiredVariables @('MajorMinorPatch', 'InformationalVersion') `
+{
+    if ($Environment -eq 'Development') # It's a developer machine.
+    {
+        return
+    }
+
+    $branchName = Exec { git rev-parse --abbrev-ref HEAD }
+
+    if ($branchName -like 'origin/*')
+    {
+        throw "Expected local branch. Got: $branchName"
+    }
+
+    if ($branchName -eq 'master')
+    {
+        $tag = Exec { git describe --exact-match --tags }
+        if (!$tag)
+        {
+            throw "Production releases without tag are not allowed."
+        }
+    }
+
+<% if (netCoreUsed) { %>
+    # $fileName = "$src\Example\Example.csproj"
+    # Get-Content $fileName |
+    #     ForEach-Object { $_ -replace '<Version>[\d\.\w+-]*</Version>', "<Version>$InformationalVersion</Version>" `
+    #                         -replace '<AssemblyVersion>[\d\.]*</AssemblyVersion>', "<AssemblyVersion>$MajorMinorPatch.0</AssemblyVersion>" } |
+    #     Set-Content $fileName -Encoding UTF8
+<% } else { %>
+    Exec { GitVersion.exe /updateassemblyinfo }
+<% } %>
 }
 
 Task code-analysis -depends pre-build `

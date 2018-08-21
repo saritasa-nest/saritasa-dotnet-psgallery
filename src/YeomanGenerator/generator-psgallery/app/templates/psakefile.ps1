@@ -22,4 +22,16 @@ TaskSetup `
     }
     Import-PsakeConfigurationFile ".\Config.$Environment.ps1"
     Import-PsakeConfigurationFile $SecretConfigPath
+
+    if (!$InformationalVersion)
+    {
+        # 1.2.3+Branch.master.Sha.dc6ebc32aa8ecf20529a677d896a8263df4900ee
+        Expand-PsakeConfiguration @{ SemVer = Exec { GitVersion.exe /showvariable InformationalVersion } }
+    }
+
+    if (!$MajorMinorPatch)
+    {
+        # 1.2.3
+        Expand-PsakeConfiguration @{ MajorMinorPatch = Exec { GitVersion.exe /showvariable MajorMinorPatch } }
+    }
 }
