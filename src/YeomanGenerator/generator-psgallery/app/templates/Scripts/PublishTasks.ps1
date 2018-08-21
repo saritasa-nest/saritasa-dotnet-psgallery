@@ -24,7 +24,7 @@ Task publish-web -depends pre-publish -description '* Publish all web apps to sp
 {
 <% if (netCoreUsed) { %>
     # $packagePath = "$src\Example\Example.zip"
-    # Exec { dotnet publish "$src\Example\Example.csproj" /p:PublishProfile=Package }
+    # Exec { dotnet publish -c $Configuration "$src\Example\Example.csproj" /p:PublishProfile=Package }
     # Invoke-WebDeployment -PackagePath $packagePath -ServerHost $WebServer `
     #     -SiteName $SiteName -Application ''
 <% } else { %>
