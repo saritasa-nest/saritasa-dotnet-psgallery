@@ -16,12 +16,17 @@ Task pre-build -description 'Restore NuGet packages, copy configs.' `
     {
         Write-Warning "Did you forget to copy $templateFilename to $($configFilename)?"
     }
-
+<% if (!aspNetCoreUsed) { %>
     # Invoke-NugetRestore -SolutionPath "$src\Example.sln"
+<% } %>
 }
 
 Task build -depends pre-build -description '* Build all projects.' `
     -requiredVariables @('Configuration') `
 {
+<% if (aspNetCoreUsed) { %>
+    # Exec { dotnet build -c $Configuration "$src\Example.sln" }
+<% } else { %>
     # Invoke-SolutionBuild -SolutionPath "$src\Example.sln" -Configuration $Configuration
+<% } %>
 }
