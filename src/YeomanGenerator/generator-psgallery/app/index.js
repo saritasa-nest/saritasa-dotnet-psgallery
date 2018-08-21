@@ -169,19 +169,21 @@ module.exports = generators.Base.extend({
         }
 
         this.log('\n\n');
-        this.log('Please ignore files:\nConfig.Development.ps1');
+        this.log('Please execute commands:\n');
+        var ignoreList = 'Config.Development.ps1';
 
-        if (this.webEnabled) {
-            this.log('Web.config');
-            this.log('Web.Development.config');
-            this.log('appsettings.Development.json');
+        if (webEnabled) {
+            ignoreList += '`nWeb.config';
+            ignoreList += '`nWeb.Development.config';
+            ignoreList += '`nappsettings.Development.json';
         }
 
         if (desktopEnabled || windowsServiceEnabled) {
-            this.log('App.config');
+            ignoreList += '`nApp.config';
         }
 
-        this.log('Please execute command:\npsake add-scripts-to-git');
+        this.log(`Add-Content -Path .gitignore "${ignoreList}"`);
+        this.log('psake add-scripts-to-git');
         this.log('\n\n');
     }
 });
