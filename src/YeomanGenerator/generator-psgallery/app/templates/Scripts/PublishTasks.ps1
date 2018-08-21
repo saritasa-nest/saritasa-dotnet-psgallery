@@ -22,7 +22,7 @@ Task pre-publish -depends pre-build -description 'Set common publish settings fo
 Task publish-web -depends pre-publish -description '* Publish all web apps to specified server.' `
     -requiredVariables @('Configuration', 'WebServer', 'SiteName') `
 {
-<% if (aspNetCoreUsed) { %>
+<% if (netCoreUsed) { %>
     # $packagePath = "$src\Example\Example.zip"
     # Exec { dotnet publish "$src\Example\Example.csproj" /p:PublishProfile=Package }
     # Invoke-WebDeployment -PackagePath $packagePath -ServerHost $WebServer `
@@ -33,6 +33,6 @@ Task publish-web -depends pre-publish -description '* Publish all web apps to sp
     #     -PackagePath $packagePath -Configuration $Configuration
     # Invoke-WebDeployment -PackagePath $packagePath -ServerHost $WebServer `
     #     -SiteName $SiteName -Application ''
-<% } // aspNetCore %>
+<% } // netCoreUsed %>
 }
 <% } // webEnabled %>

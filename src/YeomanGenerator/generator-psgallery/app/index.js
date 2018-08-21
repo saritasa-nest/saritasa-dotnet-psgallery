@@ -11,9 +11,6 @@ const NEWRELIC = 'NewRelic';
 const PRTG = 'PRTG';
 const REDIS = 'Redis';
 
-const ASP_NET = 'ASP.NET';
-const ASP_NET_CORE = 'ASP.NET Core';
-
 module.exports = generators.Base.extend({
     constructor: function () {
         generators.Base.apply(this, arguments);
@@ -42,6 +39,11 @@ module.exports = generators.Base.extend({
             choices: [WEB, DESKTOP, CLICK_ONCE, WINDOWS_SERVICE]
         }, {
             type: 'confirm',
+            name: 'netCoreUsed',
+            message: 'Is .NET Core used?',
+            default: true
+        }, {
+            type: 'confirm',
             name: 'gitTasksEnabled',
             message: 'Do you need GitFlow helper tasks?',
             default: true
@@ -63,16 +65,12 @@ module.exports = generators.Base.extend({
         return this.prompt(askingQuestions).then(function (answers) {
             this.projectTypes = answers.projectTypes;
             this.srcPath = predefinedSrcPath || answers.srcPath;
+            this.netCoreUsed = answers.netCoreUsed;
             this.gitTasksEnabled = answers.gitTasksEnabled;
             this.nunitEnabled = answers.nunitEnabled;
 
             if (this.projectTypes.indexOf(WEB) > -1) {
                 return this.prompt([{
-                    type: 'list',
-                    name: 'aspNetVersion',
-                    message: 'Select ASP.NET version:',
-                    choices: [ASP_NET, ASP_NET_CORE]
-                }, {
                     type: 'confirm',
                     name: 'adminTasksEnabled',
                     message: 'Do you need admin tasks, remote management capabilities?',
@@ -86,7 +84,6 @@ module.exports = generators.Base.extend({
             }
         }.bind(this)).then(function (answers) {
             if (answers !== undefined) {
-                this.aspNetVersion = answers.aspNetVersion;
                 this.adminTasksEnabled = answers.adminTasksEnabled;
                 this.webServices = answers.webServices;
             }
@@ -108,7 +105,7 @@ module.exports = generators.Base.extend({
             adminTasksEnabled: this.adminTasksEnabled,
             desktopEnabled: desktopEnabled,
             webEnabled: webEnabled,
-            aspNetCoreUsed: this.aspNetVersion == ASP_NET_CORE,
+            netCoreUsed: this.netCoreUsed,
             windowsServiceEnabled: windowsServiceEnabled,
             gitTasksEnabled: this.gitTasksEnabled
         };
