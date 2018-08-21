@@ -23,7 +23,9 @@ Task publish-web -depends pre-publish -description '* Publish all web apps to sp
     -requiredVariables @('Configuration', 'WebServer', 'SiteName') `
 {
 <% if (netCoreUsed) { %>
-    # $packagePath = "$src\Example\Example.zip"
+    # $packagePath = "$src\Example.Web\Example.Web.zip"
+    # Copy-Item "$src\Example.Web\web.config.template" "$src\Example.Web\web.config"
+    # Update-VariablesInFile -Path "$src\Example.Web\web.config" -Variables @{ Environment = $Environment }
     # Exec { dotnet publish -c $Configuration "$src\Example\Example.csproj" /p:PublishProfile=Package }
     # Invoke-WebDeployment -PackagePath $packagePath -ServerHost $WebServer `
     #     -SiteName $SiteName -Application ''
