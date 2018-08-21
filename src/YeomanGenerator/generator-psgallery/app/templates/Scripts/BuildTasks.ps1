@@ -1,6 +1,7 @@
 Properties `
 {
     $Configuration = $null
+    $MaxWarnings = 0
 }
 
 $root = $PSScriptRoot
@@ -16,6 +17,8 @@ Task pre-build -description 'Restore NuGet packages, copy configs.' `
     {
         Write-Warning "Did you forget to copy $templateFilename to $($configFilename)?"
     }
+
+    Initialize-MSBuild
 <% if (!netCoreUsed) { %>
     # Invoke-NugetRestore -SolutionPath "$src\Example.sln"
 <% } %>
@@ -34,4 +37,22 @@ Task build -depends pre-build -description '* Build all projects.' `
 Task clean -description '* Clean up workspace.' `
 {
     Exec { git clean -xdf -e packages/ -e node_modules/ }
+}
+
+Task code-analysis -depends pre-build `
+    -requiredVariables @('Configuration', 'MaxWarnings') `
+{
+    $buildParams = @("/p:Environment=$Environment")
+    $solutionPath = "$src\Example.sln"
+    $logFile = "$workspace\Warnings.txt"
+
+    Exec { msbuild.exe $solutionPath '/m' '/t:Build' "/p:Configuration=$Configuration" '/verbosity:normal' '/fileLogger' "/fileloggerparameters:WarningsOnly;LogFile=$logFile" $buildParams }
+
+    $warnings = (Get-Content $logFile | Measure-Object -Line).Lines
+    Write-Information "Warnings: $warnings"
+
+    if ($warnings -gt $MaxWarnings)
+    {
+        throw "Warnings number ($warnings) is upper than limit ($MaxWarnings)."
+    }
 }
