@@ -1,6 +1,7 @@
 var generators = require('yeoman-generator');
 var mkdirp = require('mkdirp');
 var fs = require('fs');
+var chalk = require('chalk');
 
 const WEB = 'Web';
 const DESKTOP = 'Desktop';
@@ -95,18 +96,18 @@ module.exports = generators.Base.extend({
         this.projectTypes = this.projectTypes || [];
         this.webServices = this.webServices || [];
 
-        var webEnabled = this.projectTypes.indexOf(WEB) > -1;
-        var desktopEnabled = this.projectTypes.indexOf(DESKTOP) > -1;
-        var clickOnceEnabled = this.projectTypes.indexOf(CLICK_ONCE) > -1;
-        var windowsServiceEnabled = this.projectTypes.indexOf(WINDOWS_SERVICE) > -1;
+        this.webEnabled = this.projectTypes.indexOf(WEB) > -1;
+        this.desktopEnabled = this.projectTypes.indexOf(DESKTOP) > -1;
+        this.clickOnceEnabled = this.projectTypes.indexOf(CLICK_ONCE) > -1;
+        this.windowsServiceEnabled = this.projectTypes.indexOf(WINDOWS_SERVICE) > -1;
 
         var templateParams = {
             srcPath: this.srcPath,
             adminTasksEnabled: this.adminTasksEnabled,
-            desktopEnabled: desktopEnabled,
-            webEnabled: webEnabled,
+            desktopEnabled: this.desktopEnabled,
+            webEnabled: this.webEnabled,
             netCoreUsed: this.netCoreUsed,
-            windowsServiceEnabled: windowsServiceEnabled,
+            windowsServiceEnabled: this.windowsServiceEnabled,
             gitTasksEnabled: this.gitTasksEnabled,
             testsUsed: this.nunitEnabled
         };
@@ -118,7 +119,7 @@ module.exports = generators.Base.extend({
         this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
             this.destinationPath('Config.Production.ps1'), templateParams);
 
-        if (webEnabled || desktopEnabled || windowsServiceEnabled) {
+        if (this.webEnabled || this.desktopEnabled || this.windowsServiceEnabled) {
             this.fs.copyTpl(this.templatePath('SecretConfig.Production.ps1.template'),
                 this.destinationPath('SecretConfig.Production.ps1.template'), templateParams);
         }
@@ -130,15 +131,15 @@ module.exports = generators.Base.extend({
 
         this.installModule('Saritasa.Build');
 
-        if (webEnabled) {
+        if (this.webEnabled) {
             this.installModule('Saritasa.WebDeploy');
         }
 
-        if (clickOnceEnabled) {
+        if (this.clickOnceEnabled) {
             this.installModule('Saritasa.Publish');
         }
 
-        if (desktopEnabled || windowsServiceEnabled) {
+        if (this.desktopEnabled || this.windowsServiceEnabled) {
             this.installModule('Saritasa.AppDeploy');
         }
 
@@ -167,23 +168,24 @@ module.exports = generators.Base.extend({
         if (this.webServices.indexOf(REDIS) > -1) {
             this.installModule('Saritasa.Redis');
         }
-
+    },
+    end: function() {
         this.log('\n\n');
-        this.log('Please execute commands:\n');
+        this.log(chalk.black.bgGreen('Please execute commands:'));
         var ignoreList = 'Config.Development.ps1';
 
-        if (webEnabled) {
+        if (this.webEnabled) {
             ignoreList += '`nWeb.config';
             ignoreList += '`nWeb.Development.config';
             ignoreList += '`nappsettings.Development.json';
         }
 
-        if (desktopEnabled || windowsServiceEnabled) {
+        if (this.desktopEnabled || this.windowsServiceEnabled) {
             ignoreList += '`nApp.config';
         }
 
-        this.log(`Add-Content -Path .gitignore "${ignoreList}"`);
-        this.log('psake add-scripts-to-git');
+        this.log(chalk.green(`Add-Content -Path .gitignore "${ignoreList}"`));
+        this.log(chalk.green('psake add-scripts-to-git'));
         this.log('\n\n');
     }
 });
