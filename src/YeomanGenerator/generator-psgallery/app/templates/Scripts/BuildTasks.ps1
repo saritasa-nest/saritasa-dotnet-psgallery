@@ -30,3 +30,8 @@ Task build -depends pre-build -description '* Build all projects.' `
     # Invoke-SolutionBuild -SolutionPath "$src\Example.sln" -Configuration $Configuration
 <% } %>
 }
+
+Task clean -description '* Clean up workspace.' `
+{
+    Exec { git clean -xdf -e packages/ -e node_modules/ }
+}
