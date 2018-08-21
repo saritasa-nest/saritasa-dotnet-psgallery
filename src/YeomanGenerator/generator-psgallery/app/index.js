@@ -107,7 +107,8 @@ module.exports = generators.Base.extend({
             webEnabled: webEnabled,
             netCoreUsed: this.netCoreUsed,
             windowsServiceEnabled: windowsServiceEnabled,
-            gitTasksEnabled: this.gitTasksEnabled
+            gitTasksEnabled: this.gitTasksEnabled,
+            testsUsed: this.nunitEnabled
         };
 
         this.fs.copyTpl(this.templatePath('psakefile.ps1'),

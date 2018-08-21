@@ -93,3 +93,18 @@ Task code-analysis -depends pre-build `
         throw "Warnings number ($warnings) is upper than limit ($MaxWarnings)."
     }
 }
+
+<% if (testsUsed) { %>
+Task run-tests -depends pre-build `
+    -description '* Run xUnit tests.' `
+    -requiredVariables @('Configuration') `
+{
+    $projectName = 'Example.Tests'
+<% if (netCoreUsed) { %>
+    Exec { dotnet test "$src\$projectName\$projectName.csproj" }
+<% } else { %>
+    Invoke-ProjectBuild "$src\$projectName\$projectName.csproj" -Configuration $Configuration
+    Invoke-XunitRunner "$src\$projectName\bin\$Configuration\$projectName.dll"
+<% } %>
+}
+<% } %>

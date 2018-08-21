@@ -26,7 +26,7 @@ TaskSetup `
     if (!$InformationalVersion)
     {
         # 1.2.3+Branch.master.Sha.dc6ebc32aa8ecf20529a677d896a8263df4900ee
-        Expand-PsakeConfiguration @{ SemVer = Exec { GitVersion.exe /showvariable InformationalVersion } }
+        Expand-PsakeConfiguration @{ InformationalVersion = Exec { GitVersion.exe /showvariable InformationalVersion } }
     }
 
     if (!$MajorMinorPatch)
