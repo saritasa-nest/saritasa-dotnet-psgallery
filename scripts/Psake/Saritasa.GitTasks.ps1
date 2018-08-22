@@ -67,7 +67,7 @@ Task delete-merged-branches -description 'Delete merged remote-tracking branches
     }
 
     $condition = { $_.Merged -eq $true -and $_.LastCommitDate -lt $startDate }
-    git fetch --prune
+    Exec { git.exe fetch --prune }
     DeleteRemoteBranches (Get-GitFlowStatus -BranchType Feature) $condition
     DeleteRemoteBranches (Get-GitFlowStatus -BranchType Release) $condition
     DeleteRemoteBranches (Get-GitFlowStatus -BranchType Hotfix) $condition
