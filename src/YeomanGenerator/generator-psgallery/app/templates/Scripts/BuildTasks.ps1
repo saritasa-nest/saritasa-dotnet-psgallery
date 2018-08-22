@@ -47,13 +47,11 @@ Task copy-configs -description 'Create configs based on App.config.template and 
     $projectName = 'Example.Web'
     $templateFile = "$src\$projectName\appsettings.$Environment.json.template"
     $configFile = "$src\$projectName\appsettings.$Environment.json"
-<% } %>
-<% else if (webEnabled) { %>
+<% } else if (webEnabled) { %>
     $projectName = 'Example.Web'
     $templateFile = "$src\$projectName\Web.$Environment.config.template"
     $configFile = "$src\$projectName\Web.$Environment.config"
-<% } %>
-<% else if (windowsServiceEnabled) { %>
+<% } else if (windowsServiceEnabled) { %>
     $projectName = 'Example.App'
     $templateFile = "$src\$projectName\App.$Environment.config.template"
     $configFile = "$src\$projectName\App.$Environment.config"

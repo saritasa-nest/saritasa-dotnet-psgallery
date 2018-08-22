@@ -32,7 +32,7 @@ Task publish-web -depends pre-publish -description '* Publish all web apps to sp
     #     -SiteName $SiteName -Application '' -MSDeployParams @('-enablerule:AppOffline')
 <% } else { %>
     # $projectName = 'Example.Web'
-    # $packagePath = "$workspace\$projectName"
+    # $packagePath = "$workspace\$projectName.zip"
     # Invoke-PackageBuild -ProjectPath "$src\$projectName\$projectName.csproj" `
     #     -PackagePath $packagePath -Configuration $Configuration
     # Invoke-WebDeployment -PackagePath $packagePath -ServerHost $WebServer `
