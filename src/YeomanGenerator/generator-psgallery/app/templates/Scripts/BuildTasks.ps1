@@ -10,7 +10,7 @@ $root = $PSScriptRoot
 $src = Resolve-Path "$root\<%= srcPath %>"
 $workspace = Resolve-Path "$root\.."
 
-Task pre-build -depends update-version -description 'Restore NuGet packages, update version.' `
+Task pre-build -depends copy-configs, update-version -description 'Copy configs, update version, restore NuGet packages.' `
 {
     $configFilename = "$workspace\Config.$Environment.ps1"
     $templateFilename = "$workspace\Config.$Environment.ps1.template"
@@ -39,6 +39,34 @@ Task build -depends pre-build -description '* Build all projects.' `
 Task clean -description '* Clean up workspace.' `
 {
     Exec { git clean -xdf -e packages/ -e node_modules/ }
+}
+
+Task copy-configs -description 'Create configs based on App.config.template and Web.config.template if they don''t exist.' `
+{
+<% if (webEnabled) { %>
+    $projectName = 'Example.Web'
+    $templateFile = "$src\$projectName\Web.$Environment.config.template"
+    $configFile = "$src\$projectName\Web.$Environment.config"
+<% } %>
+<% if (windowsServiceEnabled) { %>
+    $projectName = 'Example.App'
+    $templateFile = "$src\$projectName\App.$Environment.config.template"
+    $configFile = "$src\$projectName\App.$Environment.config"
+<% } %>
+<% if (webEnabled || windowsServiceEnabled) { %>
+    if (!(Test-Path $configFile))
+    {
+        Copy-Item $templateFile $configFile
+    }
+
+    Update-VariablesInFile -Path $configFile `
+        -Variables `
+            @{
+                DatabaseServer = $DatabaseServer
+                DatabaseUsername = $DatabaseUsername
+                DatabasePassword = $DatabasePassword
+            }
+<% } %>
 }
 
 Task update-version -description 'Replace package version in web project.' `

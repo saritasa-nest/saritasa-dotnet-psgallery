@@ -10,4 +10,9 @@ Expand-PsakeConfiguration `
     ApprootPath = 'C:\approot'    <% } %>
 <% if (adminTasksEnabled || desktopEnabled || windowsServiceEnabled) { %>    AdminUsername = 'Administrator'
     AdminPassword = 'secret'<% } %>
+<% if (webEnabled || windowsServiceEnabled) { %>
+    DatabaseServer = '.\SQLEXPRESS'
+    DatabaseUsername = 'sa'
+    DatabasePassword = '123'
+<% } %>
 }
