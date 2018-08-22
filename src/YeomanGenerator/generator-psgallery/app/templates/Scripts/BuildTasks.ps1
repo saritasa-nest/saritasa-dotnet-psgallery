@@ -43,12 +43,17 @@ Task clean -description '* Clean up workspace.' `
 
 Task copy-configs -description 'Create configs based on App.config.template and Web.config.template if they don''t exist.' `
 {
-<% if (webEnabled) { %>
+<% if (netCoreUsed) { %>
+    $projectName = 'Example.Web'
+    $templateFile = "$src\$projectName\appsettings.$Environment.json.template"
+    $configFile = "$src\$projectName\appsettings.$Environment.json"
+<% } %>
+<% else if (webEnabled) { %>
     $projectName = 'Example.Web'
     $templateFile = "$src\$projectName\Web.$Environment.config.template"
     $configFile = "$src\$projectName\Web.$Environment.config"
 <% } %>
-<% if (windowsServiceEnabled) { %>
+<% else if (windowsServiceEnabled) { %>
     $projectName = 'Example.App'
     $templateFile = "$src\$projectName\App.$Environment.config.template"
     $configFile = "$src\$projectName\App.$Environment.config"
