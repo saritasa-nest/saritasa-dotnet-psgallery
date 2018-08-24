@@ -40,3 +40,38 @@ Task publish-web -depends pre-publish -description '* Publish all web apps to sp
 <% } // netCoreUsed %>
 }
 <% } // webEnabled %>
+<% if (desktopEnabled) { %>
+Task publish-app -depends build, init-winrm -description '* Publish desktop project to specified server.' ` `
+    -requiredVariables @('Configuration', 'AppServer', 'ApprootPath') `
+{
+    $session = Start-RemoteSession -ServerHost $AppServer
+    $projectName = 'Example.App'
+    $destinationPath = "$ApprootPath\$projectName"
+
+    # Invoke-DesktopProjectDeployment -Session $session `
+    #     -BinPath "$src\$projectName\bin\$Configuration" `
+    #     -DestinationPath $destinationPath `
+    #     -BeforeDeploy { } -AfterDeploy { }
+
+    Remove-PSSession $session
+}
+<% } // desktopEnabled %>
+<% if (windowsServiceEnabled) { %>
+Task publish-service -depends build, init-winrm -description '* Publish service to specified server.' ` `
+    -requiredVariables @('Configuration', 'AppServer', 'ApprootPath') `
+{
+    $session = Start-RemoteSession -ServerHost $AppServer
+    $serviceCredential = $AdminCredential
+    $projectName = 'Example.Service'
+    $binPath = "$src\$projectName\bin\$Configuration"
+    $serviceName = $projectName
+    $destinationPath = "$ApprootPath\$serviceName"
+
+    # Invoke-ServiceProjectDeployment -Session $session `
+    #     -ServiceName $serviceName -ProjectName $projectName `
+    #     -BinPath $binPath -DestinationPath $destinationPath `
+    #     -ServiceCredential $serviceCredential
+
+    Remove-PSSession $session
+}
+<% } // windowsServiceEnabled %>
