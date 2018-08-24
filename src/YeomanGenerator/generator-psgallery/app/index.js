@@ -75,7 +75,7 @@ module.exports = generators.Base.extend({
                     type: 'confirm',
                     name: 'adminTasksEnabled',
                     message: 'Do you need admin tasks, remote management capabilities?',
-                    default: true
+                    default: false
                 }, {
                     type: 'checkbox',
                     name: 'webServices',
@@ -85,7 +85,7 @@ module.exports = generators.Base.extend({
             }
         }.bind(this)).then(function (answers) {
             if (answers !== undefined) {
-                this.adminTasksEnabled = answers.adminTasksEnabled;
+                this.adminTasksEnabled = answers.adminTasksEnabled || this.desktopEnabled || this.windowsServiceEnabled;
                 this.webServices = answers.webServices;
             }
         }.bind(this));

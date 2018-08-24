@@ -45,6 +45,8 @@ Task copy-configs -description 'Create configs based on App.config.template and 
         Write-Warning "Did you forget to copy $templateFilename to $($configFilename)?"
         return
     }
+
+    # TODO: Fix project name.
 <% if (netCoreUsed) { %>
     $projectName = 'Example.Web'
     $templateFile = "$src\$projectName\appsettings.$Environment.json.template"
