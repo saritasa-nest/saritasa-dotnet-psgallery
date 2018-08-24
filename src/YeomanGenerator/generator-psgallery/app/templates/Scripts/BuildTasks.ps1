@@ -61,7 +61,15 @@ Task copy-configs -description 'Create configs based on App.config.template and 
     {
         Copy-Item $templateFile $configFile
     }
-
+<% if (netCoreUsed) { %>
+    Update-VariablesInFile -Path $configFile `
+        -Variables `
+            @{
+                DatabaseServer = ($DatabaseServer -replace '\\', '\\')
+                DatabaseUsername = ($DatabaseUsername -replace '\\', '\\')
+                DatabasePassword = ($DatabasePassword -replace '\\', '\\')
+            }
+<% } else { %>
     Update-VariablesInFile -Path $configFile `
         -Variables `
             @{
@@ -69,7 +77,8 @@ Task copy-configs -description 'Create configs based on App.config.template and 
                 DatabaseUsername = $DatabaseUsername
                 DatabasePassword = $DatabasePassword
             }
-<% } %>
+<% } // netCoreUsed %>
+<% } // webEnabled || windowsServiceEnabled %>
 }
 
 Task update-version -description 'Replace package version in web project.' `
