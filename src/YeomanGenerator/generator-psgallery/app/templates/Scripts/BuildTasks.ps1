@@ -107,9 +107,9 @@ Task update-version -description 'Replace package version in web project.' `
 
 <% if (netCoreUsed) { %>
     # $fileName = "$src\Example\Example.csproj"
-    # Get-Content $fileName |
-    #     ForEach-Object { $_ -replace '<Version>[\d\.\w+-]*</Version>', "<Version>$InformationalVersion</Version>" `
-    #                         -replace '<AssemblyVersion>[\d\.]*</AssemblyVersion>', "<AssemblyVersion>$MajorMinorPatch.0</AssemblyVersion>" } |
+    # $lines = Get-Content $fileName
+    # $lines = ForEach-Object { $_ -replace '<Version>[\d\.\w+-]*</Version>', "<Version>$InformationalVersion</Version>" `
+    #     -replace '<AssemblyVersion>[\d\.]*</AssemblyVersion>', "<AssemblyVersion>$MajorMinorPatch.0</AssemblyVersion>" } |
     #     Set-Content $fileName -Encoding UTF8
 <% } else { %>
     Exec { GitVersion.exe /updateassemblyinfo }
