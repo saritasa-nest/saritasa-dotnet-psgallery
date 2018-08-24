@@ -75,7 +75,7 @@ module.exports = generators.Base.extend({
                     type: 'confirm',
                     name: 'adminTasksEnabled',
                     message: 'Do you need admin tasks, remote management capabilities?',
-                    default: true
+                    default: false
                 }, {
                     type: 'checkbox',
                     name: 'webServices',
@@ -147,7 +147,7 @@ module.exports = generators.Base.extend({
             this.installModule('Saritasa.Test');
         }
 
-        if (this.adminTasksEnabled) {
+        if (this.adminTasksEnabled || this.desktopEnabled || this.windowsServiceEnabled) {
             this.fs.copy(this.templatePath('Scripts/Saritasa.AdminTasks.ps1'), this.destinationPath('Scripts/Saritasa.AdminTasks.ps1'));
             this.installModule('Saritasa.RemoteManagement');
         }

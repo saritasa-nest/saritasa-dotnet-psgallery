@@ -12,27 +12,21 @@ $workspace = Resolve-Path "$root\.."
 
 Task pre-build -depends copy-configs, update-version -description 'Copy configs, update version, restore NuGet packages.' `
 {
-    $configFilename = "$workspace\Config.$Environment.ps1"
-    $templateFilename = "$workspace\Config.$Environment.ps1.template"
-
-    if (!(Test-Path $configFilename) -and (Test-Path $templateFilename))
-    {
-        Write-Warning "Did you forget to copy $templateFilename to $($configFilename)?"
-    }
-
     Initialize-MSBuild
 <% if (!netCoreUsed) { %>
-    # Invoke-NugetRestore -SolutionPath "$src\Example.sln"
+    # TODO: Fix solution name.
+    Invoke-NugetRestore -SolutionPath "$src\Example.sln"
 <% } %>
 }
 
 Task build -depends pre-build -description '* Build all projects.' `
     -requiredVariables @('Configuration') `
 {
+    # TODO: Fix solution name.
 <% if (netCoreUsed) { %>
-    # Exec { dotnet build -c $Configuration "$src\Example.sln" }
+    Exec { dotnet build -c $Configuration "$src\Example.sln" }
 <% } else { %>
-    # Invoke-SolutionBuild -SolutionPath "$src\Example.sln" -Configuration $Configuration
+    Invoke-SolutionBuild -SolutionPath "$src\Example.sln" -Configuration $Configuration
 <% } %>
 }
 
@@ -43,6 +37,16 @@ Task clean -description '* Clean up workspace.' `
 
 Task copy-configs -description 'Create configs based on App.config.template and Web.config.template if they don''t exist.' `
 {
+    $configFilename = "$workspace\Config.$Environment.ps1"
+    $templateFilename = "$workspace\Config.$Environment.ps1.template"
+
+    if (!(Test-Path $configFilename) -and (Test-Path $templateFilename))
+    {
+        Write-Warning "Did you forget to copy $templateFilename to $($configFilename)?"
+        return
+    }
+
+    # TODO: Fix project name.
 <% if (netCoreUsed) { %>
     $projectName = 'Example.Web'
     $templateFile = "$src\$projectName\appsettings.$Environment.json.template"
@@ -61,7 +65,15 @@ Task copy-configs -description 'Create configs based on App.config.template and 
     {
         Copy-Item $templateFile $configFile
     }
-
+<% if (netCoreUsed) { %>
+    Update-VariablesInFile -Path $configFile `
+        -Variables `
+            @{
+                DatabaseServer = ($DatabaseServer -replace '\\', '\\')
+                DatabaseUsername = ($DatabaseUsername -replace '\\', '\\')
+                DatabasePassword = ($DatabasePassword -replace '\\', '\\')
+            }
+<% } else { %>
     Update-VariablesInFile -Path $configFile `
         -Variables `
             @{
@@ -69,7 +81,8 @@ Task copy-configs -description 'Create configs based on App.config.template and 
                 DatabaseUsername = $DatabaseUsername
                 DatabasePassword = $DatabasePassword
             }
-<% } %>
+<% } // netCoreUsed %>
+<% } // webEnabled || windowsServiceEnabled %>
 }
 
 Task update-version -description 'Replace package version in web project.' `
@@ -97,11 +110,12 @@ Task update-version -description 'Replace package version in web project.' `
     }
 
 <% if (netCoreUsed) { %>
-    # $fileName = "$src\Example\Example.csproj"
-    # Get-Content $fileName |
-    #     ForEach-Object { $_ -replace '<Version>[\d\.\w+-]*</Version>', "<Version>$InformationalVersion</Version>" `
-    #                         -replace '<AssemblyVersion>[\d\.]*</AssemblyVersion>', "<AssemblyVersion>$MajorMinorPatch.0</AssemblyVersion>" } |
-    #     Set-Content $fileName -Encoding UTF8
+    # TODO: Fix project name.
+    $fileName = "$src\Example\Example.csproj"
+    $lines = Get-Content $fileName
+    $lines | ForEach-Object { $_ -replace '<Version>[\d\.\w+-]*</Version>', "<Version>$InformationalVersion</Version>" `
+        -replace '<AssemblyVersion>[\d\.]*</AssemblyVersion>', "<AssemblyVersion>$MajorMinorPatch.0</AssemblyVersion>" } |
+        Set-Content $fileName -Encoding UTF8
 <% } else { %>
     Exec { GitVersion.exe /updateassemblyinfo }
 <% } %>
@@ -111,6 +125,7 @@ Task code-analysis -depends pre-build `
     -requiredVariables @('Configuration', 'MaxWarnings') `
 {
     $buildParams = @("/p:Environment=$Environment")
+    # TODO: Fix solution name.
     $solutionPath = "$src\Example.sln"
     $logFile = "$workspace\Warnings.txt"
 
@@ -130,6 +145,7 @@ Task run-tests -depends pre-build `
     -description '* Run xUnit tests.' `
     -requiredVariables @('Configuration') `
 {
+    # TODO: Fix project name.
     $projectName = 'Example.Tests'
 <% if (netCoreUsed) { %>
     Exec { dotnet test "$src\$projectName\$projectName.csproj" }
