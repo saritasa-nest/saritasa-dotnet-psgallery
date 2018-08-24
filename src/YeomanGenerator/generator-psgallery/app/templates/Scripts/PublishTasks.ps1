@@ -23,20 +23,22 @@ Task publish-web -depends pre-publish -description '* Publish all web apps to sp
     -requiredVariables @('Configuration', 'WebServer', 'SiteName') `
 {
 <% if (netCoreUsed) { %>
-    # $projectName = 'Example.Web'
-    # $packagePath = "$src\$projectName\$projectName.zip"
-    # Copy-Item "$src\$projectName\web.config.template" "$src\$projectName\web.config"
-    # Update-VariablesInFile -Path "$src\$projectName\web.config" -Variables @{ Environment = $Environment }
-    # Exec { dotnet publish -c $Configuration "$src\$projectName\$projectName.csproj" /p:PublishProfile=Package }
-    # Invoke-WebDeployment -PackagePath $packagePath -ServerHost $WebServer `
-    #     -SiteName $SiteName -Application '' -MSDeployParams @('-enablerule:AppOffline')
+    # TODO: Fix project name.
+    $projectName = 'Example.Web'
+    $packagePath = "$src\$projectName\$projectName.zip"
+    Copy-Item "$src\$projectName\web.config.template" "$src\$projectName\web.config"
+    Update-VariablesInFile -Path "$src\$projectName\web.config" -Variables @{ Environment = $Environment }
+    Exec { dotnet publish -c $Configuration "$src\$projectName\$projectName.csproj" /p:PublishProfile=Package }
+    Invoke-WebDeployment -PackagePath $packagePath -ServerHost $WebServer `
+        -SiteName $SiteName -Application '' -MSDeployParams @('-enablerule:AppOffline')
 <% } else { %>
-    # $projectName = 'Example.Web'
-    # $packagePath = "$workspace\$projectName.zip"
-    # Invoke-PackageBuild -ProjectPath "$src\$projectName\$projectName.csproj" `
-    #     -PackagePath $packagePath -Configuration $Configuration
-    # Invoke-WebDeployment -PackagePath $packagePath -ServerHost $WebServer `
-    #     -SiteName $SiteName -Application ''
+    # TODO: Fix project name.
+    $projectName = 'Example.Web'
+    $packagePath = "$workspace\$projectName.zip"
+    Invoke-PackageBuild -ProjectPath "$src\$projectName\$projectName.csproj" `
+        -PackagePath $packagePath -Configuration $Configuration
+    Invoke-WebDeployment -PackagePath $packagePath -ServerHost $WebServer `
+        -SiteName $SiteName -Application ''
 <% } // netCoreUsed %>
 }
 <% } // webEnabled %>
@@ -45,13 +47,14 @@ Task publish-app -depends build, init-winrm -description '* Publish desktop proj
     -requiredVariables @('Configuration', 'AppServer', 'ApprootPath') `
 {
     $session = Start-RemoteSession -ServerHost $AppServer
+    # TODO: Fix project name.
     $projectName = 'Example.App'
     $destinationPath = "$ApprootPath\$projectName"
 
-    # Invoke-DesktopProjectDeployment -Session $session `
-    #     -BinPath "$src\$projectName\bin\$Configuration" `
-    #     -DestinationPath $destinationPath `
-    #     -BeforeDeploy { } -AfterDeploy { }
+    Invoke-DesktopProjectDeployment -Session $session `
+        -BinPath "$src\$projectName\bin\$Configuration" `
+        -DestinationPath $destinationPath `
+        -BeforeDeploy { } -AfterDeploy { }
 
     Remove-PSSession $session
 }
@@ -62,15 +65,16 @@ Task publish-service -depends build, init-winrm -description '* Publish service 
 {
     $session = Start-RemoteSession -ServerHost $AppServer
     $serviceCredential = $AdminCredential
+    # TODO: Fix project name.
     $projectName = 'Example.Service'
     $binPath = "$src\$projectName\bin\$Configuration"
     $serviceName = $projectName
     $destinationPath = "$ApprootPath\$serviceName"
 
-    # Invoke-ServiceProjectDeployment -Session $session `
-    #     -ServiceName $serviceName -ProjectName $projectName `
-    #     -BinPath $binPath -DestinationPath $destinationPath `
-    #     -ServiceCredential $serviceCredential
+    Invoke-ServiceProjectDeployment -Session $session `
+        -ServiceName $serviceName -ProjectName $projectName `
+        -BinPath $binPath -DestinationPath $destinationPath `
+        -ServiceCredential $serviceCredential
 
     Remove-PSSession $session
 }
