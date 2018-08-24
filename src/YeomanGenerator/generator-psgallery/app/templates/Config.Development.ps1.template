@@ -7,7 +7,7 @@ Expand-PsakeConfiguration `
     DeployPassword = 'undefined'
     WwwrootPath = 'C:\inetpub\wwwroot'<% } %>
 <% if (desktopEnabled || windowsServiceEnabled) { %>    AppServer = 'localhost'
-    ApprootPath = 'C:\approot'    <% } %>
+    ApprootPath = 'C:\approot'<% } %>
 <% if (adminTasksEnabled || desktopEnabled || windowsServiceEnabled) { %>    AdminUsername = 'Administrator'
     AdminPassword = 'secret'<% } %>
 <% if (webEnabled || windowsServiceEnabled) { %>

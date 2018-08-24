@@ -85,7 +85,7 @@ module.exports = generators.Base.extend({
             }
         }.bind(this)).then(function (answers) {
             if (answers !== undefined) {
-                this.adminTasksEnabled = answers.adminTasksEnabled || this.desktopEnabled || this.windowsServiceEnabled;
+                this.adminTasksEnabled = answers.adminTasksEnabled;
                 this.webServices = answers.webServices;
             }
         }.bind(this));
@@ -147,7 +147,7 @@ module.exports = generators.Base.extend({
             this.installModule('Saritasa.Test');
         }
 
-        if (this.adminTasksEnabled) {
+        if (this.adminTasksEnabled || this.desktopEnabled || this.windowsServiceEnabled) {
             this.fs.copy(this.templatePath('Scripts/Saritasa.AdminTasks.ps1'), this.destinationPath('Scripts/Saritasa.AdminTasks.ps1'));
             this.installModule('Saritasa.RemoteManagement');
         }
