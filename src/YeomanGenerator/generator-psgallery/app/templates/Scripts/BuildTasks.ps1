@@ -113,7 +113,7 @@ Task update-version -description 'Replace package version in web project.' `
     # TODO: Fix project name.
     $fileName = "$src\Example\Example.csproj"
     $lines = Get-Content $fileName
-    $lines = ForEach-Object { $_ -replace '<Version>[\d\.\w+-]*</Version>', "<Version>$InformationalVersion</Version>" `
+    $lines | ForEach-Object { $_ -replace '<Version>[\d\.\w+-]*</Version>', "<Version>$InformationalVersion</Version>" `
         -replace '<AssemblyVersion>[\d\.]*</AssemblyVersion>', "<AssemblyVersion>$MajorMinorPatch.0</AssemblyVersion>" } |
         Set-Content $fileName -Encoding UTF8
 <% } else { %>
