@@ -12,14 +12,6 @@ $workspace = Resolve-Path "$root\.."
 
 Task pre-build -depends copy-configs, update-version -description 'Copy configs, update version, restore NuGet packages.' `
 {
-    $configFilename = "$workspace\Config.$Environment.ps1"
-    $templateFilename = "$workspace\Config.$Environment.ps1.template"
-
-    if (!(Test-Path $configFilename) -and (Test-Path $templateFilename))
-    {
-        Write-Warning "Did you forget to copy $templateFilename to $($configFilename)?"
-    }
-
     Initialize-MSBuild
 <% if (!netCoreUsed) { %>
     # Invoke-NugetRestore -SolutionPath "$src\Example.sln"
@@ -43,6 +35,14 @@ Task clean -description '* Clean up workspace.' `
 
 Task copy-configs -description 'Create configs based on App.config.template and Web.config.template if they don''t exist.' `
 {
+    $configFilename = "$workspace\Config.$Environment.ps1"
+    $templateFilename = "$workspace\Config.$Environment.ps1.template"
+
+    if (!(Test-Path $configFilename) -and (Test-Path $templateFilename))
+    {
+        Write-Warning "Did you forget to copy $templateFilename to $($configFilename)?"
+        return
+    }
 <% if (netCoreUsed) { %>
     $projectName = 'Example.Web'
     $templateFile = "$src\$projectName\appsettings.$Environment.json.template"
