@@ -14,7 +14,7 @@ Expand-PsakeConfiguration `
     ServicePassword = $env:ServicePassword<% } %>
 <% if (webEnabled || windowsServiceEnabled) { %>
     DatabaseServer = 'mssql.example.com'
-    DatabaseUsername = 'dbuser'
+    DatabaseUsername = $env:DatabaseUser
     DatabasePassword = $env:DatabasePassword
 <% } %>
 }
