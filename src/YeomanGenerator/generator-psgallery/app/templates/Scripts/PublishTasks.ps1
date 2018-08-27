@@ -5,6 +5,7 @@ Properties `
 <% if (desktopEnabled || windowsServiceEnabled) { %>    $AppServer = $null<% } %>
 <% if (adminTasksEnabled || desktopEnabled || windowsServiceEnabled) { %>    $AdminUsername = $null<%= '\n' %>    $AdminPassword = $null<% } %>
 <% if (webEnabled) { %>    $DeployUsername = $null<%= '\n' %>    $DeployPassword = $null<% } %>
+<% if (windowsServiceEnabled) { %>    $ServiceUsername = $null<%= '\n' %>    $ServicePassword = $null<%}%>
 }
 
 $root = $PSScriptRoot
@@ -61,10 +62,12 @@ Task publish-app -depends build, init-winrm -description '* Publish desktop proj
 <% } // desktopEnabled %>
 <% if (windowsServiceEnabled) { %>
 Task publish-service -depends build, init-winrm -description '* Publish service to specified server.' ` `
-    -requiredVariables @('Configuration', 'AppServer', 'ApprootPath') `
+    -requiredVariables @('Configuration', 'AppServer', 'ApprootPath',
+        'ServiceUsername', 'ServicePassword') `
 {
     $session = Start-RemoteSession -ServerHost $AppServer
-    $serviceCredential = $AdminCredential
+    $serviceCredential = New-Object System.Management.Automation.PSCredential($ServiceUsername,
+        (ConvertTo-SecureString $ServicePassword -AsPlainText -Force))
     # TODO: Fix project name.
     $projectName = 'Example.Service'
     $binPath = "$src\$projectName\bin\$Configuration"
