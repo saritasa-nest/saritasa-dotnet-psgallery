@@ -10,4 +10,9 @@ Expand-PsakeConfiguration `
     ApprootPath = 'C:\approot'<% } %>
 <% if (adminTasksEnabled || desktopEnabled || windowsServiceEnabled) { %>    AdminUsername = $env:AdminUsername
     AdminPassword = $env:AdminPassword<% } %>
+<% if (webEnabled || windowsServiceEnabled) { %>
+    DatabaseServer = 'mssql.example.com'
+    DatabaseUsername = 'dbuser'
+    DatabasePassword = $env:DatabasePassword
+<% } %>
 }

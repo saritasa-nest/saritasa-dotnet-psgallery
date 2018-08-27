@@ -117,6 +117,8 @@ module.exports = generators.Base.extend({
         this.fs.copyTpl(this.templatePath('Config.Development.ps1.template'),
             this.destinationPath('Config.Development.ps1.template'), templateParams);
         this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
+            this.destinationPath('Config.Staging.ps1'), templateParams);
+            this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
             this.destinationPath('Config.Production.ps1'), templateParams);
 
         if (this.webEnabled || this.desktopEnabled || this.windowsServiceEnabled) {
@@ -175,13 +177,21 @@ module.exports = generators.Base.extend({
         var ignoreList = 'Config.Development.ps1';
 
         if (this.webEnabled) {
-            ignoreList += '`nWeb.config';
-            ignoreList += '`nWeb.Development.config';
-            ignoreList += '`nappsettings.Development.json';
+            if (this.netCoreUsed) {
+                ignoreList += '`nweb.config';
+            }
+            else {
+                ignoreList += '`nWeb.config';
+                ignoreList += '`nWeb.Development.config';
+            }
         }
 
-        if (this.desktopEnabled || this.windowsServiceEnabled) {
+        if (this.netCoreUsed) {
+            ignoreList += '`nappsettings.Development.json';
+        }
+        else if (this.desktopEnabled || this.windowsServiceEnabled) {
             ignoreList += '`nApp.config';
+            ignoreList += '`nApp.Development.config';
         }
 
         this.log(chalk.green(`Add-Content -Path .gitignore "${ignoreList}"`));
