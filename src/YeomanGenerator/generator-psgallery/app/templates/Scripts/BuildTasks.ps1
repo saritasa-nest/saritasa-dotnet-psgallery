@@ -26,7 +26,9 @@ Task build -depends pre-build -description '* Build all projects.' `
 <% if (netCoreUsed) { %>
     Exec { dotnet build -c $Configuration "$src\Example.sln" }
 <% } else { %>
-    Invoke-SolutionBuild -SolutionPath "$src\Example.sln" -Configuration $Configuration
+    $buildParams = @("/p:Environment=$Environment")
+    Invoke-ProjectBuild -SolutionPath "$src\Example.sln" -Configuration $Configuration `
+        -BuildParams $buildParams
 <% } %>
 }
 
