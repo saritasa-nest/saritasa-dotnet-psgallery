@@ -1,6 +1,7 @@
 var generators = require('yeoman-generator');
 var mkdirp = require('mkdirp');
 var fs = require('fs');
+var chalk = require('chalk');
 
 const WEB = 'Web';
 const DESKTOP = 'Desktop';
@@ -39,13 +40,18 @@ module.exports = generators.Base.extend({
             choices: [WEB, DESKTOP, CLICK_ONCE, WINDOWS_SERVICE]
         }, {
             type: 'confirm',
+            name: 'netCoreUsed',
+            message: 'Is .NET Core used?',
+            default: true
+        }, {
+            type: 'confirm',
             name: 'gitTasksEnabled',
             message: 'Do you need GitFlow helper tasks?',
             default: true
         }, {
             type: 'confirm',
             name: 'nunitEnabled',
-            message: 'Do you need to run NUnit tests?',
+            message: 'Do you need to run NUnit or xUnit tests?',
             default: false
         }];
         let predefinedSrcPath = this.options && this.options.srcPath;
@@ -53,13 +59,14 @@ module.exports = generators.Base.extend({
             askingQuestions.unshift({
                 type: 'input',
                 name: 'srcPath',
-                message: 'Where are project source files located (relative to default.ps1)?',
+                message: 'Where are project source files located (relative to BuildTasks.ps1)?',
                 default: '..\\src'
             });
         }
         return this.prompt(askingQuestions).then(function (answers) {
             this.projectTypes = answers.projectTypes;
             this.srcPath = predefinedSrcPath || answers.srcPath;
+            this.netCoreUsed = answers.netCoreUsed;
             this.gitTasksEnabled = answers.gitTasksEnabled;
             this.nunitEnabled = answers.nunitEnabled;
 
@@ -68,7 +75,7 @@ module.exports = generators.Base.extend({
                     type: 'confirm',
                     name: 'adminTasksEnabled',
                     message: 'Do you need admin tasks, remote management capabilities?',
-                    default: true
+                    default: false
                 }, {
                     type: 'checkbox',
                     name: 'webServices',
@@ -89,21 +96,36 @@ module.exports = generators.Base.extend({
         this.projectTypes = this.projectTypes || [];
         this.webServices = this.webServices || [];
 
-        var webEnabled = this.projectTypes.indexOf(WEB) > -1;
-        var desktopEnabled = this.projectTypes.indexOf(DESKTOP) > -1;
-        var clickOnceEnabled = this.projectTypes.indexOf(CLICK_ONCE) > -1;
-        var windowsServiceEnabled = this.projectTypes.indexOf(WINDOWS_SERVICE) > -1;
+        this.webEnabled = this.projectTypes.indexOf(WEB) > -1;
+        this.desktopEnabled = this.projectTypes.indexOf(DESKTOP) > -1;
+        this.clickOnceEnabled = this.projectTypes.indexOf(CLICK_ONCE) > -1;
+        this.windowsServiceEnabled = this.projectTypes.indexOf(WINDOWS_SERVICE) > -1;
 
         var templateParams = {
             srcPath: this.srcPath,
             adminTasksEnabled: this.adminTasksEnabled,
-            desktopEnabled: desktopEnabled,
-            webEnabled: webEnabled,
-            windowsServiceEnabled: windowsServiceEnabled,
-            gitTasksEnabled: this.gitTasksEnabled
+            desktopEnabled: this.desktopEnabled,
+            webEnabled: this.webEnabled,
+            netCoreUsed: this.netCoreUsed,
+            windowsServiceEnabled: this.windowsServiceEnabled,
+            gitTasksEnabled: this.gitTasksEnabled,
+            testsUsed: this.nunitEnabled
         };
 
-        this.fs.copyTpl(this.templatePath('default.ps1'), this.destinationPath('default.ps1'), templateParams);
+        this.fs.copyTpl(this.templatePath('psakefile.ps1'),
+            this.destinationPath('psakefile.ps1'), templateParams);
+        this.fs.copyTpl(this.templatePath('Config.Development.ps1.template'),
+            this.destinationPath('Config.Development.ps1.template'), templateParams);
+        this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
+            this.destinationPath('Config.Staging.ps1'), templateParams);
+            this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
+            this.destinationPath('Config.Production.ps1'), templateParams);
+
+        if (this.webEnabled || this.desktopEnabled || this.windowsServiceEnabled) {
+            this.fs.copyTpl(this.templatePath('SecretConfig.Production.ps1.template'),
+                this.destinationPath('SecretConfig.Production.ps1.template'), templateParams);
+        }
+
         this.fs.copyTpl(this.templatePath('scripts/BuildTasks.ps1'), this.destinationPath('scripts/BuildTasks.ps1'), templateParams);
         this.fs.copyTpl(this.templatePath('scripts/PublishTasks.ps1'), this.destinationPath('scripts/PublishTasks.ps1'), templateParams);
         this.fs.copy(this.templatePath('scripts/Saritasa.PsakeExtensions.ps1'), this.destinationPath('scripts/Saritasa.PsakeExtensions.ps1'));
@@ -111,15 +133,15 @@ module.exports = generators.Base.extend({
 
         this.installModule('Saritasa.Build');
 
-        if (webEnabled) {
+        if (this.webEnabled) {
             this.installModule('Saritasa.WebDeploy');
         }
 
-        if (clickOnceEnabled) {
+        if (this.clickOnceEnabled) {
             this.installModule('Saritasa.Publish');
         }
 
-        if (desktopEnabled || windowsServiceEnabled) {
+        if (this.desktopEnabled || this.windowsServiceEnabled) {
             this.installModule('Saritasa.AppDeploy');
         }
 
@@ -127,7 +149,7 @@ module.exports = generators.Base.extend({
             this.installModule('Saritasa.Test');
         }
 
-        if (this.adminTasksEnabled) {
+        if (this.adminTasksEnabled || this.desktopEnabled || this.windowsServiceEnabled) {
             this.fs.copy(this.templatePath('Scripts/Saritasa.AdminTasks.ps1'), this.destinationPath('Scripts/Saritasa.AdminTasks.ps1'));
             this.installModule('Saritasa.RemoteManagement');
         }
@@ -148,5 +170,32 @@ module.exports = generators.Base.extend({
         if (this.webServices.indexOf(REDIS) > -1) {
             this.installModule('Saritasa.Redis');
         }
+    },
+    end: function() {
+        this.log('\n\n');
+        this.log(chalk.black.bgGreen('Please execute commands:'));
+        var ignoreList = 'Config.Development.ps1';
+
+        if (this.webEnabled) {
+            if (this.netCoreUsed) {
+                ignoreList += '`r`nweb.config';
+            }
+            else {
+                ignoreList += '`r`nWeb.config';
+                ignoreList += '`r`nWeb.Development.config';
+            }
+        }
+
+        if (this.netCoreUsed) {
+            ignoreList += '`r`nappsettings.Development.json';
+        }
+        else if (this.desktopEnabled || this.windowsServiceEnabled) {
+            ignoreList += '`r`nApp.config';
+            ignoreList += '`r`nApp.Development.config';
+        }
+
+        this.log(chalk.green(`Add-Content -Path .gitignore "${ignoreList}"`));
+        this.log(chalk.green('psake add-scripts-to-git'));
+        this.log('\n\n');
     }
 });

@@ -4,13 +4,13 @@ The document describes how to setup first simple project. We will setup build an
 
 ## Create First Task
 
-You may find `default.ps` file and `scripts` directories in the root of your project. `default.ps1` is used for Psake task runner and it is an entry point. It contains project properties and includes all main configuration. `scripts` directory contains PSGallery modules and predefined Psake tasks. Example:
+You may find `psakefile.ps1` file and `scripts` directories in the root of your project. `psakefile.ps1` is used for Psake task runner and it is an entry point. It contains project properties and includes all main configuration. `scripts` directory contains PSGallery modules and predefined Psake tasks. Example:
 
 ```
 ./
 scripts/          // Psake modules and build files.
 src/              // Application.
-default.ps1       // Entry point for Psake.
+psakefile.ps1     // Entry point for Psake.
 ```
 
 Let's overview Psake entry point with comments:
@@ -33,8 +33,7 @@ $env:PSModulePath += ";$PSScriptRoot\scripts\modules"
 # Global properties.
 Properties `
 {
-    $Configuration = 'Debug'
-    $Environment = 'Development'
+    $Environment = $env:Environment
 }
 ```
 
@@ -80,7 +79,7 @@ Now it is done! You can type `psake -docs` and see that our test task is enumera
 
 ## Build and Publish Project
 
-The idea of PSGallery project is to provide set of useful Powershell functions to make CI process easier. Let's build and publish our project to remote Windows server! To build use `Invoke-SolutionBuild` function.
+The idea of PSGallery project is to provide set of useful PowerShell functions to make CI process easier. Let's build and publish our project to remote Windows server! To build use `Invoke-SolutionBuild` function.
 
 **Note** The server should be configured and IIS needs to be installed. You should have remote management service running (see [WinRM Configuration](WinRMConfiguration.md) section) and IIS with WebDeploy installed. You can do this by run `Install-Iis $ServerHost -ManagementService -WebDeploy` on your local host.
 

@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.4.0
+.VERSION 1.5.0
 
 .GUID a8bc41d0-c2bd-459a-9e39-544b6f70724f
 
@@ -67,7 +67,7 @@ Task delete-merged-branches -description 'Delete merged remote-tracking branches
     }
 
     $condition = { $_.Merged -eq $true -and $_.LastCommitDate -lt $startDate }
-
+    Exec { git.exe fetch --prune }
     DeleteRemoteBranches (Get-GitFlowStatus -BranchType Feature) $condition
     DeleteRemoteBranches (Get-GitFlowStatus -BranchType Release) $condition
     DeleteRemoteBranches (Get-GitFlowStatus -BranchType Hotfix) $condition

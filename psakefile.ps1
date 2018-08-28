@@ -132,19 +132,6 @@ Task publish-modules -depends build -requiredVariables @('NugetApiKey') `
         }
 }
 
-Task publish-scripts -requiredVariables @('NugetApiKey') `
-{
-    try
-    {
-        Write-Information "Publishing Install-WinrmHttps script..."
-        Publish-Script -Path "$scripts\WinRM\Install-WinrmHttps.ps1" -NuGetApiKey $NugetApiKey
-    }
-    catch [System.Exception]
-    {
-        $_.Exception
-    }
-}
-
 Task build `
 {
     Install-NugetCli -Destination "$root\tools"
