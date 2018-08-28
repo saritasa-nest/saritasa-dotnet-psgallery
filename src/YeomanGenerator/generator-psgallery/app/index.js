@@ -178,20 +178,20 @@ module.exports = generators.Base.extend({
 
         if (this.webEnabled) {
             if (this.netCoreUsed) {
-                ignoreList += '`nweb.config';
+                ignoreList += '`r`nweb.config';
             }
             else {
-                ignoreList += '`nWeb.config';
-                ignoreList += '`nWeb.Development.config';
+                ignoreList += '`r`nWeb.config';
+                ignoreList += '`r`nWeb.Development.config';
             }
         }
 
         if (this.netCoreUsed) {
-            ignoreList += '`nappsettings.Development.json';
+            ignoreList += '`r`nappsettings.Development.json';
         }
         else if (this.desktopEnabled || this.windowsServiceEnabled) {
-            ignoreList += '`nApp.config';
-            ignoreList += '`nApp.Development.config';
+            ignoreList += '`r`nApp.config';
+            ignoreList += '`r`nApp.Development.config';
         }
 
         this.log(chalk.green(`Add-Content -Path .gitignore "${ignoreList}"`));
