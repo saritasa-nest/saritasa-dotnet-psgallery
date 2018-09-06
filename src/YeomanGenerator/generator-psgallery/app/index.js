@@ -1,4 +1,4 @@
-var generators = require('yeoman-generator');
+var Generator = require('yeoman-generator');
 var mkdirp = require('mkdirp');
 var fs = require('fs');
 var chalk = require('chalk');
@@ -12,9 +12,9 @@ const NEWRELIC = 'NewRelic';
 const PRTG = 'PRTG';
 const REDIS = 'Redis';
 
-module.exports = generators.Base.extend({
-    constructor: function () {
-        generators.Base.apply(this, arguments);
+module.exports = class extends Generator {
+    constructor(args, opts) {
+        super(args, opts);
 
         this.installModule = function (name) {
             fs.access(this.modulesPath + '\\' + name, function (err) {
@@ -27,12 +27,14 @@ module.exports = generators.Base.extend({
                 }
             }.bind(this));
         };
-    },
-    initializing: function () {
+    }
+
+    initializing() {
         this.modulesPath = this.destinationPath('scripts/modules');
         this.adminTasksEnabled = false;
-    },
-    prompting: function () {
+    }
+
+    prompting() {
         let askingQuestions = [{
             type: 'checkbox',
             name: 'projectTypes',
@@ -89,8 +91,9 @@ module.exports = generators.Base.extend({
                 this.webServices = answers.webServices;
             }
         }.bind(this));
-    },
-    writing: function () {
+    }
+
+    writing() {
         mkdirp.sync(this.modulesPath);
 
         this.projectTypes = this.projectTypes || [];
@@ -170,8 +173,9 @@ module.exports = generators.Base.extend({
         if (this.webServices.indexOf(REDIS) > -1) {
             this.installModule('Saritasa.Redis');
         }
-    },
-    end: function() {
+    }
+
+    end() {
         this.log('\n\n');
         this.log(chalk.black.bgGreen('Please execute commands:'));
         var ignoreList = 'Config.Development.ps1';
@@ -198,4 +202,4 @@ module.exports = generators.Base.extend({
         this.log(chalk.green('psake add-scripts-to-git'));
         this.log('\n\n');
     }
-});
+};
