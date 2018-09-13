@@ -12,7 +12,10 @@ $workspace = Resolve-Path "$root\.."
 
 Task pre-build -depends copy-configs, update-version -description 'Copy configs, update version, restore NuGet packages.' `
 {
-    Initialize-MSBuild
+    if (!$IsLinux)
+    {
+        Initialize-MSBuild
+    }
 <% if (!netCoreUsed) { %>
     # TODO: Fix solution name.
     Invoke-NugetRestore -SolutionPath "$src\Example.sln"
