@@ -91,6 +91,7 @@ Task copy-configs -description 'Create configs based on App.config.template and 
 }
 
 Task update-version -description 'Replace package version in web project.' `
+    -depends get-version `
     -requiredVariables @('MajorMinorPatch', 'InformationalVersion') `
 {
     if ($Environment -eq 'Development') # It's a developer machine.

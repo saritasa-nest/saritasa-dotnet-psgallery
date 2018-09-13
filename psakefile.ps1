@@ -154,8 +154,5 @@ Task build `
     Copy-Item "$src\Saritasa.Git\bin\Release\Saritasa.Git.dll" $gitRoot
 
     $yeomanScriptsPath = "$src\YeomanGenerator\generator-psgallery\app\templates\Scripts"
-    Copy-Item "$scripts\Psake\Saritasa.AdminTasks.ps1" $yeomanScriptsPath
-    Copy-Item "$scripts\Psake\Saritasa.GitTasks.ps1" $yeomanScriptsPath
-    Copy-Item "$scripts\Psake\Saritasa.PsakeExtensions.ps1" $yeomanScriptsPath
-    Copy-Item "$scripts\Psake\Saritasa.PsakeTasks.ps1" $yeomanScriptsPath
+    Copy-Item "$scripts\Psake\*.ps1" $yeomanScriptsPath
 }
