@@ -49,7 +49,9 @@ Task publish-web -depends pre-publish -description '* Publish all web apps to sp
         Exec { rsync -av --delete-excluded `
             "$publishDir/" "$DeployUsername@$($WebServer):$WwwrootPath/$SiteName" }
 
-        Exec { ssh $DeployUsername@$WebServer sudo /bin/systemctl restart deploy-demo }
+        # TODO: Fix Systemd service name.
+        $serviceName = 'example-web'
+        Exec { ssh $DeployUsername@$WebServer sudo /bin/systemctl restart $serviceName }
     }
     else
     {
