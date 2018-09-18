@@ -12,7 +12,10 @@ $workspace = Resolve-Path "$root\.."
 
 Task pre-build -depends copy-configs, update-version -description 'Copy configs, update version, restore NuGet packages.' `
 {
-    Initialize-MSBuild
+    if (!$IsLinux)
+    {
+        Initialize-MSBuild
+    }
 <% if (!netCoreUsed) { %>
     # TODO: Fix solution name.
     Invoke-NugetRestore -SolutionPath "$src\Example.sln"
@@ -88,6 +91,7 @@ Task copy-configs -description 'Create configs based on App.config.template and 
 }
 
 Task update-version -description 'Replace package version in web project.' `
+    -depends get-version `
     -requiredVariables @('MajorMinorPatch', 'InformationalVersion') `
 {
     if ($Environment -eq 'Development') # It's a developer machine.
