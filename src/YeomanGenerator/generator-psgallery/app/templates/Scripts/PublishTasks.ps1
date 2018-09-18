@@ -14,7 +14,7 @@ $workspace = Resolve-Path "$root\.."
 
 <% if (webEnabled) { %>
 Task pre-publish -depends pre-build -description 'Set common publish settings for all deployments.' `
-    -requiredVariables @('DeployUsername', 'DeployPassword') `
+    -requiredVariables @('DeployUsername') `
 {
     if (!$IsLinux)
     {
@@ -40,7 +40,7 @@ Task publish-web -depends pre-publish -description '* Publish all web apps to sp
         $publishProfile = 'Package'
     }
 
-    Exec { dotnet publish -c $Configuration "$src\$projectName\$projectName.csproj" /p:PublishProfile=Package }
+    Exec { dotnet publish -c $Configuration "$src\$projectName\$projectName.csproj" /p:PublishProfile=$publishProfile }
 
     if ($IsLinux)
     {
