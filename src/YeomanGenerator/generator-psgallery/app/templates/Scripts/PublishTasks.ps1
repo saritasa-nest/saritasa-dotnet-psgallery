@@ -46,8 +46,11 @@ Task publish-web -depends pre-publish -description '* Publish all web apps to sp
     {
         $publishDir = "$src/$projectName/bin/$Configuration/netcoreapp2.1/publish"
         Remove-Item "$publishDir/web.config"
-        Exec { rsync -av --delete-excluded `
-            "$publishDir/" "$DeployUsername@$($WebServer):$WwwrootPath/$SiteName" }
+
+        $params = @('-av', '--delete-excluded', "$publishDir/",
+            "$DeployUsername@$($WebServer):$WwwrootPath/$SiteName")
+        Write-Information "Running command: rsync $params"
+        Exec { rsync $params }
 
         # TODO: Fix Systemd service name.
         $serviceName = 'example-web'
