@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.0.0
+.VERSION 1.0.1
 
 .GUID b9173d19-1d34-4508-95cb-77979efaac87
 
@@ -162,7 +162,8 @@ Task get-version `
     }
 
     $changeset = Exec { git rev-parse HEAD }
-    $result.InformationalVersion = $result.MajorMinorPatch + $suffix + "+$branch.$changeset"
+    $result.InformationalVersion = ($result.MajorMinorPatch + $suffix +
+        "+$branch.$changeset") -replace '/', '-'
 
     if (!$InformationalVersion)
     {
