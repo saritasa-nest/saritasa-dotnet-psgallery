@@ -123,7 +123,8 @@ Task update-version -description 'Replace package version in web project.' `
         -replace '<AssemblyVersion>[\d\.]*</AssemblyVersion>', "<AssemblyVersion>$AssemblySemVer</AssemblyVersion>" } |
         Set-Content $fileName -Encoding UTF8
 <% } else { %>
-    Update-AssemblyInfoFile -Path $src -AssemblyVersion $AssemblySemVer -AssemblyFileVersion $AssemblySemVer -AssemblyInfoVersion $InformationalVersion
+    Update-AssemblyInfoFile -Path $src -AssemblyVersion `
+        $AssemblySemVer -AssemblyFileVersion $AssemblySemVer -AssemblyInfoVersion $InformationalVersion
 <% } %>
 }
 
