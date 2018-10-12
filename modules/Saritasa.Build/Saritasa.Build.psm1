@@ -210,7 +210,7 @@ Update version numbers of AssemblyInfo.cs and AssemblyInfo.vb.
 Updates version numbers in AssemblyInfo files located in current directory and all subdirectories.
 
 .EXAMPLE
-Update-AssemblyInfoFile '6.3.1.1'
+Update-AssemblyInfoFile -AssemblyVersion '6.3.0.0' -AssemblyFileVersion '6.3.1.1' -AssemblyInfoVersion '6.3.0+master.808d1733f5c701c1882816f70c3eafc6e7fce4d4'
 
 .NOTES
 Based on SetVersion script.
