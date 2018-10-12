@@ -51,25 +51,29 @@
 
 ## Reserved Property Names
 
-| Property            | Description    |
-|---------------------|----------------|
-| AdminUsername       |                |
-| AdminPassword       |                |
-| Configuration       |                |
-| DeployUsername      |                |
-| DeployPassword      |                |
-| ServerHost          |                |
-| SiteName            |                |
-| WwwrootPath         |                |
-| WinrmAuthentication |                |
-| WinrmPort           |                |
-| WorkspacePath       |                |
+| Property             | Description    |
+|----------------------|----------------|
+| AdminUsername        |                |
+| AdminPassword        |                |
+| ApprootPath          |                |
+| AssemblySemVer       |                |
+| Configuration        |                |
+| Environment          |                |
+| DeployUsername       |                |
+| DeployPassword       |                |
+| InformationalVersion |                |
+| MajorMinorPatch      |                |
+| ServerHost           |                |
+| SiteName             |                |
+| WwwrootPath          |                |
+| WinrmAuthentication  |                |
+| WinrmPort            |                |
+| WorkspacePath        |                |
 
 ## Recommended Property Names
 
-| Property            | Description    |
-|---------------------|----------------|
-| ApprootPath         |                |
-| DistrPath           |                |
-| MajorMinorPatch     |                |
-| SemVer              |                |
+| Property             | Description    |
+|----------------------|----------------|
+| AppServer            |                |
+| DistrPath            |                |
+| WebServer            |                |

@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.0.1
+.VERSION 1.1.0
 
 .GUID b9173d19-1d34-4508-95cb-77979efaac87
 
@@ -38,6 +38,7 @@ Properties `
 {
     $InformationalVersion = $null
     $MajorMinorPatch = $null
+    $AssemblySemVer = $null
 }
 
 
@@ -177,6 +178,13 @@ Task get-version `
         # 1.2.3
         # 1.3.0
         Expand-PsakeConfiguration @{ MajorMinorPatch = $result.MajorMinorPatch }
+    }
+
+    if (!$AssemblySemVer)
+    {
+        # 1.2.3.0
+        # 1.3.0.
+        Expand-PsakeConfiguration @{ AssemblySemVer = ($result.MajorMinorPatch + '.0') }
     }
 
     Write-Information "$description, $MajorMinorPatch, $InformationalVersion"

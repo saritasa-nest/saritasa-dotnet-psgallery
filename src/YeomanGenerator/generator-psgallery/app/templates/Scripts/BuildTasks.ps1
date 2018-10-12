@@ -2,8 +2,8 @@ Properties `
 {
     $Configuration = $null
     $MaxWarnings = 0
+    $AssemblySemVer = $null
     $InformationalVersion = $null
-    $MajorMinorPatch = $null
 }
 
 $root = $PSScriptRoot
@@ -92,7 +92,7 @@ Task copy-configs -description 'Create configs based on App.config.template and 
 
 Task update-version -description 'Replace package version in web project.' `
     -depends get-version `
-    -requiredVariables @('MajorMinorPatch', 'InformationalVersion') `
+    -requiredVariables @('AssemblySemVer', 'InformationalVersion') `
 {
     if ($Environment -eq 'Development') # It's a developer machine.
     {
@@ -120,10 +120,10 @@ Task update-version -description 'Replace package version in web project.' `
     $fileName = "$src\Example\Example.csproj"
     $lines = Get-Content $fileName
     $lines | ForEach-Object { $_ -replace '<Version>[\d\.\w+-]*</Version>', "<Version>$InformationalVersion</Version>" `
-        -replace '<AssemblyVersion>[\d\.]*</AssemblyVersion>', "<AssemblyVersion>$MajorMinorPatch.0</AssemblyVersion>" } |
+        -replace '<AssemblyVersion>[\d\.]*</AssemblyVersion>', "<AssemblyVersion>$AssemblySemVer</AssemblyVersion>" } |
         Set-Content $fileName -Encoding UTF8
 <% } else { %>
-    Exec { GitVersion.exe /updateassemblyinfo }
+    Update-AssemblyInfoFile -Path $src -AssemblyVersion $AssemblySemVer -AssemblyFileVersion $AssemblySemVer -AssemblyInfoVersion $InformationalVersion
 <% } %>
 }
 
