@@ -25,7 +25,7 @@ function Initialize-Prtg
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     $script:prtgUrl = $PrtgUrl
     $script:userName = $Credential.UserName
     $script:password = $Credential.GetNetworkCredential().Password
@@ -59,7 +59,7 @@ function Get-PrtgSensorId
     {
         throw "PRTG sensor for $Server is not registered."
     }
-    
+
     $sensorId
 }
 
@@ -88,7 +88,7 @@ function Start-PrtgSensor
     Write-Information 'Starting PRTG sensor...'
     $sensorId = Get-PrtgSensorId($Server)
     Update-SslCheckProcedure
-    $status = (Invoke-WebRequest "$prtgUrl/api/pause.htm?id=$sensorId&action=1&pausemsg=Resumed by deployment script.&username=$username&password=$password").StatusDescription
+    $status = (Invoke-WebRequest -UseBasicParsing "$prtgUrl/api/pause.htm?id=$sensorId&action=1&pausemsg=Resumed by deployment script.&username=$username&password=$password").StatusDescription
     Write-Information "$status`n`n"
 }
 
@@ -117,6 +117,6 @@ function Stop-PrtgSensor
     Write-Information 'Stopping PRTG sensor...'
     $sensorId = Get-PrtgSensorId($Server)
     Update-SslCheckProcedure
-    $status = (Invoke-WebRequest "$prtgUrl/api/pause.htm?id=$sensorId&action=0&pausemsg=Paused by deployment script.&username=$username&password=$password").StatusDescription
+    $status = (Invoke-WebRequest -UseBasicParsing "$prtgUrl/api/pause.htm?id=$sensorId&action=0&pausemsg=Paused by deployment script.&username=$username&password=$password").StatusDescription
     Write-Information "$status`n`n"
 }
