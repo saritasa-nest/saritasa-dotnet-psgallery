@@ -1,3 +1,6 @@
+# Install NuGet and Visual Studio 2017 for build.
+# choco install nuget.commandline
+
 Framework 4.6
 $InformationPreference = 'Continue'
 $env:PSModulePath += ";$PSScriptRoot\modules"
