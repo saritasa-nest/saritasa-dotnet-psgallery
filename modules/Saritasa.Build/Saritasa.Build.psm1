@@ -182,7 +182,7 @@ function ProcessAssemblyInfoFile([string] $FileName, [string] $AssemblyVersionSt
         Write-Warning "Unknown file format: $FileName"
     }
 
-    $content = Get-Content $FileName -Raw
+    $content = Get-Content $FileName -Raw -Encoding UTF8
 
     if ($AssemblyVersionString)
     {
