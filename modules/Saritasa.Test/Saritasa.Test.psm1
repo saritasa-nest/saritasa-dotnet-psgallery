@@ -79,7 +79,7 @@ function Invoke-XunitRunner
         [string] $TestAssembly,
 
         [Parameter(HelpMessage = 'Use x86 version of runner. False by default.')]
-        [bool] $UseX86 = $false,
+        [switch] $UseX86,
 
         [string[]] $Params
     )
