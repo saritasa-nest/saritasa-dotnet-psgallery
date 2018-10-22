@@ -70,6 +70,8 @@ function Invoke-NugetRestore
     }
     else
     {
+        Write-Warning "Install NuGet globally for faster builds:`nchoco install nuget.commandline"
+        
         Install-NugetCli -Destination $PSScriptRoot
         $nugetExePath = "$PSScriptRoot\nuget.exe"
     }
