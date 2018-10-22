@@ -65,7 +65,7 @@ function Invoke-Nunit3Runner
 
 <#
 .SYNOPSIS
-Run xUnit tests.
+Run xUnit tests since version 2.3 .
 
 .NOTES
 xunit.runner.console package should be installed.
@@ -77,6 +77,10 @@ function Invoke-XunitRunner
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Path to assembly file with tests.')]
         [string] $TestAssembly,
+
+        [Parameter(HelpMessage = 'Use x86 version of runner. False by default.')]
+        [bool] $UseX86 = $false,
+
         [string[]] $Params
     )
 
@@ -102,12 +106,17 @@ function Invoke-XunitRunner
         Sort-Object { $_.Name } | Select-Object -Last 1
     if (!$xunitExeDirectory)
     {
-        throw 'Cannot find xunit console runner package.'
+        throw 'Cannot find xUnit console runner package.'
     }
-    $xunitExe = Join-Path $xunitExeDirectory.FullName '.\tools\xunit.console.exe'
+    $xunitExeFilename = 'xunit.console.exe';
+    if ($UseX86)
+    {
+        $xunitExeFilename = 'xunit.console.x86.exe';
+    }
+    $xunitExe = Join-Path $xunitExeDirectory.FullName ".\tools\net452\$xunitExeFilename"
     Write-Information "Found $($xunitExeDirectory.FullName)"
 
-    # Run xunit
+    # Run xUnit
     $args = @($TestAssembly, '-nologo', '-nocolor')
     $args += $Params
     &"$xunitExe" $args
