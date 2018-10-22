@@ -111,7 +111,7 @@ Task publish-modules -depends build -requiredVariables @('NugetApiKey') `
 {
     Remove-Item "$modules\Saritasa.Build\nuget.exe" -ErrorAction SilentlyContinue
 
-    Get-ChildItem -Directory $modules | % `
+    Get-ChildItem -Directory $modules | ForEach-Object `
         {
             Write-Information "Publishing $_ module..."
             try
@@ -134,15 +134,8 @@ Task publish-modules -depends build -requiredVariables @('NugetApiKey') `
 
 Task build `
 {
-    Install-NugetCli -Destination "$root\tools"
-    $nugetExePath = "$root\tools\nuget.exe"
-
     # Tested on version 1.1.605.
-    &$nugetExePath install StackExchange.Redis -OutputDirectory "$root\tmp"
-    if ($LASTEXITCODE)
-    {
-        throw 'NuGet failed.'
-    }
+    Exec { nuget.exe install StackExchange.Redis -OutputDirectory "$root\tmp" }
 
     $redisRoot = "$modules\Saritasa.Redis"
     Copy-Item "$root\tmp\StackExchange.Redis.*\lib\net46\StackExchange.Redis.dll" $redisRoot
@@ -155,4 +148,9 @@ Task build `
 
     $yeomanScriptsPath = "$src\YeomanGenerator\generator-psgallery\app\templates\Scripts"
     Copy-Item "$scripts\Psake\*.ps1" $yeomanScriptsPath
+}
+
+Task clean `
+{
+    Exec { git clean -xdf -e node_modules/ }
 }
