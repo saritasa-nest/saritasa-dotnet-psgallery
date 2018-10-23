@@ -40,7 +40,7 @@ function Invoke-Nunit3Runner
 
         if (!$packagesDirectory)
         {
-            throw 'Cannot find packages directory.'
+            throw "Cannot find packages directory. Make sure NUnit.ConsoleRunner package is installed."
         }
         Write-Information "Found $packagesDirectory."
         $nunitExeDirectory = Get-ChildItem $packagesDirectory.FullName 'NUnit.ConsoleRunner.*' |
@@ -99,7 +99,7 @@ function Invoke-XunitRunner
 
     if (!$packagesDirectory)
     {
-        throw 'Cannot find packages directory.'
+        throw "Cannot find packages directory. Make sure xunit.runner.console package is installed."
     }
     Write-Information "Found $packagesDirectory."
     $xunitExeDirectory = Get-ChildItem $packagesDirectory.FullName 'xunit.runner.console.*' |
