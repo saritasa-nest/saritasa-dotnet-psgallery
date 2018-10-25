@@ -105,5 +105,6 @@ function Import-TrustedSslCertificate
         }
     }
 
+    Write-Information 'SSL certificate is imported.'
     Remove-Item $tempFilename
 }
