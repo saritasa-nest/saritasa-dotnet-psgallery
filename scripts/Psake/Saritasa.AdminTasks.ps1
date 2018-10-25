@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.6.1
+.VERSION 1.7.0
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -8,7 +8,7 @@
 
 .COMPANYNAME Saritasa
 
-.COPYRIGHT (c) 2016 Saritasa. All rights reserved.
+.COPYRIGHT (c) 2016-2018 Saritasa. All rights reserved.
 
 .TAGS WinRM WSMan
 
@@ -76,6 +76,8 @@ Task init-winrm -description 'Initializes WinRM configuration.' `
 Task import-sites -depends init-winrm -description 'Import app pools and sites to IIS.' `
     -requiredVariables @('Environment', 'ServerHost', 'SiteName', 'WwwrootPath') `
 {
+    Write-Warning 'The import-sites task is obsolete. Use Ansible to set up sites.'
+
     $params = @{ Slot = $Slot }
     $appPoolsPath = [System.IO.Path]::GetTempFileName()
     Copy-Item "$root\IIS\AppPools.${Environment}.xml" $appPoolsPath
@@ -96,6 +98,8 @@ Task import-sites -depends init-winrm -description 'Import app pools and sites t
 Task export-sites -depends init-winrm -description 'Export app pools and sites from IIS.' `
     -requiredVariables @('Environment', 'ServerHost') `
 {
+    Write-Warning 'The export-sites task is obsolete. Use Ansible to set up sites.'
+
     Export-AppPool $ServerHost "$root\IIS\AppPools.${Environment}.xml"
     Export-Site $ServerHost "$root\IIS\Sites.${Environment}.xml"
 }
@@ -103,6 +107,8 @@ Task export-sites -depends init-winrm -description 'Export app pools and sites f
 Task trust-host -description 'Add server''s certificate to trusted root CA store.' `
     -requiredVariables @('ServerHost', 'WinrmPort') `
 {
+    Write-Warning 'The trust-host task is obsolete. Use Import-TrustedSslCertificate cmdlet from Saritasa.Web module.'
+
     $fqdn = [System.Net.Dns]::GetHostByName($ServerHost).Hostname
 
     Import-Module Saritasa.Web
