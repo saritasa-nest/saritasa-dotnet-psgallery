@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.3.1
+.VERSION 1.4.0
 
 .GUID 5bf3b9dd-b754-4e71-bb03-cb5c5a8101c7
 
@@ -52,6 +52,8 @@ Invoke-psake setup-jenkins -properties @{ServerHost='example.com';JenkinsPlugins
 Task setup-jenkins -depends init-winrm -description 'Install Jenkins, change service account.' `
     -requiredVariables @('ServerHost', 'AdminCredential') `
 {
+    Write-Warning 'The setup-jenkins task is obsolete. Use Ansible to set up Jenkins.'
+
     $session = Start-RemoteSession -ServerHost $ServerHost
 
     $plugins = ''
@@ -124,6 +126,8 @@ Task setup-jenkins -depends init-winrm -description 'Install Jenkins, change ser
 Task setup-workspace -depends init-winrm -description 'Install Git, generate SSH keys, init workspace.' `
     -requiredVariables @('ServerHost', 'WorkspacePath', 'GitServer', 'GitUsername') `
 {
+    Write-Warning 'The setup-workspace task is obsolete. Use Ansible to set up build server.'
+
     $session = Start-RemoteSession -ServerHost $ServerHost
     Invoke-Command -Session $session -ScriptBlock `
         {
@@ -255,6 +259,8 @@ Task write-ssh-key -description 'Display public SSH key for Git.' `
 Task write-jenkins-password -description 'Display Jenkins default password for initial configuration.' `
     -requiredVariables @('ServerHost') `
 {
+    Write-Warning 'The write-jenkins-password task is obsolete. Use Ansible to set up Jenkins.'
+
     $session = Start-RemoteSession -ServerHost $ServerHost
 
     Invoke-Command -Session $session -ScriptBlock `
