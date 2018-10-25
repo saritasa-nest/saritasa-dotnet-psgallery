@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.7.0
+.VERSION 1.8.0
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -114,13 +114,6 @@ Task trust-host -description 'Add server''s certificate to trusted root CA store
     Import-Module Saritasa.Web
     Import-TrustedSslCertificate $fqdn $WinrmPort
     Write-Information 'SSL certificate is imported.'
-
-    # Allow remote connections to the host.
-    if ((Get-Item WSMan:\localhost\Client\TrustedHosts).Value -ne '*')
-    {
-        Set-Item WSMan:\localhost\Client\TrustedHosts $fqdn -Concatenate -Force
-        Write-Information 'Host is added to trusted list.'
-    }
 }
 
 <#
