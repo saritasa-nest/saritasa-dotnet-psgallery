@@ -99,22 +99,6 @@ Task update-version -description 'Replace package version in web project.' `
         return
     }
 
-    $branchName = Exec { git rev-parse --abbrev-ref HEAD }
-
-    if ($branchName -like 'origin/*')
-    {
-        throw "Expected local branch. Got: $branchName"
-    }
-
-    if ($branchName -eq 'master')
-    {
-        $tag = Exec { git describe --exact-match --tags }
-        if (!$tag)
-        {
-            throw "Production releases without tag are not allowed."
-        }
-    }
-
 <% if (netCoreUsed) { %>
     # TODO: Fix project name.
     $fileName = "$src\Example\Example.csproj"
@@ -123,7 +107,8 @@ Task update-version -description 'Replace package version in web project.' `
         -replace '<AssemblyVersion>[\d\.]*</AssemblyVersion>', "<AssemblyVersion>$AssemblySemVer</AssemblyVersion>" } |
         Set-Content $fileName -Encoding UTF8
 <% } else { %>
-    Update-AssemblyInfoFile -Path $src -AssemblyVersion $AssemblySemVer -AssemblyFileVersion $AssemblySemVer -AssemblyInfoVersion $InformationalVersion
+    Update-AssemblyInfoFile -Path $src -AssemblyVersion `
+        $AssemblySemVer -AssemblyFileVersion $AssemblySemVer -AssemblyInfoVersion $InformationalVersion
 <% } %>
 }
 

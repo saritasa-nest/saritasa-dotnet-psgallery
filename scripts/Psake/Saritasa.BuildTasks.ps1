@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.1.0
+.VERSION 1.1.1
 
 .GUID b9173d19-1d34-4508-95cb-77979efaac87
 
@@ -113,7 +113,7 @@ Task get-version `
             $version = $defaultVersion
         }
 
-        elseif ($branch -match 'hotfix/(.*)')
+        if ($branch -match 'hotfix/(.*)')
         {
             $description = 'Hotfix branch'
             $suffix = '-' + $Matches[1]

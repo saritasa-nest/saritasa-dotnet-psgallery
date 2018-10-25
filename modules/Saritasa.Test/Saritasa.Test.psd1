@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Test'
 
 # Version number of this module.
-ModuleVersion = '1.4.0'
+ModuleVersion = '1.5.1'
 
 # ID used to uniquely identify this module
 GUID = '97046c41-6b19-4e13-9434-ead6834a5338'
@@ -24,7 +24,7 @@ Author = 'Ivan Kozhin'
 CompanyName = 'Saritasa'
 
 # Copyright statement for this module
-Copyright = '(c) 2016-2017 Saritasa. All rights reserved.'
+Copyright = '(c) 2016-2018 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Contains functions to run unit tests.'
@@ -94,7 +94,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = 'NUnit', 'Unit', 'Test'
+        Tags = 'NUnit', 'xUnit', 'Unit', 'Test'
 
         # A URL to the license for this module.
         LicenseUri = 'https://raw.githubusercontent.com/Saritasa/PSGallery/master/LICENSE'

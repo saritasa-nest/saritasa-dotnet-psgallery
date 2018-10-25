@@ -57,6 +57,7 @@
 | AdminPassword        |                |
 | ApprootPath          |                |
 | AssemblySemVer       |                |
+| ConfigInitialized    |                |
 | Configuration        |                |
 | Environment          |                |
 | DeployUsername       |                |

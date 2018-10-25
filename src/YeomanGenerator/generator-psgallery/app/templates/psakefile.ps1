@@ -17,6 +17,12 @@ Properties `
 
 TaskSetup `
 {
+    if ($ConfigInitialized)
+    {
+        return
+    }
+    Expand-PsakeConfiguration @{ ConfigInitialized = $true }
+
     if (!$Environment)
     {
         Expand-PsakeConfiguration @{ Environment = 'Development' }
