@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.WinRM'
 
 # Version number of this module.
-ModuleVersion = '1.5.1'
+ModuleVersion = '1.6.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -98,7 +98,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('WinRM')
+        Tags = @('WinRM', 'WSMan', 'SSH')
 
         # A URL to the license for this module.
         LicenseUri = 'https://raw.githubusercontent.com/Saritasa/PSGallery/master/LICENSE'
