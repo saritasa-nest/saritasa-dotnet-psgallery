@@ -4,6 +4,7 @@
 
 | Task                      | Script                        |
 |---------------------------|-------------------------------|
+| init-remoting             | Saritasa.AdminTasks.ps1       |
 | init-winrm                | Saritasa.AdminTasks.ps1       |
 | import-sites              | Saritasa.AdminTasks.ps1       |
 | export-sites              | Saritasa.AdminTasks.ps1       |

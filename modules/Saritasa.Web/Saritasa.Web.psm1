@@ -47,11 +47,6 @@ function Import-TrustedSslCertificate
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    if (!(Test-UserIsAdministrator))
-    {
-        throw 'Administrator permissions are required.'
-    }
-
     $tempFilename = "$env:TEMP\" + [guid]::NewGuid()
 
     $webRequest = [Net.WebRequest]::Create("https://${ServerHost}:$Port")
@@ -78,6 +73,20 @@ function Import-TrustedSslCertificate
     }
 
     $cert = $webRequest.ServicePoint.Certificate
+    $thumbprint = $cert.GetCertHashString()
+    $existingCert = Get-Item "Cert:\LocalMachine\Root\$thumbprint" -ErrorAction SilentlyContinue
+
+    if ($existingCert)
+    {
+        Write-Information "Certificate $thumbprint is trusted already ($($cert.Subject))."
+        return
+    }
+
+    if (!(Test-UserIsAdministrator))
+    {
+        throw 'Administrator permissions are required.'
+    }
+
     $bytes = $cert.Export([Security.Cryptography.X509Certificates.X509ContentType]::Cert)
     Set-Content -Value $bytes -Encoding Byte -Path $tempFilename
 
@@ -96,5 +105,6 @@ function Import-TrustedSslCertificate
         }
     }
 
+    Write-Information 'SSL certificate is imported.'
     Remove-Item $tempFilename
 }

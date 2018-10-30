@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.Web'
 
 # Version number of this module.
-ModuleVersion = '1.6.0'
+ModuleVersion = '1.7.1'
 
 # ID used to uniquely identify this module
 GUID = '6aeb9fa0-7096-4488-9d49-4f16578d7be0'
@@ -24,7 +24,7 @@ Author = 'Anton Zimin'
 CompanyName = 'Saritasa'
 
 # Copyright statement for this module
-Copyright = '(c) 2015-2017 Saritasa. All rights reserved.'
+Copyright = '(c) 2015-2018 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Contains various methods for web requests and SSL handling.'

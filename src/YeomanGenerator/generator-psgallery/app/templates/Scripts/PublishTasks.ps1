@@ -75,7 +75,7 @@ Task publish-web -depends pre-publish -description '* Publish all web apps to sp
 }
 <% } // webEnabled %>
 <% if (desktopEnabled) { %>
-Task publish-app -depends build, init-winrm -description '* Publish desktop project to specified server.' ` `
+Task publish-app -depends build, init-remoting -description '* Publish desktop project to specified server.' ` `
     -requiredVariables @('Configuration', 'AppServer', 'ApprootPath') `
 {
     $session = Start-RemoteSession -ServerHost $AppServer
@@ -92,7 +92,7 @@ Task publish-app -depends build, init-winrm -description '* Publish desktop proj
 }
 <% } // desktopEnabled %>
 <% if (windowsServiceEnabled) { %>
-Task publish-service -depends build, init-winrm -description '* Publish service to specified server.' ` `
+Task publish-service -depends build, init-remoting -description '* Publish service to specified server.' ` `
     -requiredVariables @('Configuration', 'AppServer', 'ApprootPath',
         'ServiceUsername', 'ServicePassword') `
 {
