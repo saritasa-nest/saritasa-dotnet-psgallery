@@ -1,6 +1,8 @@
 ﻿$credential = $null
 $winrmPort = 5986
 $authentication = [System.Management.Automation.Runspaces.AuthenticationMechanism]::Default
+$useSsh = $false
+$sshUserName = $null
 
 <#
 .SYNOPSIS
@@ -20,12 +22,17 @@ function Initialize-RemoteManagement
     [CmdletBinding()]
     param
     (
+        [Parameter(Mandatory = $true, ParameterSetName = 'WSMan')]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
         $Credential,
+        [Parameter(Mandatory = $false, ParameterSetName = 'WSMan')]
         [int] $Port,
+        [Parameter(Mandatory = $false, ParameterSetName = 'WSMan')]
         [System.Management.Automation.Runspaces.AuthenticationMechanism]
-        $Authentication
+        $Authentication,
+        [Parameter(Mandatory = $false, ParameterSetName = 'SSH')]
+        [string] $UserName
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
@@ -43,6 +50,12 @@ function Initialize-RemoteManagement
     if ($Authentication)
     {
         $script:authentication = $Authentication
+    }
+
+    if ($UserName)
+    {
+        $script:useSsh = $true
+        $script:sshUserName = $UserName
     }
 }
 
@@ -67,8 +80,17 @@ function Start-RemoteSession
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    New-PSSession -UseSSL -Credential $credential -ComputerName ([System.Net.Dns]::GetHostByName($ServerHost).Hostname) `
-        -Authentication $authentication -Port $winrmPort
+    $hostName = [System.Net.Dns]::GetHostByName($ServerHost).Hostname
+
+    if ($useSsh)
+    {
+        New-PSSession -HostName $hostName -UserName $sshUserName
+    }
+    else
+    {
+        New-PSSession -UseSSL -Credential $credential -ComputerName $hostName `
+            -Authentication $authentication -Port $winrmPort
+    }
 }
 
 <#

@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.8.1
+.VERSION 1.9.0
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -48,32 +48,47 @@ Properties `
 }
 
 <#
+SSH is used in PowerShell Core, WSMan - in PowerShell.
+
+WSMan:
 AdminCredential will be used for WinRM connection.
 If it's empty, AdminUsername and AdminPassword will be converted to AdminCredential.
 If AdminPassword is empty, new credential will be requested (if target server is not localhost).
 #>
-Task init-winrm -description 'Initializes WinRM configuration.' `
+Task init-remoting -description 'Initializes PowerShell Remoting configuration.' `
 {
-    if (!$AdminCredential)
+    if ($PSVersionTable.PSVersion.Major -ge 6) # PowerShell Core
     {
-        if ($AdminPassword)
-        {
-            $credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (ConvertTo-SecureString $AdminPassword -AsPlainText -Force))
-        }
-        elseif (!(Test-IsLocalhost $ServerHost)) # Not localhost.
-        {
-            $credential = Get-Credential
-        }
-
-        Expand-PsakeConfiguration @{ AdminCredential = $credential }
+        Initialize-RemoteManagement -UserName $AdminUsername
     }
+    else # PowerShell
+    {
+        if (!$AdminCredential)
+        {
+            if ($AdminPassword)
+            {
+                $credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (ConvertTo-SecureString $AdminPassword -AsPlainText -Force))
+            }
+            elseif (!(Test-IsLocalhost $ServerHost)) # Not localhost.
+            {
+                $credential = Get-Credential
+            }
 
-    Initialize-RemoteManagement -Credential $AdminCredential -Port $WinrmPort -Authentication $WinrmAuthentication
+            Expand-PsakeConfiguration @{ AdminCredential = $credential }
+        }
+
+        Initialize-RemoteManagement -Credential $AdminCredential -Port $WinrmPort -Authentication $WinrmAuthentication
+    }
+}
+
+Task init-winrm -depends init-remoting `
+{
+    Write-Warning 'The init-winrm task is obsolete. Use init-remoting instead.'
 }
 
 # Use following params to import sites on localhost:
 # psake import-sites -properties @{ServerHost='.';Environment='Development'}
-Task import-sites -depends init-winrm -description 'Import app pools and sites to IIS.' `
+Task import-sites -depends init-remoting -description 'Import app pools and sites to IIS.' `
     -requiredVariables @('Environment', 'ServerHost', 'SiteName', 'WwwrootPath') `
 {
     Write-Warning 'The import-sites task is obsolete. Use Ansible to set up sites.'
@@ -95,7 +110,7 @@ Task import-sites -depends init-winrm -description 'Import app pools and sites t
 
 # Use following params to export sites from localhost:
 # psake export-sites -properties @{ServerHost='.';Environment='Development'}
-Task export-sites -depends init-winrm -description 'Export app pools and sites from IIS.' `
+Task export-sites -depends init-remoting -description 'Export app pools and sites from IIS.' `
     -requiredVariables @('Environment', 'ServerHost') `
 {
     Write-Warning 'The export-sites task is obsolete. Use Ansible to set up sites.'

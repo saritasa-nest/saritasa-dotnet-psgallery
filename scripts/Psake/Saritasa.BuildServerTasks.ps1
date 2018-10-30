@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.4.0
+.VERSION 1.5.0
 
 .GUID 5bf3b9dd-b754-4e71-bb03-cb5c5a8101c7
 
@@ -49,7 +49,7 @@ psake setup-jenkins -properties @{ServerHost='example.com';JenkinsPlugins='git w
 .EXAMPLE
 Invoke-psake setup-jenkins -properties @{ServerHost='example.com';JenkinsPlugins=@('cloudbees-folder', 'git', 'workflow-aggregator')}
 #>
-Task setup-jenkins -depends init-winrm -description 'Install Jenkins, change service account.' `
+Task setup-jenkins -depends init-remoting -description 'Install Jenkins, change service account.' `
     -requiredVariables @('ServerHost', 'AdminCredential') `
 {
     Write-Warning 'The setup-jenkins task is obsolete. Use Ansible to set up Jenkins.'
@@ -123,7 +123,7 @@ Task setup-jenkins -depends init-winrm -description 'Install Jenkins, change ser
     Remove-PSSession $session
 }
 
-Task setup-workspace -depends init-winrm -description 'Install Git, generate SSH keys, init workspace.' `
+Task setup-workspace -depends init-remoting -description 'Install Git, generate SSH keys, init workspace.' `
     -requiredVariables @('ServerHost', 'WorkspacePath', 'GitServer', 'GitUsername') `
 {
     Write-Warning 'The setup-workspace task is obsolete. Use Ansible to set up build server.'
@@ -195,7 +195,7 @@ Task setup-workspace -depends init-winrm -description 'Install Git, generate SSH
     Remove-PSSession $session
 }
 
-Task import-jenkins -depends init-winrm -description 'Copy Jenkins config and jobs to a remote server.' `
+Task import-jenkins -depends init-remoting -description 'Copy Jenkins config and jobs to a remote server.' `
     -requiredVariables @('ServerHost') `
 {
     $session = Start-RemoteSession -ServerHost $ServerHost
@@ -205,7 +205,7 @@ Task import-jenkins -depends init-winrm -description 'Copy Jenkins config and jo
     Remove-PSSession $session
 }
 
-Task export-jenkins -depends init-winrm -description 'Download Jenkins config and jobs from a remote server.' `
+Task export-jenkins -depends init-remoting -description 'Download Jenkins config and jobs from a remote server.' `
     -requiredVariables @('ServerHost') `
 {
     if (Test-Path "$root\Jenkins")
