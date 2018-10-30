@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.8.1
+.VERSION 1.9.0
 
 .GUID 6d562cb9-4323-4944-bb81-eba9b99b8b21
 
@@ -48,27 +48,37 @@ Properties `
 }
 
 <#
+SSH is used in PowerShell Core, WSMan - in PowerShell.
+
+WSMan:
 AdminCredential will be used for WinRM connection.
 If it's empty, AdminUsername and AdminPassword will be converted to AdminCredential.
 If AdminPassword is empty, new credential will be requested (if target server is not localhost).
 #>
 Task init-winrm -description 'Initializes WinRM configuration.' `
 {
-    if (!$AdminCredential)
+    if ($PSVersionTable.PSVersion.Major -ge 6) # PowerShell Core
     {
-        if ($AdminPassword)
-        {
-            $credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (ConvertTo-SecureString $AdminPassword -AsPlainText -Force))
-        }
-        elseif (!(Test-IsLocalhost $ServerHost)) # Not localhost.
-        {
-            $credential = Get-Credential
-        }
-
-        Expand-PsakeConfiguration @{ AdminCredential = $credential }
+        Initialize-RemoteManagement -UserName $AdminUsername
     }
+    else # PowerShell
+    {
+        if (!$AdminCredential)
+        {
+            if ($AdminPassword)
+            {
+                $credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (ConvertTo-SecureString $AdminPassword -AsPlainText -Force))
+            }
+            elseif (!(Test-IsLocalhost $ServerHost)) # Not localhost.
+            {
+                $credential = Get-Credential
+            }
 
-    Initialize-RemoteManagement -Credential $AdminCredential -Port $WinrmPort -Authentication $WinrmAuthentication
+            Expand-PsakeConfiguration @{ AdminCredential = $credential }
+        }
+
+        Initialize-RemoteManagement -Credential $AdminCredential -Port $WinrmPort -Authentication $WinrmAuthentication
+    }
 }
 
 # Use following params to import sites on localhost:
