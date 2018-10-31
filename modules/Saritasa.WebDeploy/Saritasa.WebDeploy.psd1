@@ -12,7 +12,7 @@
 RootModule = 'Saritasa.WebDeploy'
 
 # Version number of this module.
-ModuleVersion = '1.15.1'
+ModuleVersion = '1.15.2'
 
 # ID used to uniquely identify this module
 GUID = '1821cb68-29fe-4074-b296-58c450cb9177'
@@ -24,7 +24,7 @@ Author = 'Anton Zimin'
 CompanyName = 'Saritasa'
 
 # Copyright statement for this module
-Copyright = '(c) 2016-2017 Saritasa. All rights reserved.'
+Copyright = '(c) 2016-2018 Saritasa. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Contains functions to control app pools and synchronize IIS web sites using Microsoft WebDeploy tool.'
