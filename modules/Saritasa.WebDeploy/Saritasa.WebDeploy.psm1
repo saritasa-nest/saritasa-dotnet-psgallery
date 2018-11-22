@@ -426,7 +426,7 @@ function Sync-WebContent
     }
     else
     {
-        $destinationParam = "-dest:iisApp='$SiteName/$Application'"
+        $destinationParam = "-dest:contentPath='$SiteName/$Application'"
     }
 
     $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
