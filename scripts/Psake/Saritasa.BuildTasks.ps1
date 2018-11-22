@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.1.1
+.VERSION 1.2.0
 
 .GUID b9173d19-1d34-4508-95cb-77979efaac87
 
@@ -60,6 +60,28 @@ function GetMasterTagArray()
     $result
 }
 
+# Returns SemVer tag or $null.
+function GetSemVerTag()
+{
+    $tag = git describe --tags --exact-match HEAD
+    $tagExists = $?
+    $semVerTag = $null
+
+    if ($tagExists -and $tag)
+    {
+        if ($tag -match '\d+\.\d+\.\d+')
+        {
+            $semVerTag = $tag
+        }
+        else
+        {
+            Write-Information "Found tag $tag with wrong format, skipped. Expected SemVer: x.x.x"
+        }
+    }
+
+    $semVerTag
+}
+
 Task get-version `
     -description 'Fills version properties by info from Git. Works faster than GitVersion.' `
 {
@@ -70,20 +92,18 @@ Task get-version `
     $suffix = $null
 
     $branch = Exec { git rev-parse --abbrev-ref HEAD }
+    $semVerTag = GetSemVerTag
 
     if ($branch -eq 'master')
     {
-        $tag = Exec { git describe --tags --exact-match HEAD }
-        $values = $tag -split '\.'
-
-        if ($values.Length -ne 3)
+        if (!$semVerTag)
         {
-            throw 'Wrong tag format. Expected SemVer: x.x.x'
+            throw 'Production releases without tag are not allowed.'
         }
 
         $description = "Master branch"
         $suffix = ''
-        $result.MajorMinorPatch = $tag
+        $result.MajorMinorPatch = $semVerTag
     }
     elseif ($branch -like 'release/*')
     {
@@ -132,15 +152,22 @@ Task get-version `
     }
     else
     {
-        $values = GetMasterTagArray
-
-        if ($values)
+        if ($semVerTag) # Tag is assigned to commit in develop branch.
         {
-            $version = $values[0] + '.' + ([int]$values[1] + 1) + '.0'
+            $version = $semVerTag
         }
-        else
+        else # Calculate version by master branch.
         {
-            $version = $defaultVersion
+            $values = GetMasterTagArray
+
+            if ($values)
+            {
+                $version = $values[0] + '.' + ([int]$values[1] + 1) + '.0'
+            }
+            else
+            {
+                $version = $defaultVersion
+            }
         }
 
         if ($branch -eq 'develop')
@@ -183,7 +210,7 @@ Task get-version `
     if (!$AssemblySemVer)
     {
         # 1.2.3.0
-        # 1.3.0.
+        # 1.3.0.0
         Expand-PsakeConfiguration @{ AssemblySemVer = ($result.MajorMinorPatch + '.0') }
     }
 
