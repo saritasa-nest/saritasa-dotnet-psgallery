@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.2.0
+.VERSION 1.2.1
 
 .GUID b9173d19-1d34-4508-95cb-77979efaac87
 
@@ -45,7 +45,7 @@ Properties `
 function GetMasterTagArray()
 {
     $result = $null
-    $masterTag = git describe --tags --exact-match master
+    $masterTag = git describe --tags --exact-match origin/master
 
     if (!$LASTEXITCODE)
     {
