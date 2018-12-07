@@ -21,7 +21,7 @@ TaskSetup `
     {
         return
     }
-    Expand-PsakeConfiguration @{ ConfigInitialized = $true }
+    Expand-PsakeConfiguration @{ ConfigInitialized = $true; IsLocalDevelopment = !$Environment }
 
     if (!$Environment)
     {
@@ -29,4 +29,5 @@ TaskSetup `
     }
     Import-PsakeConfigurationFile ".\Config.$Environment.ps1"
     Import-PsakeConfigurationFile $SecretConfigPath
+    Import-PsakeConfigurationFile ".\Config.ps1"
 }
