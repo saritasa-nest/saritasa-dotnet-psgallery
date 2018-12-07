@@ -174,7 +174,7 @@ module.exports = class extends Generator {
     end() {
         this.log('\n\n');
         this.log(chalk.black.bgGreen('Please execute commands:'));
-        var ignoreList = 'Config.Development.ps1';
+        var ignoreList = 'Config.ps1';
 
         if (this.webEnabled) {
             if (this.netCoreUsed) {
