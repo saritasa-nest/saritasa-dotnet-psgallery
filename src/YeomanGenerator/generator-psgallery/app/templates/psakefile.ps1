@@ -27,7 +27,14 @@ TaskSetup `
     {
         Expand-PsakeConfiguration @{ Environment = 'Development' }
     }
-    Import-PsakeConfigurationFile ".\Config.$Environment.ps1"
-    Import-PsakeConfigurationFile $SecretConfigPath
-    Import-PsakeConfigurationFile ".\Config.ps1"
+
+    if (Test-Path '.\Config.ps1')
+    {
+        Import-PsakeConfigurationFile '.\Config.ps1'
+    }
+    else
+    {
+        Import-PsakeConfigurationFile ".\Config.$Environment.ps1"
+        Import-PsakeConfigurationFile $SecretConfigPath
+    }
 }

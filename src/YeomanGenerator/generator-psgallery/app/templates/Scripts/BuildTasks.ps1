@@ -66,10 +66,7 @@ Task copy-configs -description 'Create configs based on App.config.template and 
     $configFile = "$src\$projectName\App.$Environment.config"
 <% } %>
 <% if (webEnabled || windowsServiceEnabled) { %>
-    if (!(Test-Path $configFile))
-    {
-        Copy-Item $templateFile $configFile
-    }
+    Copy-DotnetConfig $templateFile
 <% if (netCoreUsed) { %>
     Update-VariablesInFile -Path $configFile `
         -Variables `
