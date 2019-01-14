@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.2.1
+.VERSION 1.2.2
 
 .GUID b9173d19-1d34-4508-95cb-77979efaac87
 
@@ -9,7 +9,7 @@
 
 .COMPANYNAME Saritasa
 
-.COPYRIGHT (c) 2018 Saritasa. All rights reserved.
+.COPYRIGHT (c) 2018-2019 Saritasa. All rights reserved.
 
 .TAGS Git GitVersion
 
@@ -45,7 +45,7 @@ Properties `
 function GetMasterTagArray()
 {
     $result = $null
-    $masterTag = git describe --tags --exact-match origin/master
+    $masterTag = git describe --tags --exact-match origin/master 2>&1
 
     if (!$LASTEXITCODE)
     {
@@ -63,7 +63,7 @@ function GetMasterTagArray()
 # Returns SemVer tag or $null.
 function GetSemVerTag()
 {
-    $tag = git describe --tags --exact-match HEAD
+    $tag = git describe --tags --exact-match HEAD 2>&1
     $tagExists = $?
     $semVerTag = $null
 
