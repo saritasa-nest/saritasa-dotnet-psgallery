@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.2.2
+.VERSION 1.2.3
 
 .GUID b9173d19-1d34-4508-95cb-77979efaac87
 
@@ -41,14 +41,35 @@ Properties `
     $AssemblySemVer = $null
 }
 
+Function ExecuteCommand ([string] $CommandPath, [string] $CommandArguments)
+{
+    $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+    $pinfo.FileName = $CommandPath
+    $pinfo.RedirectStandardError = $true
+    $pinfo.RedirectStandardOutput = $true
+    $pinfo.UseShellExecute = $false
+    $pinfo.Arguments = $CommandArguments
+    $p = New-Object System.Diagnostics.Process
+    $p.StartInfo = $pinfo
+    $p.Start() | Out-Null
+    [pscustomobject] `
+    @{
+        StandardOutput = $p.StandardOutput.ReadToEnd()
+        StandardError = $p.StandardError.ReadToEnd()
+        ExitCode = $p.ExitCode
+        Success = $p.ExitCode -eq 0
+    }
+    $p.WaitForExit()
+}
 
 function GetMasterTagArray()
 {
     $result = $null
-    $masterTag = git describe --tags --exact-match origin/master 2>&1
+    $gitResult = ExecuteCommand 'git' 'describe --tags --exact-match origin/master'
 
-    if (!$LASTEXITCODE)
+    if ($gitResult.Success)
     {
+        $masterTag = $gitResult.StandardOutput
         $values = $masterTag -split '\.'
 
         if ($values.Length -eq 3)
@@ -63,11 +84,11 @@ function GetMasterTagArray()
 # Returns SemVer tag or $null.
 function GetSemVerTag()
 {
-    $tag = git describe --tags --exact-match HEAD 2>&1
-    $tagExists = $?
+    $gitResult = ExecuteCommand 'git' 'describe --tags --exact-match HEAD'
+    $tag = $gitResult.StandardOutput
     $semVerTag = $null
 
-    if ($tagExists -and $tag)
+    if ($gitResult.Success -and $tag)
     {
         if ($tag -match '\d+\.\d+\.\d+')
         {
