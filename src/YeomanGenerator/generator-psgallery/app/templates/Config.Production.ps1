@@ -18,3 +18,24 @@ Expand-PsakeConfiguration `
     DatabasePassword = $env:DatabasePassword
 <% } %>
 }
+
+# Secret Config Example
+
+<#
+Expand-PsakeConfiguration `
+@{
+<% if (adminTasksEnabled || desktopEnabled || windowsServiceEnabled) { %>
+    AdminUsername = 'Administrator'
+    AdminPassword = 'xxxxxxxx'<% } %>
+<% if (windowsServiceEnabled) { %>
+    ServiceUsername = 'SvcUser'
+    ServicePassword = 'xxxxxxxx'<% } %>
+<% if (webEnabled) { %>
+    DeployUsername = 'DeployUser'
+    DeployPassword = 'xxxxxxxx'<% } %>
+<% if (webEnabled || windowsServiceEnabled) { %>
+    DatabaseServer = 'mssql.example.com'
+    DatabaseUsername = 'dbuser'
+    DatabasePassword = 'xxxxxxxx'<% } %>
+}
+#>

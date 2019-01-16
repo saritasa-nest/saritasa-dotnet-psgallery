@@ -21,12 +21,20 @@ TaskSetup `
     {
         return
     }
-    Expand-PsakeConfiguration @{ ConfigInitialized = $true }
+    Expand-PsakeConfiguration @{ ConfigInitialized = $true; IsLocalDevelopment = !$Environment }
 
     if (!$Environment)
     {
         Expand-PsakeConfiguration @{ Environment = 'Development' }
     }
-    Import-PsakeConfigurationFile ".\Config.$Environment.ps1"
-    Import-PsakeConfigurationFile $SecretConfigPath
+
+    if (Test-Path '.\Config.ps1')
+    {
+        Import-PsakeConfigurationFile '.\Config.ps1'
+    }
+    else
+    {
+        Import-PsakeConfigurationFile ".\Config.$Environment.ps1"
+        Import-PsakeConfigurationFile $SecretConfigPath
+    }
 }

@@ -117,17 +117,12 @@ module.exports = class extends Generator {
 
         this.fs.copyTpl(this.templatePath('psakefile.ps1'),
             this.destinationPath('psakefile.ps1'), templateParams);
-        this.fs.copyTpl(this.templatePath('Config.Development.ps1.template'),
-            this.destinationPath('Config.Development.ps1.template'), templateParams);
+        this.fs.copyTpl(this.templatePath('Config.Development.ps1'),
+            this.destinationPath('Config.Development.ps1'), templateParams);
         this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
             this.destinationPath('Config.Staging.ps1'), templateParams);
             this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
             this.destinationPath('Config.Production.ps1'), templateParams);
-
-        if (this.webEnabled || this.desktopEnabled || this.windowsServiceEnabled) {
-            this.fs.copyTpl(this.templatePath('SecretConfig.Production.ps1.template'),
-                this.destinationPath('SecretConfig.Production.ps1.template'), templateParams);
-        }
 
         this.fs.copyTpl(this.templatePath('scripts/BuildTasks.ps1'), this.destinationPath('scripts/BuildTasks.ps1'), templateParams);
         this.fs.copyTpl(this.templatePath('scripts/PublishTasks.ps1'), this.destinationPath('scripts/PublishTasks.ps1'), templateParams);
@@ -179,7 +174,7 @@ module.exports = class extends Generator {
     end() {
         this.log('\n\n');
         this.log(chalk.black.bgGreen('Please execute commands:'));
-        var ignoreList = 'Config.Development.ps1';
+        var ignoreList = 'Config.ps1';
 
         if (this.webEnabled) {
             if (this.netCoreUsed) {
