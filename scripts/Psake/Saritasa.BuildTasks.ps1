@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.2.3
+.VERSION 1.2.4
 
 .GUID b9173d19-1d34-4508-95cb-77979efaac87
 
@@ -54,8 +54,8 @@ Function ExecuteCommand ([string] $CommandPath, [string] $CommandArguments)
     $p.Start() | Out-Null
     [pscustomobject] `
     @{
-        StandardOutput = $p.StandardOutput.ReadToEnd()
-        StandardError = $p.StandardError.ReadToEnd()
+        StandardOutput = $p.StandardOutput.ReadToEnd().Trim()
+        StandardError = $p.StandardError.ReadToEnd().Trim()
         ExitCode = $p.ExitCode
         Success = $p.ExitCode -eq 0
     }
