@@ -1,6 +1,6 @@
 {
   "name": "generator-psgallery",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "description": "Yeoman generator for common Psake tasks",
   "main": "index.js",
   "scripts": {

@@ -1,6 +1,6 @@
 <% if (vaultEnabled) { %>
 # $env:VAULT_ADDR and $env:VAULT_TOKEN should be set.
-$secretPath = 'secret/project-production'<% } %>
+$secretPath = 'secret/project-staging'<% } %>
 
 Expand-PsakeConfiguration `
 @{
@@ -30,43 +30,3 @@ $configuration = @{}
 $data.PSObject.Properties | ForEach-Object { $configuration[$_.Name] = $_.Value }
 
 Expand-PsakeConfiguration $configuration<% } %>
-
-# Secret Config Example
-<% if (vaultEnabled) { %>
-<#
-{
-<% if (adminTasksEnabled || desktopEnabled || windowsServiceEnabled) { %>
-  "AdminUsername": "Administrator",
-  "AdminPassword": "xxxxxxxx",<% } %>
-<% if (windowsServiceEnabled) { %>
-  "ServiceUsername": "SvcUser",
-  "ServicePassword": "xxxxxxxx",<% } %>
-<% if (webEnabled) { %>
-  "DeployUsername": "DeployUser",
-  "DeployPassword": "xxxxxxxx",<% } %>
-<% if (webEnabled || windowsServiceEnabled) { %>
-  "DatabaseServer": "mssql.example.com",
-  "DatabaseUsername": "dbuser",
-  "DatabasePassword": "xxxxxxxx",<% } %>
-  "SomeProperty": "xxxxxxxx"
-}
-#>
-<% } else { %>
-<#
-Expand-PsakeConfiguration `
-@{
-<% if (adminTasksEnabled || desktopEnabled || windowsServiceEnabled) { %>
-    AdminUsername = 'Administrator'
-    AdminPassword = 'xxxxxxxx'<% } %>
-<% if (windowsServiceEnabled) { %>
-    ServiceUsername = 'SvcUser'
-    ServicePassword = 'xxxxxxxx'<% } %>
-<% if (webEnabled) { %>
-    DeployUsername = 'DeployUser'
-    DeployPassword = 'xxxxxxxx'<% } %>
-<% if (webEnabled || windowsServiceEnabled) { %>
-    DatabaseServer = 'mssql.example.com'
-    DatabaseUsername = 'dbuser'
-    DatabasePassword = 'xxxxxxxx'<% } %>
-}
-#><% } %>

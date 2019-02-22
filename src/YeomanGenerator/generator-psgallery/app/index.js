@@ -42,6 +42,11 @@ module.exports = class extends Generator {
             choices: [WEB, DESKTOP, CLICK_ONCE, WINDOWS_SERVICE]
         }, {
             type: 'confirm',
+            name: 'vaultEnabled',
+            message: 'Is Vault used?',
+            default: true
+        }, {
+            type: 'confirm',
             name: 'netCoreUsed',
             message: 'Is .NET Core used?',
             default: true
@@ -68,6 +73,7 @@ module.exports = class extends Generator {
         return this.prompt(askingQuestions).then(function (answers) {
             this.projectTypes = answers.projectTypes;
             this.srcPath = predefinedSrcPath || answers.srcPath;
+            this.vaultEnabled = answers.vaultEnabled;
             this.netCoreUsed = answers.netCoreUsed;
             this.gitTasksEnabled = answers.gitTasksEnabled;
             this.nunitEnabled = answers.nunitEnabled;
@@ -109,6 +115,7 @@ module.exports = class extends Generator {
             adminTasksEnabled: this.adminTasksEnabled,
             desktopEnabled: this.desktopEnabled,
             webEnabled: this.webEnabled,
+            vaultEnabled: this.vaultEnabled,
             netCoreUsed: this.netCoreUsed,
             windowsServiceEnabled: this.windowsServiceEnabled,
             gitTasksEnabled: this.gitTasksEnabled,
@@ -119,9 +126,9 @@ module.exports = class extends Generator {
             this.destinationPath('psakefile.ps1'), templateParams);
         this.fs.copyTpl(this.templatePath('Config.Development.ps1'),
             this.destinationPath('Config.Development.ps1'), templateParams);
-        this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
+        this.fs.copyTpl(this.templatePath('Config.Staging.ps1'),
             this.destinationPath('Config.Staging.ps1'), templateParams);
-            this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
+        this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
             this.destinationPath('Config.Production.ps1'), templateParams);
 
         this.fs.copyTpl(this.templatePath('scripts/BuildTasks.ps1'), this.destinationPath('scripts/BuildTasks.ps1'), templateParams);
@@ -156,6 +163,10 @@ module.exports = class extends Generator {
         if (this.gitTasksEnabled) {
             this.fs.copy(this.templatePath('Scripts/Saritasa.GitTasks.ps1'), this.destinationPath('Scripts/Saritasa.GitTasks.ps1'));
             this.installModule('Saritasa.Git');
+        }
+
+        if (this.vaultEnabled) {
+            this.installModule('PowerVault');
         }
 
         if (this.webServices.indexOf(NEWRELIC) > -1) {
