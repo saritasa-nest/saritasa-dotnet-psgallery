@@ -12,11 +12,12 @@ $workspace = Resolve-Path "$root\.."
 
 Task pre-build -depends copy-configs, update-version -description 'Copy configs, update version, restore NuGet packages.' `
 {
+<% if (!netCoreUsed) { %>
     if (!$IsLinux)
     {
         Initialize-MSBuild
     }
-<% if (!netCoreUsed) { %>
+
     # TODO: Fix solution name.
     Invoke-NugetRestore -SolutionPath "$src\Example.sln"
 <% } %>
@@ -116,9 +117,11 @@ Task code-analysis -depends pre-build `
     # TODO: Fix solution name.
     $solutionPath = "$src\Example.sln"
     $logFile = "$workspace\Warnings.txt"
-
+<% if (netCoreUsed) { %>
+    Exec { dotnet msbuild -restore $solutionPath '/m' '/t:Build' "/p:Configuration=$Configuration" '/verbosity:normal' '/fileLogger' "/fileloggerparameters:WarningsOnly;LogFile=$logFile" $buildParams }
+<% } else { %>
     Exec { msbuild.exe $solutionPath '/m' '/t:Build' "/p:Configuration=$Configuration" '/verbosity:normal' '/fileLogger' "/fileloggerparameters:WarningsOnly;LogFile=$logFile" $buildParams }
-
+<% } %>
     $warnings = (Get-Content $logFile | Measure-Object -Line).Lines
     Write-Information "Warnings: $warnings"
 
