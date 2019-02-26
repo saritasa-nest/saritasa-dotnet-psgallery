@@ -7,7 +7,7 @@ $env:PSModulePath += [IO.Path]::PathSeparator + [IO.Path]::Combine($PSScriptRoot
 . .\scripts\Saritasa.PsakeTasks.ps1
 
 . .\scripts\BuildTasks.ps1
-. .\scripts\PublishTasks.ps1
+<% if (gitLabUsed) { %>. .\scripts\GitLabTasks.ps1<%= '\n' %><% } %><% if (jenkinsUsed) { %>. .\scripts\JenkinsTasks.ps1<%= '\n' %><% } %>. .\scripts\PublishTasks.ps1
 
 Properties `
 {
