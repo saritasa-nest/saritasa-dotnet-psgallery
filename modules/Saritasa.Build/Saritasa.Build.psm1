@@ -394,7 +394,8 @@ function Update-VariablesInFile
     foreach ($key in $Variables.Keys)
     {
         $escapedValue = $Variables[$key] -replace '\$', '$$$$'
-        $content = $content -ireplace"\`$\($key\)", $escapedValue
+        $content = $content -ireplace "\`$\($key\)", $escapedValue
+        $content = $content -ireplace "%$key%", $escapedValue
     }
 
     $content | Set-Content $Path
