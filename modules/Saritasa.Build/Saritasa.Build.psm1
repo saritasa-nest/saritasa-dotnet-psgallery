@@ -395,7 +395,7 @@ function Update-VariablesInFile
     {
         $escapedValue = $Variables[$key] -replace '\$', '$$$$'
         $content = $content -ireplace "\`$\($key\)", $escapedValue
-        $content = $content -ireplace "\%$key\%", $escapedValue
+        $content = $content -ireplace "%$key%", $escapedValue
     }
 
     $content | Set-Content $Path
