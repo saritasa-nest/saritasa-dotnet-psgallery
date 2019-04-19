@@ -71,7 +71,7 @@ function Invoke-NugetRestore
     else
     {
         Write-Warning "Install NuGet globally for faster builds:`nchoco install nuget.commandline"
-        
+
         Install-NugetCli -Destination $PSScriptRoot
         $nugetExePath = "$PSScriptRoot\nuget.exe"
     }
@@ -412,12 +412,27 @@ function Initialize-MSBuild
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    $vsPath = (@((Get-VSSetupInstance | Select-VSSetupInstance -Version 15.0 -Require Microsoft.Component.MSBuild).InstallationPath,
-        (Get-VSSetupInstance | Select-VSSetupInstance -Version 15.0 -Product Microsoft.VisualStudio.Product.BuildTools).InstallationPath) -ne $null)[0]
+    $vsDefinitions = `
+    @(
+        @{ Version = '16.0'; Product = 'Microsoft.Component.MSBuild' }
+        @{ Version = '16.0'; Product = 'Microsoft.VisualStudio.Product.BuildTools' }
+        @{ Version = '15.0'; Product = 'Microsoft.Component.MSBuild' }
+        @{ Version = '15.0'; Product = 'Microsoft.VisualStudio.Product.BuildTools' }
+    )
+
+    foreach ($vsDefinition in $vsDefinitions)
+    {
+        $vsPath = (Get-VSSetupInstance | Select-VSSetupInstance -Version $vsDefinition.Version -Require $vsDefinition.Product).InstallationPath
+
+        if ($vsPath)
+        {
+            break
+        }
+    }
 
     if (!$vsPath)
     {
-        Write-Information 'VS 2017 not found.'
+        Write-Information 'VS 2017 or 2019 not found.'
         return
     }
 
