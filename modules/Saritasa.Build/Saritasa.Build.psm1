@@ -414,10 +414,10 @@ function Initialize-MSBuild
 
     $vsDefinitions = `
     @(
-        @{ Version = '16.0'; Product = 'Microsoft.Component.MSBuild' }
-        @{ Version = '16.0'; Product = 'Microsoft.VisualStudio.Product.BuildTools' }
-        @{ Version = '15.0'; Product = 'Microsoft.Component.MSBuild' }
-        @{ Version = '15.0'; Product = 'Microsoft.VisualStudio.Product.BuildTools' }
+        @{ Version = '16.0'; Product = 'Microsoft.Component.MSBuild'; MSBuildVersion = 'Current' }
+        @{ Version = '16.0'; Product = 'Microsoft.VisualStudio.Product.BuildTools'; MSBuildVersion = 'Current' }
+        @{ Version = '15.0'; Product = 'Microsoft.Component.MSBuild'; MSBuildVersion = '15.0' }
+        @{ Version = '15.0'; Product = 'Microsoft.VisualStudio.Product.BuildTools'; MSBuildVersion = '15.0' }
     )
 
     foreach ($vsDefinition in $vsDefinitions)
@@ -426,6 +426,7 @@ function Initialize-MSBuild
 
         if ($vsPath)
         {
+            $msBuildVersion = $vsDefinition.MSBuildVersion
             break
         }
     }
@@ -438,11 +439,11 @@ function Initialize-MSBuild
 
     if ([System.IntPtr]::Size -eq 8)
     {
-        $msbuildPath = Join-Path $vsPath 'MSBuild\15.0\Bin\amd64'
+        $msbuildPath = Join-Path $vsPath "MSBuild\$msBuildVersion\Bin\amd64"
     }
     else
     {
-        $msbuildPath = Join-Path $vsPath 'MSBuild\15.0\Bin'
+        $msbuildPath = Join-Path $vsPath "MSBuild\$msBuildVersion\Bin"
     }
 
     $env:Path = "$msbuildPath;$env:Path"
