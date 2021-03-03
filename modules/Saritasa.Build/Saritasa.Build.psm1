@@ -415,12 +415,12 @@ function Initialize-MSBuild
     $vsDefinitions = `
     @(
         @{ Version = '16.0'; Component = 'Microsoft.Component.MSBuild'; MSBuildVersion = 'Current' }
-        @{ Version = '15.0'; Component = 'Microsoft.Component.MSBuild'; MSBuildVersion = '15.0' }
+        @{ Version = '[15.0,16.0)'; Component = 'Microsoft.Component.MSBuild'; MSBuildVersion = '15.0' }
     )
 
     foreach ($vsDefinition in $vsDefinitions)
     {
-        $vsPath = (Get-VSSetupInstance | Select-VSSetupInstance -Version $vsDefinition.Version -Require $vsDefinition.Component -Product *).InstallationPath
+        $vsPath = @(Get-VSSetupInstance | Select-VSSetupInstance -Version $vsDefinition.Version -Require $vsDefinition.Component -Product *)[0].InstallationPath
 
         if ($vsPath)
         {
