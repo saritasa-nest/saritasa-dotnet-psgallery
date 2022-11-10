@@ -52,6 +52,9 @@ function Invoke-NugetRestore
         # Path to solution. All NuGet packages from included projects will be restored.
         [Parameter(Mandatory = $true, ParameterSetName = 'Solution')]
         [string] $SolutionPath,
+	  # Path to nuget config file.
+	  [Parameter(Mandatory = $false, ParameterSetName = 'Solution')]
+        [string] $ConfigFile,
         # Path to project or packages.config.
         [Parameter(Mandatory = $true, ParameterSetName = 'Project')]
         [string] $ProjectPath,
@@ -80,6 +83,11 @@ function Invoke-NugetRestore
     if ($SolutionPath)
     {
         $params += $SolutionPath
+
+        if ($ConfigFile)
+        {
+          $params += @('-ConfigFile', $ConfigFile)
+        }
     }
     else
     {
