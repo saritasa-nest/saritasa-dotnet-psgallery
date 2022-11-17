@@ -57,7 +57,10 @@ function Invoke-NugetRestore
         [string] $ProjectPath,
         # Path to the solution directory. Not valid when restoring packages for a solution.
         [Parameter(Mandatory = $true, ParameterSetName = 'Project')]
-        [string] $SolutionDirectory
+        [string] $SolutionDirectory,
+        # Path to nuget config file.
+        [Parameter(Mandatory = $false)]
+        [string] $ConfigFile
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
@@ -71,7 +74,7 @@ function Invoke-NugetRestore
     else
     {
         Write-Warning "Install NuGet globally for faster builds:`nchoco install nuget.commandline"
-        
+
         Install-NugetCli -Destination $PSScriptRoot
         $nugetExePath = "$PSScriptRoot\nuget.exe"
     }
@@ -84,6 +87,11 @@ function Invoke-NugetRestore
     else
     {
         $params += @($ProjectPath, '-SolutionDirectory', $SolutionDirectory)
+    }
+
+    if ($ConfigFile)
+    {
+        $params += @('-ConfigFile', $ConfigFile)
     }
 
     &$nugetExePath $params
