@@ -1,3 +1,7 @@
+<% if (vaultEnabled) { %>
+# $env:VAULT_ADDR and $env:VAULT_TOKEN should be set.
+$secretPath = 'secret/project-development'<% } %>
+
 Expand-PsakeConfiguration `
 @{
     Configuration = 'Debug'
@@ -18,3 +22,15 @@ Expand-PsakeConfiguration `
     DatabasePassword = '123'
 <% } %>
 }
+
+<% if (vaultEnabled) { %>
+if (!$IsLocalDevelopment -or $env:VAULT_ADDR)
+{
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 'Tls12'
+    $vault = Get-Vault
+    $data = Get-Secret $vault $secretPath
+    $configuration = @{}
+    $data.PSObject.Properties | ForEach-Object { $configuration[$_.Name] = $_.Value }
+
+    Expand-PsakeConfiguration $configuration
+}<% } %>

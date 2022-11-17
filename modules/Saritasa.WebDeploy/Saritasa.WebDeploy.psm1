@@ -412,7 +412,9 @@ function Sync-WebContent
         [AllowEmptyString()]
         [string] $Application,
         [Parameter(Mandatory = $true, ParameterSetName = 'FileSystem')]
-        [switch] $AutoDestination
+        [switch] $AutoDestination,
+        [switch] $AllowUntrusted,
+        [string[]] $MSDeployParams
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
@@ -432,6 +434,16 @@ function Sync-WebContent
     $computerName, $useTempAgent = GetComputerName $ServerHost $SiteName
     $args = @('-verb:sync', "-source:contentPath='$ContentPath'",
               "$destinationParam,computerName='$computerName',tempAgent='$useTempAgent',$credential")
+
+    if ($AllowUntrusted)
+    {
+        $args += '-allowUntrusted'
+    }
+
+    if ($MSDeployParams)
+    {
+        $args += $MSDeployParams
+    }
 
     $result = Start-Process -NoNewWindow -Wait -PassThru "$msdeployPath\msdeploy.exe" $args
     if ($result.ExitCode)

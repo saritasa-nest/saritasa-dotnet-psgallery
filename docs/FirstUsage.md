@@ -81,7 +81,7 @@ Now it is done! You can type `psake -docs` and see that our test task is enumera
 
 The idea of PSGallery project is to provide set of useful PowerShell functions to make CI process easier. Let's build and publish our project to remote Windows server! To build use `Invoke-SolutionBuild` function.
 
-**Note** The server should be configured and IIS needs to be installed. You should have remote management service running (see [WinRM Configuration](WinRMConfiguration.md) section) and IIS with WebDeploy installed. You can do this by run `Install-Iis $ServerHost -ManagementService -WebDeploy` on your local host.
+**Note** The server should be configured and IIS needs to be installed. You should have remote management service running (see [WinRM Configuration](https://github.com/Saritasa/dotnet-docs/blob/master/WindowsRemoteAdministration/WinRMConfiguration.md) section) and IIS with WebDeploy installed. You can do this by run `Install-Iis $ServerHost -ManagementService -WebDeploy` on your local host.
 
 ```powershell
 Task build `

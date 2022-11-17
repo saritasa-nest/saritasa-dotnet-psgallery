@@ -12,6 +12,11 @@ const NEWRELIC = 'NewRelic';
 const PRTG = 'PRTG';
 const REDIS = 'Redis';
 
+const GITLAB_UPSOURCE = 'GitLab & Upsource';
+const GITLAB = 'GitLab';
+const JENKINS_UPSOURCE = 'Jenkins & Upsource';
+const NONE = 'None';
+
 module.exports = class extends Generator {
     constructor(args, opts) {
         super(args, opts);
@@ -42,10 +47,22 @@ module.exports = class extends Generator {
             choices: [WEB, DESKTOP, CLICK_ONCE, WINDOWS_SERVICE]
         }, {
             type: 'confirm',
+            name: 'vaultEnabled',
+            message: 'Is Vault used?',
+            default: true
+        }, {
+            type: 'confirm',
             name: 'netCoreUsed',
             message: 'Is .NET Core used?',
             default: true
         }, {
+            type: 'list',
+            name: 'integrations',
+            message: 'What integrations do you need?',
+            choices: [GITLAB_UPSOURCE, GITLAB, JENKINS_UPSOURCE, NONE],
+            default: 0
+        },
+        {
             type: 'confirm',
             name: 'gitTasksEnabled',
             message: 'Do you need GitFlow helper tasks?',
@@ -68,9 +85,14 @@ module.exports = class extends Generator {
         return this.prompt(askingQuestions).then(function (answers) {
             this.projectTypes = answers.projectTypes;
             this.srcPath = predefinedSrcPath || answers.srcPath;
+            this.vaultEnabled = answers.vaultEnabled;
             this.netCoreUsed = answers.netCoreUsed;
             this.gitTasksEnabled = answers.gitTasksEnabled;
             this.nunitEnabled = answers.nunitEnabled;
+
+            this.gitLabUsed = answers.integrations == GITLAB_UPSOURCE || answers.integrations == GITLAB;
+            this.upsourceUsed = answers.integrations == GITLAB_UPSOURCE || answers.integrations == JENKINS_UPSOURCE;
+            this.jenkinsUsed = answers.integrations == JENKINS_UPSOURCE;
 
             if (this.projectTypes.indexOf(WEB) > -1) {
                 return this.prompt([{
@@ -109,19 +131,23 @@ module.exports = class extends Generator {
             adminTasksEnabled: this.adminTasksEnabled,
             desktopEnabled: this.desktopEnabled,
             webEnabled: this.webEnabled,
+            vaultEnabled: this.vaultEnabled,
             netCoreUsed: this.netCoreUsed,
             windowsServiceEnabled: this.windowsServiceEnabled,
             gitTasksEnabled: this.gitTasksEnabled,
-            testsUsed: this.nunitEnabled
+            testsUsed: this.nunitEnabled,
+            gitLabUsed: this.gitLabUsed,
+            upsourceUsed: this.upsourceUsed,
+            jenkinsUsed: this.jenkinsUsed,
         };
 
         this.fs.copyTpl(this.templatePath('psakefile.ps1'),
             this.destinationPath('psakefile.ps1'), templateParams);
         this.fs.copyTpl(this.templatePath('Config.Development.ps1'),
             this.destinationPath('Config.Development.ps1'), templateParams);
-        this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
+        this.fs.copyTpl(this.templatePath('Config.Staging.ps1'),
             this.destinationPath('Config.Staging.ps1'), templateParams);
-            this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
+        this.fs.copyTpl(this.templatePath('Config.Production.ps1'),
             this.destinationPath('Config.Production.ps1'), templateParams);
 
         this.fs.copyTpl(this.templatePath('scripts/BuildTasks.ps1'), this.destinationPath('scripts/BuildTasks.ps1'), templateParams);
@@ -129,6 +155,14 @@ module.exports = class extends Generator {
         this.fs.copy(this.templatePath('scripts/Saritasa.PsakeExtensions.ps1'), this.destinationPath('scripts/Saritasa.PsakeExtensions.ps1'));
         this.fs.copy(this.templatePath('scripts/Saritasa.BuildTasks.ps1'), this.destinationPath('scripts/Saritasa.BuildTasks.ps1'));
         this.fs.copy(this.templatePath('scripts/Saritasa.PsakeTasks.ps1'), this.destinationPath('scripts/Saritasa.PsakeTasks.ps1'));
+
+        if (this.gitLabUsed) {
+            this.fs.copyTpl(this.templatePath('scripts/GitLabTasks.ps1'), this.destinationPath('scripts/GitLabTasks.ps1'), templateParams);
+        }
+
+        if (this.jenkinsUsed) {
+            this.fs.copyTpl(this.templatePath('scripts/JenkinsTasks.ps1'), this.destinationPath('scripts/JenkinsTasks.ps1'), templateParams);
+        }
 
         this.installModule('Saritasa.Build');
 
@@ -156,6 +190,10 @@ module.exports = class extends Generator {
         if (this.gitTasksEnabled) {
             this.fs.copy(this.templatePath('Scripts/Saritasa.GitTasks.ps1'), this.destinationPath('Scripts/Saritasa.GitTasks.ps1'));
             this.installModule('Saritasa.Git');
+        }
+
+        if (this.vaultEnabled) {
+            this.installModule('PowerVault');
         }
 
         if (this.webServices.indexOf(NEWRELIC) > -1) {

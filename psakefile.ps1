@@ -139,6 +139,7 @@ Task build `
 {
     # Tested on version 1.1.605.
     Exec { nuget.exe install StackExchange.Redis -OutputDirectory "$root\tmp" }
+    Save-Module VSSetup -Path "$modules"
 
     $redisRoot = "$modules\Saritasa.Redis"
     Copy-Item "$root\tmp\StackExchange.Redis.*\lib\net46\StackExchange.Redis.dll" $redisRoot
