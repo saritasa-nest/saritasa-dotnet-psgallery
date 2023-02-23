@@ -151,12 +151,18 @@ function Invoke-ProjectBuild
         [string] $Configuration,
         [string] $Target = 'Build',
         # Additional build parameters.
-        [string[]] $BuildParams
+        [string[]] $BuildParams,
+        [switch] $SingleThreaded
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    msbuild.exe $ProjectPath '/m' "/t:$Target" "/p:Configuration=$Configuration" '/verbosity:normal' $BuildParams
+    if (!$SingleThreaded)
+    {
+        $BuildParams += @('/m')
+    }
+
+    msbuild.exe $ProjectPath "/t:$Target" "/p:Configuration=$Configuration" '/verbosity:normal' $BuildParams
     if ($LASTEXITCODE)
     {
         throw 'Build failed.'
