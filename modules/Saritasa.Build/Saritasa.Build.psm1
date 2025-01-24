@@ -403,7 +403,7 @@ function Update-VariablesInFile
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    $content = Get-Content $Path
+    $content = Get-Content $Path -Encoding UTF8
 
     foreach ($key in $Variables.Keys)
     {
@@ -412,7 +412,7 @@ function Update-VariablesInFile
         $content = $content -ireplace "%$key%", $escapedValue
     }
 
-    $content | Set-Content $Path
+    $content | Set-Content $Path -Encoding UTF8
 }
 
 <#
